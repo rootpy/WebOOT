@@ -16,7 +16,7 @@
     </div>
     <div id="bottom">
       <div class="bottom">
-        This is some ${content}.
+        ${content}
       </div>
     </div>
   </div>

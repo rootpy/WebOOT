@@ -27,3 +27,4 @@ weboot/static/pyramid-small.png
 weboot/static/pyramid.png
 weboot/static/transparent.gif
 weboot/templates/mytemplate.pt
+weboot/templates/result.pt
