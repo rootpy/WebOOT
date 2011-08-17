@@ -33,9 +33,6 @@ def main(global_config, **settings):
                     
     config.add_static_view('static', 'weboot:static')
     
-    #config.add_route("result", "/result/*traverse", factory=FilesystemTraverser)
-    
-        # MongoDB
     def add_mongo_db(event):
         settings = event.request.registry.settings
         url = settings['mongodb.url']
@@ -43,9 +40,11 @@ def main(global_config, **settings):
         db = settings['mongodb_conn'][db_name]
         event.request.db = db
         
-    conn = pymongo.Connection(settings['mongodb.url'])
-    config.registry.settings['mongodb_conn'] = conn
-    config.add_subscriber(add_mongo_db, NewRequest)
+    mongo_url = settings.get('mongodb.url', None)
+    if mongo_url:
+        conn = pymongo.Connection(settings['mongodb.url'])
+        config.registry.settings['mongodb_conn'] = conn
+        config.add_subscriber(add_mongo_db, NewRequest)
     
     config.scan("weboot.views")
     
