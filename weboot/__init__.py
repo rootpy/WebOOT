@@ -1,11 +1,16 @@
 from pyramid.config import Configurator
-from weboot.resources import Root, FilesystemTraverser
+from pyramid.events import subscriber, NewRequest
+
+import pymongo
 
 import ROOT as R
 R.PyConfig.IgnoreCommandLineOptions = True
 
 def setup_root():
     R.gROOT.SetBatch()
+
+from weboot.resources import Root, FilesystemTraverser
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -18,9 +23,29 @@ def main(global_config, **settings):
                     context='weboot:resources.Root',
                     renderer='weboot:templates/mytemplate.pt')
                     
+    config.add_view('weboot.views.view_listing',
+                    context='weboot:resources.FilesystemTraverser',
+                    renderer='weboot:templates/listing.pt')
+                    
+    config.add_view('weboot.views.view_listing',
+                    context='weboot:resources.RootFileTraverser',
+                    renderer='weboot:templates/listing.pt')
+                    
     config.add_static_view('static', 'weboot:static')
     
     #config.add_route("result", "/result/*traverse", factory=FilesystemTraverser)
+    
+        # MongoDB
+    def add_mongo_db(event):
+        settings = event.request.registry.settings
+        url = settings['mongodb.url']
+        db_name = settings['mongodb.db_name']
+        db = settings['mongodb_conn'][db_name]
+        event.request.db = db
+        
+    conn = pymongo.Connection(settings['mongodb.url'])
+    config.registry.settings['mongodb_conn'] = conn
+    config.add_subscriber(add_mongo_db, NewRequest)
     
     config.scan("weboot.views")
     

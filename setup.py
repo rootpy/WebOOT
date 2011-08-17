@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = ['pyramid', 'WebError']
+requires = ['pyramid', 'WebError', 'pymongo', 'velruse', 'pyOpenSSL']
 
 setup(name='WebOOT',
       version='0.0',
