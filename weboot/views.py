@@ -4,6 +4,7 @@ from os.path import exists, join as pjoin
 from tempfile import NamedTemporaryFile
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.location import lineage
 from pyramid.response import Response
 from pyramid.url import static_url
 from pyramid.view import view_config
@@ -68,12 +69,16 @@ def view_root_object_render(context, request):
         return render_histogram(context, request)
     return HTTPFound(location=static_url('weboot:static/cancel_32.png', request))
     
+def build_path(context):
+    return "".join('<span class="breadcrumb">{0}</span>'.format(l.__name__) 
+                    for l in reversed(list(lineage(context))) if l.__name__)
+    
 @view_config(renderer='weboot:templates/result.pt', context=RootObject)
 def view_root_object(context, request):
     content = []
     content.append('<p><img src="{0}" /></p>'.format(request.resource_url(context, "render")))
-    return dict(path="You are at {0}".format(context.path),
-                content="\n".join(content))
+    return dict(path=build_path(context),
+                 content="\n".join(content))
                 
 #@view_config(renderer='weboot:templates/result.pt', context=MultipleTraverser)
 #def view_multitraverse(context, request):

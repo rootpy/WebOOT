@@ -3,7 +3,24 @@
 <head>
   <title>Results</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
+  <script type="text/javascript">   
+  $(function () {
+    $(".breadcrumb").click(function() {
+        alert("Hello! " + $(this).text());
+    })
+  })
+  </script>
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <style type="text/css">
+    .breadcrumb {
+        margin: 0 0.25em 0 0.25em;
+        color: #eee;
+        padding: 0.2em;
+        background: #888;
+        border: 1px solid #666;
+    }
+  </style>
 </head>
 <body>
   <div id="wrap">
