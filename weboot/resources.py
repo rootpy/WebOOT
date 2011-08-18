@@ -80,12 +80,12 @@ class RootObject(LocationAware, ListingItem):
     @property
     def icon_url(self):
         if issubclass(self.cls, R.TH1):
-            return self.sub_url("render", query={"resolution": 25})
+            return self.sub_url("!render", query={"resolution": 25})
         return static_url('weboot:static/close_32.png', self.request)
     
     def __getitem__(self, what):
-        if what == "render":
-            return RootObjectRender.from_parent(self, "render", self.o.ReadObj())
+        if what == "!render":
+            return RootObjectRender.from_parent(self, "!render", self.o.ReadObj())
 
 class MultipleTraverser(LocationAware):
     def __init__(self, request, contexts):
