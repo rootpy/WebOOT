@@ -76,7 +76,7 @@ def build_path(context):
 @view_config(renderer='weboot:templates/result.pt', context=RootObject)
 def view_root_object(context, request):
     content = []
-    content.append('<p><img src="{0}" /></p>'.format(context["!render"].url))
+    content.append('<p><img src="{0}" /></p>'.format(request.resource_url(context, "render")))
     return dict(path=build_path(context),
                  content="\n".join(content))
                 
