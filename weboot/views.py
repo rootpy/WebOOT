@@ -75,6 +75,8 @@ def build_path(context):
     
 @view_config(renderer='weboot:templates/result.pt', context=RootObject)
 def view_root_object(context, request):
+    if context.forward_url:
+        return HTTPFound(location=context.forward_url)
     content = []
     content.append('<p><img src="{0}" /></p>'.format(context["!render"].url))
     return dict(path=build_path(context),
