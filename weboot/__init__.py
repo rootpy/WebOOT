@@ -8,6 +8,8 @@ R.PyConfig.IgnoreCommandLineOptions = True
 
 def setup_root():
     R.gROOT.SetBatch()
+    R.TH1.SetDefaultSumw2()
+    R.TH1.AddDirectory(False)
 
 from weboot.resources import Root, FilesystemTraverser
 
