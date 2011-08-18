@@ -153,6 +153,8 @@ class RootFileTraverser(LocationAware):
             return MultipleTraverser.from_parent(self, subpath, contexts)
             
         leaf = self.rootfile.GetKey(subpath)
+        if not leaf:
+            raise KeyError(subpath)
         leaf_cls = get_key_class(leaf)
         print "--", self.rootfile, subpath, leaf.GetClassName()
         if not leaf:
@@ -218,3 +220,4 @@ class FilesystemTraverser(LocationAware):
                         for f in listdir(self.path) if pattern.match(f)]
             return MultipleTraverser.from_parent(self, subpath, contexts)
 
+        raise KeyError(subpath)
