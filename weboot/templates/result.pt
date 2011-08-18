@@ -7,7 +7,22 @@
   <script type="text/javascript">   
   $(function () {
     $(".breadcrumb").click(function() {
-        alert("Hello! " + $(this).text());
+        var clicked = this;
+        var clicked_idx = 0;
+        var crumbs = $(".breadcrumb");
+        /*
+        crumbs.each(function (i) {
+            if (this == clicked) {
+                clicked_idx = i;
+                return false;
+            }
+        });
+        crumbs = crumbs.slice(0, clicked_idx);
+        */
+        query = crumbs.map(function () { 
+                return this == clicked ? "*" : $(this).text(); 
+            }).get().join("/");
+        alert(query)
     })
   })
   </script>
