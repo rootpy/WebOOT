@@ -154,17 +154,40 @@ class RootFileTraverser(LocationAware):
             
         leaf = self.rootfile.GetKey(subpath)
         if not leaf:
-            raise KeyError(subpath)
+            return
+            
         leaf_cls = get_key_class(leaf)
         print "--", self.rootfile, subpath, leaf.GetClassName()
+                
         if not leaf:
             raise HTTPNotFound(subpath)
             
         if issubclass(leaf_cls, R.TDirectory):
             leaf = self.rootfile.Get(subpath)
             return RootFileTraverser.from_parent(self, subpath, leaf)
-            
+        
+        if issubclass(leaf_cls, R.TObjArray):
+            leaf = self.rootfile.Get(subpath)
+            return TObjArrayTraverser.from_parent(self, subpath, leaf)
+        
         return RootObject.from_parent(self, subpath, leaf)
+
+class TObjArrayTraverser(RootFileTraverser):
+    
+    def __init__(self, request, obj_array):
+        super(TObjArrayTraverser, self).__init__(request, obj_array)
+        self.mapping = {}
+        for i, item in enumerate(obj_array):
+            item.GetName()
+    
+    @property
+    def items(self):
+        keys = [self[k.GetName()] for k in list(self.rootfile)]
+        keys.sort(key=lambda k: k.name)
+        return keys
+    
+    @property
+    def __getitem__
 
 class FilesystemTraverser(LocationAware):
     def __init__(self, request, path=None):
