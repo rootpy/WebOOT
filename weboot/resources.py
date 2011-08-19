@@ -8,7 +8,7 @@ from os.path import basename, exists, isfile, isdir, join as pjoin
 import re
 import fnmatch
 
-from pyramid.httpexceptions import HTTPError, HTTPNotFound, HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPError, HTTPFound, HTTPNotFound, HTTPMethodNotAllowed
 from pyramid.traversal import traverse
 from pyramid.url import static_url
 
@@ -58,8 +58,10 @@ class LocationAware(object):
 class Root(dict, LocationAware):
     def __init__(self, request):
         self.request = request
-        #self['result'] = FilesystemTraverser.from_parent(self, "result")
+        self['result'] = FilesystemTraverser.from_parent(self, "result")
         self['browse'] = FilesystemTraverser.from_parent(self, "browse")
+        self['baskets'] = BasketBrowser.from_parent(self, "baskets")
+
 
 class RootObjectRender(LocationAware):
     """
@@ -136,6 +138,11 @@ class RootObject(LocationAware, ListingItem):
             
         elif what == "!table":
             return HistogramTable.from_parent(self, "!table", self.o)
+
+        elif what == "!basket":
+            self.request.db.baskets.insert({"basket":"my_basket", "url": self.url, "name": self.name})
+            print "adding %s to basket" % self.url
+            return HTTPFound(location=self.url)
 
 class HistogramTable(RootObject):
     @property
@@ -263,6 +270,11 @@ class RootFileTraverser(LocationAware):
         
     def __getitem__(self, subpath):
         print "Traversing root object at", subpath
+
+        if subpath == "!basket":
+            self.request.db.baskets.insert({"basket":"my_basket", "url": self.url, "name": self.name})
+            print "adding %s to basket" % self.url
+            return HTTPFound(location=self.url)
         
         if "*" in subpath:
             keys = [l.GetName() for l in self.rootfile.GetListOfKeys()]
@@ -378,3 +390,81 @@ class FilesystemTraverser(LocationAware):
             return MultipleTraverser.from_parent(self, subpath, contexts)
 
         #raise KeyError(subpath)
+
+class BasketBrowser(LocationAware):
+    section = "directory"
+
+    def __init__(self, request, path=None):
+        self.request = request
+        self.path = path
+    
+    @property
+    def name(self):
+        if self.path:
+            return basename(self.path)
+        else:
+            return "baskets"
+    
+    @property
+    def icon_url(self):
+        return static_url('weboot:static/folder_32.png', self.request)
+        
+    @property
+    def content(self):
+        def link(p):
+            url = self.request.resource_url(self, p)
+            return '<p><a href="{0}">{1}</a></p>'.format(url, p)
+        return "".join(link(p) for p in self.ls)
+    
+    @property
+    def items(self):
+        if self.path:
+            baskets = self.request.db.baskets.find({"basket" : "/^%s/" % self.path})
+        else:
+            baskets = self.request.db.baskets.find()
+        n = self.path.count("/")+1 if self.path else 0
+        items = set(b["basket"] for b in baskets)
+        items = set(i.split("/")[n] for i in items if len(i.split("/")) > n)
+        items = [self[i] for i in sorted(items)]
+        items = [i for i in items if i]
+        return items
+    
+    def __getitem__(self, subpath):
+        if self.path:
+            path = pjoin(self.path, subpath)
+        else:
+            path = subpath
+        basket = self.request.db.baskets.find({"basket" : path})
+        if basket: 
+            return BasketTraverser.from_parent(self, subpath, basket)
+        else:
+            return BasketBrowser.from_parent(self, subpath)
+
+class BasketTraverser(LocationAware):
+    section = "directory"
+
+    def __init__(self, request, basket=None):
+        self.request = request
+        self.basket = list(basket)
+    
+    @property
+    def name(self):
+        return self.__name__
+    
+    @property
+    def icon_url(self):
+        return static_url('weboot:static/folder_chart_32.png', self.request)
+        
+    @property
+    def content(self):
+        def link(url, p):
+            return '<p><a href="{0}">{1}</a></p>'.format(url, p)
+        return "".join(link(p['url'], p['name']) for p in self.basket)
+    
+    @property
+    def items(self):
+        return [self[i] for i in range(len(self.basket))]
+    
+    def __getitem__(self, subpath):
+        b = self.basket[int(subpath)]
+        return traverse(Root(self.request), b['url'])["context"]

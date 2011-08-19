@@ -35,14 +35,15 @@ def main(global_config, **settings):
     config.add_view('weboot.views.my_view',
                     context='weboot:resources.Root',
                     renderer='weboot:templates/mytemplate.pt')
-                    
-    config.add_view('weboot.views.view_listing',
-                    context='weboot:resources.FilesystemTraverser',
-                    renderer='weboot:templates/listing.pt')
-                    
-    config.add_view('weboot.views.view_listing',
-                    context='weboot:resources.RootFileTraverser',
-                    renderer='weboot:templates/listing.pt')
+    
+
+    for ctx in ['weboot:resources.FilesystemTraverser',
+                'weboot:resources.RootFileTraverser',
+                'weboot:resources.BasketBrowser',
+                'weboot:resources.BasketTraverser']:
+        config.add_view('weboot.views.view_listing',
+                        context=ctx,
+                        renderer='weboot:templates/listing.pt')
                     
     config.add_static_view('static', 'weboot:static')
     
