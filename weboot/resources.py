@@ -9,7 +9,7 @@ import re
 import fnmatch
 
 from pyramid.httpexceptions import HTTPError, HTTPFound, HTTPNotFound, HTTPMethodNotAllowed
-from pyramid.traversal import traverse
+from pyramid.traversal import traverse, resource_path
 from pyramid.url import static_url
 
 import ROOT as R
@@ -140,7 +140,7 @@ class RootObject(LocationAware, ListingItem):
             return HistogramTable.from_parent(self, "!table", self.o)
 
         elif what == "!basket":
-            self.request.db.baskets.insert({"basket":"my_basket", "url": self.url, "name": self.name})
+            self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
 
@@ -272,7 +272,7 @@ class RootFileTraverser(LocationAware):
         print "Traversing root object at", subpath
 
         if subpath == "!basket":
-            self.request.db.baskets.insert({"basket":"my_basket", "url": self.url, "name": self.name})
+            self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
         
@@ -459,7 +459,7 @@ class BasketTraverser(LocationAware):
     def content(self):
         def link(url, p):
             return '<p><a href="{0}">{1}</a></p>'.format(url, p)
-        return "".join(link(p['url'], p['name']) for p in self.basket)
+        return "".join(link(p['path'], p['name']) for p in self.basket)
     
     @property
     def items(self):
@@ -467,4 +467,4 @@ class BasketTraverser(LocationAware):
     
     def __getitem__(self, subpath):
         b = self.basket[int(subpath)]
-        return traverse(Root(self.request), b['url'])["context"]
+        return traverse(Root(self.request), b['path'])["context"]
