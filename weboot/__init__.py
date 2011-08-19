@@ -10,6 +10,8 @@ def setup_root():
     R.gROOT.SetBatch()
     R.TH1.SetDefaultSumw2()
     R.TH1.AddDirectory(False)
+    R.gROOT.SetStyle("Plain")
+    R.gStyle.SetPalette(1)
 
 from weboot.resources import Root, FilesystemTraverser
 
