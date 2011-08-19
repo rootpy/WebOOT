@@ -100,9 +100,10 @@ def view_root_object(context, request):
     
 #@view_config(renderer='weboot:templates/result.pt', context=FilesystemTraverser)
 def view_listing(context, request):
-    return dict(path="You are at {0}".format(context.path), 
+    sections = {}
+    for item in context.items:
+        sections.setdefault(item.section, []).append(item)
+        
+    return dict(path=build_path(context), 
                 context=context,
-                items=context.items)
-    
-
-
+                sections=sections)

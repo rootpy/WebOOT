@@ -5,6 +5,13 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
   <style type="text/css">
+    .breadcrumb {
+        margin: 0 0.25em 0 0.25em;
+        color: #eee;
+        padding: 0.2em;
+        background: #888;
+        border: 1px solid #666;
+    }
   div.img
   {
       margin:2px;
@@ -38,17 +45,20 @@
     <div id="middle">
       <div class="middle align-center">
         <p class="app-welcome">
-          ${path}
+          <a href="${request.resource_url(None)}" id="base_url"></a>${path}
         </p>
       </div>
     </div>
     <div id="bottom">
       <div class="bottom">
-        <div class="img" tal:repeat="i context.items">
+        <div tal:repeat="section sections">
+        <div class="img" tal:repeat="i section.items">
             <a href="${i.url}">
             <img src="${i.icon_url}" />
             <div class="name">${i.name}</div>
             </a>
+        </div>
+        <hrule />
         </div>
       </div>
     </div>

@@ -79,6 +79,13 @@ class RootObject(LocationAware, ListingItem):
         self.cls = get_key_class(self.o)
     
     @property
+    def section(self):
+        if issubclass(self.cls, R.TH1):
+            return "hist"
+        if "TParameter" in self.cls.__name__:
+            return "parameters"
+    
+    @property
     def obj(self):
         if isinstance(self.o, R.TKey):
             return self.o.ReadObj()
@@ -145,6 +152,8 @@ class RootFileTraverser(LocationAware):
     """
     A traverser to go across ROOT files
     """
+    section = "root_file"
+    
     def __init__(self, request, rootfile):
         self.request, self.rootfile = request, rootfile
     
@@ -235,6 +244,8 @@ class TObjArrayTraverser(RootFileTraverser):
         return RootObject.from_parent(self, subpath, root_obj)
 
 class FilesystemTraverser(LocationAware):
+    section = "directory"
+
     def __init__(self, request, path=None):
         self.request = request
         self.path = path or request.registry.settings["results_path"]

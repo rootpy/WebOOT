@@ -50,6 +50,8 @@
             }).get().join("/");
         //alert(query);
     })
+    $(".button").button();
+    
     add_toggleable("logx");
     add_toggleable("logy");
     add_toggleable("logz");     
@@ -68,18 +70,18 @@
         border: 1px solid #666;
     }
     #sidebar {
-        padding: 1em;
+        padding: 0.4em;
         margin: 2em;
         float:right;
         width:300px;
         background:#99c;
     }
-    #logx,#logy,#hist,label {
+    #buttons a,label {
         -moz-user-select: none;
         -khtml-user-select: none;
         -webkit-user-select: none;
         user-select: none;
-        margin: 0.1em;
+        margin: 0.4em;
     }
   </style>
 </head>
@@ -93,12 +95,15 @@
       </div>
     </div>
     <div id="sidebar">
-      <div class="buttons">
+      <div id="buttons">
         <input type="checkbox" id="logx" /><label for="logx">log X</label>
         <input type="checkbox" id="logy" /><label for="logy">log Y</label>
         <input type="checkbox" id="logz" /><label for="logz">log Z</label>
         <input type="checkbox" id="hist" /><label for="hist">Hist</label>
         <input type="checkbox" id="e0x0" /><label for="e0x0">Y Error Bars</label>
+        <a class="button" href="!project/x">Project X</a>
+        <a class="button" href="!project/y">Project Y</a>
+        <a class="button" href="!project/z">Project Z</a>
 
 
       </div>
