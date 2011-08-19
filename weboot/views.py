@@ -20,9 +20,11 @@ def my_view(request):
     return {'project':'WebOOT'}
 
 def build_draw_params(params):
-    options = []
+    options = ["box"]
     if "hist" in params:
         options.append("hist")
+    if "e0x0" in params:
+        options.append("e0x0")
     return " ".join(options)
 
 def eps_to_png(what, input_name, resolution=100):
@@ -42,16 +44,17 @@ def render_histogram(context, request):
     
     print "Will attempt to render", h
     if isinstance(h, R.TH3):
-        h = h.Project3D("x")
+        #h = h.Project3D("x")
+        pass
     if isinstance(h, R.TH2):
         h = h.ProjectionX()
         
     c = R.TCanvas("{0}{1:03d}".format(h.GetName(), random.randint(0, 999)))
     
-    if "log" in request.params:
-        c.SetLogy()
+    if "logx" in request.params: c.SetLogx()
+    if "logy" in request.params: c.SetLogy()
     
-    h = fixup_hist_units(h)
+    #h = fixup_hist_units(h)
     
     h.Draw(build_draw_params(request.params))
     
@@ -78,7 +81,7 @@ def view_root_object(context, request):
     if context.forward_url:
         return HTTPFound(location=context.forward_url)
     content = []
-    content.append('<p><img src="{0}" /></p>'.format(request.resource_url(context, "render")))
+    content.append('<p><img id="plot" src="{0}" /></p>'.format(context["!render"].url))
     return dict(path=build_path(context),
                  content="\n".join(content))
                 

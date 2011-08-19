@@ -1,4 +1,7 @@
 
+
+# PyTrie! https://bitbucket.org/gsakkis/pytrie/src/804df264a06f/pytrie.py
+
 from os import listdir
 from os.path import basename, exists, isfile, isdir, join as pjoin
 
@@ -12,6 +15,8 @@ from pyramid.url import static_url
 import ROOT as R
 
 def get_key_class(key):
+    if not isinstance(key, R.TKey):
+        return type(key)
     class_name = key.GetClassName()
     try:
         class_object = getattr(R, class_name)
@@ -30,6 +35,10 @@ class ListingItem(object):
 class LocationAware(object):
     __name__ = ""
     __parent__ = None
+
+    @property
+    def forward_url(self):
+        pass
 
     def sub_url(self, *args, **kwargs):
         return self.request.resource_url(self, *args, **kwargs)
@@ -58,7 +67,7 @@ class RootObjectRender(LocationAware):
     """
     def __init__(self, request, root_object):
         self.request = request
-        self.o = root_object
+        self.o = root_object    
 
 class RootObject(LocationAware, ListingItem):
     """
@@ -68,6 +77,12 @@ class RootObject(LocationAware, ListingItem):
         self.request = request
         self.o = root_object
         self.cls = get_key_class(self.o)
+    
+    @property
+    def obj(self):
+        if isinstance(self.o, R.TKey):
+            return self.o.ReadObj()
+        return self.o
     
     @property
     def name(self):
@@ -85,7 +100,25 @@ class RootObject(LocationAware, ListingItem):
     
     def __getitem__(self, what):
         if what == "!render":
-            return RootObjectRender.from_parent(self, "!render", self.o.ReadObj())
+            return RootObjectRender.from_parent(self, "!render", self.obj)
+            
+        elif what == "!project":
+            return Projector.from_parent(self, "!project", self.o)
+            
+        elif what == "!range":
+            return Ranger.from_parent(self, "!range", self.o)
+
+class Projector(RootObject):
+    def __getitem__(self, what):
+        return RootObject.from_parent(self, what, self.obj.Project3D(what))
+
+class Ranger(RootObject):
+    def __getitem__(self, what):
+        ax, lo, hi = what.split("!")
+        h = self.obj.Clone()
+        GetAxis = getattr(h, "Get{0}axis".format(ax.upper()))
+        GetAxis().SetRange(int(lo), int(hi))
+        return RootObject.from_parent(self, what, h)
 
 class MultipleTraverser(LocationAware):
     def __init__(self, request, contexts):
@@ -176,9 +209,18 @@ class TObjArrayTraverser(RootFileTraverser):
     
     def __init__(self, request, obj_array):
         super(TObjArrayTraverser, self).__init__(request, obj_array)
-        self.mapping = {}
+        mapping = self.mapping = {}
         for i, item in enumerate(obj_array):
-            item.GetName()
+            orig_name = name = item.GetName()
+            n = 0
+            while name in mapping:
+                name = "{0};{1}".format(orig_name, n)
+                n += 1
+            mapping[name] = i                    
+    
+    @property
+    def path(self):
+        return self.__name__
     
     @property
     def items(self):
@@ -186,8 +228,11 @@ class TObjArrayTraverser(RootFileTraverser):
         keys.sort(key=lambda k: k.name)
         return keys
     
-    @property
-    def __getitem__
+    def __getitem__(self, subpath):
+        if subpath not in self.mapping:
+            return
+        root_obj = self.rootfile.At(self.mapping[subpath])
+        return RootObject.from_parent(self, subpath, root_obj)
 
 class FilesystemTraverser(LocationAware):
     def __init__(self, request, path=None):
@@ -243,4 +288,4 @@ class FilesystemTraverser(LocationAware):
                         for f in listdir(self.path) if pattern.match(f)]
             return MultipleTraverser.from_parent(self, subpath, contexts)
 
-        raise KeyError(subpath)
+        #raise KeyError(subpath)
