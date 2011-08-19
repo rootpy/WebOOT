@@ -4,6 +4,19 @@
   <title>Results</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.viewport.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
+  <script type="text/javascript">
+    $(function() {
+        $("img").lazyload();
+        $("img:in-viewport").each(function () {
+            $(this).attr("src", $(this).attr("original"));
+        });
+    });
+  </script>
   <style type="text/css">
     .breadcrumb {
         margin: 0 0.25em 0 0.25em;
@@ -51,15 +64,16 @@
     </div>
     <div id="bottom">
       <div class="bottom">
-        <div tal:repeat="section sections">
-        <div class="img" tal:repeat="i section.items">
-            <a href="${i.url}">
-            <img src="${i.icon_url}" />
-            <div class="name">${i.name}</div>
-            </a>
-        </div>
-        <hrule />
-        </div>
+        <p tal:repeat="(name, section_items) sections">
+            <div>Name: ${name}</div>
+            <div class="img" tal:repeat="i section_items">
+                <a href="${i.url}">
+                <img original="${i.icon_url}" src="" />
+                <div class="name">${i.name}</div>
+                </a>
+            </div>
+            <hr style="clear: both;" />
+        </p>
       </div>
     </div>
   </div>

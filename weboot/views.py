@@ -19,8 +19,8 @@ def my_view(request):
     
     return {'project':'WebOOT'}
 
-def build_draw_params(params):
-    options = ["box"]
+def build_draw_params(h, params):
+    options = ["colz" if isinstance(h, R.TH2) else "box"]
     if "hist" in params:
         options.append("hist")
     if "e0x0" in params:
@@ -43,20 +43,23 @@ def render_histogram(context, request):
         raise HTTPNotFound("Not a histogram")
     
     print "Will attempt to render", h
-    if isinstance(h, R.TH3):
-        #h = h.Project3D("x")
-        pass
-    if isinstance(h, R.TH2):
-        h = h.ProjectionX()
         
     c = R.TCanvas("{0}{1:03d}".format(h.GetName(), random.randint(0, 999)))
     
     if "logx" in request.params: c.SetLogx()
     if "logy" in request.params: c.SetLogy()
+    if "logz" in request.params: c.SetLogz()
     
-    #h = fixup_hist_units(h)
+    if "unit_fixup" in request.params:
+        h = fixup_hist_units(h)
     
-    h.Draw(build_draw_params(request.params))
+    if "nostat" in request.params:
+        h.SetStats(False)
+    
+    if "notitle" in request.params:
+        h.SetTitle("")
+    
+    h.Draw(build_draw_params(h, request.params))
     
     with NamedTemporaryFile(suffix=".eps") as tmpfile:
         c.SaveAs(tmpfile.name)
@@ -80,10 +83,8 @@ def build_path(context):
 def view_root_object(context, request):
     if context.forward_url:
         return HTTPFound(location=context.forward_url)
-    content = []
-    content.append('<p><img id="plot" src="{0}" /></p>'.format(context["!render"].url))
     return dict(path=build_path(context),
-                 content="\n".join(content))
+                content="\n".join(context.content))
                 
 #@view_config(renderer='weboot:templates/result.pt', context=MultipleTraverser)
 #def view_multitraverse(context, request):
@@ -103,7 +104,15 @@ def view_listing(context, request):
     sections = {}
     for item in context.items:
         sections.setdefault(item.section, []).append(item)
-        
+    for items in sections.values():
+        items.sort(key=lambda o: o.name)
+    section_list = []
+    #fsorted(sections.iteritems())
+    for sec in ["root_file", "directory", "hist"]:
+        if sec in sections:
+            section_list.append((sec, sections.pop(sec)))
+    section_list.extend(sections.iteritems())
+    
     return dict(path=build_path(context), 
                 context=context,
-                sections=sections)
+                sections=section_list)

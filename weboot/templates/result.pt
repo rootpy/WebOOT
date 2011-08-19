@@ -5,62 +5,46 @@
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
   <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
   <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/lazyload.js')}"></script>
   <script type="text/javascript">
-  function update_plot() {
-    var p = $("#plot");
-    query_str = $.map(p.data("properties"), 
+    function update_plot() {
+        var p = $("#plot");
+        query_str = $.map(p.data("properties"), 
         function (val, key) { return key + "=" + val; })
         .join("&");
-    
-    $("#plot").attr("src", p.data("orig-src") + "?" + query_str);
-  }
-  function add_toggleable(what) {
-    var props = $("#plot").data("properties");
-    $("#" + what)
+
+        $("#plot").attr("src", p.data("orig-src") + "?" + query_str);
+    }
+    function add_toggleable(what) {
+        var props = $("#plot").data("properties");
+        $("#" + what)
         .button().disableSelection()
         .click(function (){
             if (this.checked) props[what] = true;
             else delete props[what];
             update_plot();
         });
-  }
-  
-  $(function () {
-    $("#plot").data("properties", {});
-    $("#plot").data("orig-src", $("#plot").attr("src"));
-    
-    $(".breadcrumb").click(function() {
-        var clicked = this;
-        var clicked_idx = 0;
-        var crumbs = $(".breadcrumb");
-        crumbs.each(function (i) {
-            if (this != clicked) return;
-            clicked_idx = i+1;
-            return false;
-        });
-        
-        url = crumbs.slice(0, clicked_idx).map(function() {return $(this).text();}).get().join("/");
-        dest = $("#base_url").attr("href") + url;
-        window.location = dest;
-        //alert();
-                
-        
-        query = crumbs.map(function () { 
-                return this == clicked ? "*" : $(this).text(); 
-            }).get().join("/");
-        //alert(query);
-    })
-    $(".button").button();
-    
-    add_toggleable("logx");
-    add_toggleable("logy");
-    add_toggleable("logz");     
-    add_toggleable("hist");
-    add_toggleable("e0x0");
-  })
+    }
+
+    $(function () {
+        $("#plot").data("properties", {});
+        $("#plot").data("orig-src", $("#plot").attr("src"));
+        $(".button").button();
+
+        add_toggleable("logx");
+        add_toggleable("logy");
+        add_toggleable("logz");     
+        add_toggleable("hist");
+        add_toggleable("e0x0");
+        add_toggleable("unit_fixup");
+        add_toggleable("nostat");
+        add_toggleable("notitle");
+    });
   </script>
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
   <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/jquery-ui-1.8.15.custom.css')}" type="text/css" media="screen" charset="utf-8" />
+  <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/overcast.css')}" type="text/css" media="screen" charset="utf-8" />
   <style type="text/css">
     .breadcrumb {
         margin: 0 0.25em 0 0.25em;
@@ -101,11 +85,13 @@
         <input type="checkbox" id="logz" /><label for="logz">log Z</label>
         <input type="checkbox" id="hist" /><label for="hist">Hist</label>
         <input type="checkbox" id="e0x0" /><label for="e0x0">Y Error Bars</label>
-        <a class="button" href="!project/x">Project X</a>
-        <a class="button" href="!project/y">Project Y</a>
-        <a class="button" href="!project/z">Project Z</a>
-
-
+        <input type="checkbox" id="unit_fixup" /><label for="unit_fixup">Unit Fixup</label>
+        <input type="checkbox" id="nostat" /><label for="nostat">Remove Stats</label>
+        <input type="checkbox" id="notitle" /><label for="notitle">Remove Title</label>
+        <a class="button" href="!project/x/">Project X</a>
+        <a class="button" href="!project/y/">Project Y</a>
+        <a class="button" href="!project/z/">Project Z</a>
+        <a class="button" href="!table/">Table</a>
       </div>
     </div>
     <div id="bottom">
