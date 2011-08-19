@@ -143,6 +143,15 @@ class RootObject(LocationAware, ListingItem):
             self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
+            
+        elif what == "!rebin":
+            return HistogramRebinned.from_parent(self, "!rebin", self.o)
+
+class HistogramRebinned(RootObject):
+    def __getitem__(self, what):
+        h = self.obj.Clone()
+        get_haxis(h, ax).SetRange(int(lo), int(hi))
+        return RootObject.from_parent(self, what, h)
 
 class HistogramTable(RootObject):
     @property

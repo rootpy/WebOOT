@@ -86,13 +86,13 @@ def view_root_object(context, request):
     return dict(path=build_path(context),
                 content="\n".join(context.content))
                 
-#@view_config(renderer='weboot:templates/result.pt', context=MultipleTraverser)
-#def view_multitraverse(context, request):
-#    content = []
-#    for c in context.contexts:
-#        content.append("<p>{repr(0)}</p>".format(c))
-#    return dict(path="You are at {0}".format(context.path),
-#                content="\n".join(content))
+@view_config(renderer='weboot:templates/result.pt', context=MultipleTraverser)
+def view_multitraverse(context, request):
+    content = []
+    for c in context.contexts:
+        content.append("<p>{repr(0)}</p>".format(c))
+    return dict(path="You are at {0}".format(context.path),
+                content="\n".join(content))
 
 #@view_config(renderer='weboot:templates/result.pt', context=RootFileTraverser)
 #def view_rootfile(context, request):
