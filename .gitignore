@@ -2,3 +2,4 @@
 *~
 *.lock
 /data/WebOOT.*
+/*.egg-info
