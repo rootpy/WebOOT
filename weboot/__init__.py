@@ -1,10 +1,15 @@
 from pyramid.config import Configurator
 from pyramid.events import subscriber, NewRequest
 
+# Database
 import pymongo
 
 import ROOT as R
+# Prevent ROOT from intercepting 
 R.PyConfig.IgnoreCommandLineOptions = True
+
+from weboot.resources.home import HomeResource
+
 
 def setup_root():
     R.gROOT.SetBatch()
@@ -13,7 +18,6 @@ def setup_root():
     R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
 
-from weboot.resources import Root, FilesystemTraverser
 
 def start_mongo(db_path):
     print "Starting mongo"
@@ -30,17 +34,17 @@ def main(global_config, **settings):
     """
     setup_root()
 
-    config = Configurator(root_factory=Root, settings=settings)
+    config = Configurator(root_factory=HomeResource, settings=settings)
 
     config.add_view('weboot.views.my_view',
-                    context='weboot:resources.Root',
+                    context='weboot:resources.home.HomeResource',
                     renderer='weboot:templates/mytemplate.pt')
     
 
-    for ctx in ['weboot:resources.FilesystemTraverser',
-                'weboot:resources.RootFileTraverser',
-                'weboot:resources.BasketBrowser',
-                'weboot:resources.BasketTraverser']:
+    for ctx in ['weboot:resources.filesystem.FilesystemTraverser',
+                'weboot:resources.root.file.RootFileTraverser',
+                'weboot:resources.baskets.BasketBrowser',
+                'weboot:resources.baskets.BasketTraverser']:
         config.add_view('weboot.views.view_listing',
                         context=ctx,
                         renderer='weboot:templates/listing.pt')

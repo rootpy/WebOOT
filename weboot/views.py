@@ -13,7 +13,10 @@ import ROOT as R
 
 from minty.histograms import fixup_hist_units
 
-from .resources import MultipleTraverser, FilesystemTraverser, RootFileTraverser, RootObject, RootObjectRender
+from .resources.multitraverser import MultipleTraverser
+from .resources.filesystem import FilesystemTraverser
+from .resources.root.file import RootFileTraverser
+from .resources.root.object import RootObject, RootObjectRender
 
 def my_view(request):
     

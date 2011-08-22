@@ -1,0 +1,114 @@
+from pyramid.url import static_url
+
+import ROOT as R
+
+from ..locationaware import LocationAware
+
+
+def get_key_class(key):
+    if not isinstance(key, R.TKey):
+        return type(key)
+    class_name = key.GetClassName()
+    try:
+        class_object = getattr(R, class_name)
+        return class_object
+    except AttributeError:
+        return None
+
+class ListingItem(object):    
+    @property
+    def icon_path(self):
+        """
+        Default Icon
+        """
+        return static_url('weboot:static/folder_32.png', self.request)
+
+class RootObjectRender(LocationAware):
+    """
+    A ROOT object being rendered
+    """
+    def __init__(self, request, root_object):
+        self.request = request
+        self.o = root_object
+
+class RootObject(LocationAware, ListingItem):
+    """
+    A page that shows a ROOT object
+    """
+    def __init__(self, request, root_object):
+        self.request = request
+        self.o = root_object
+        self.cls = get_key_class(self.o)
+    
+    @property
+    def section(self):
+        if issubclass(self.cls, R.TH1):
+            return "hist"
+        if "TParameter" in self.cls.__name__:
+            return "parameters"
+    
+    @property
+    def content(self):
+        if issubclass(self.cls, R.TH1):
+            try:
+                return ['<p><img id="plot" src="{0}" /></p>'.format(self["!render"].url)]
+            except HTTPError as e:
+                pass               
+        return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
+    
+    @property
+    def obj(self):
+        if isinstance(self.o, R.TKey):
+            return self.o.ReadObj()
+        return self.o
+    
+    @property
+    def name(self):
+        return self.o.GetName()
+        
+    @property
+    def path(self):
+        return self.o.GetName()
+        
+    @property
+    def icon_url(self):
+        try:
+            if issubclass(self.cls, R.TH1):
+                return self.sub_url("!render", query={"resolution": 25})
+        except HTTPError as e:
+            # Catch HTTP errors, fall back
+            pass
+        return static_url('weboot:static/close_32.png', self.request)
+    
+    def __getitem__(self, what):
+        # TODO: fix this mess
+        from .histogram.actions import (Projector, Profiler, 
+            Ranger, MultiProjector, HistogramTable, HistogramRebinned)
+            
+        if what == "!render":
+            return RootObjectRender.from_parent(self, "!render", self.obj)
+            
+        elif what == "!project":
+            return Projector.from_parent(self, "!project", self.o)
+            
+        elif what == "!profile":
+            return Profiler.from_parent(self, "!profile", self.o)
+            
+        elif what == "!range":
+            return Ranger.from_parent(self, "!range", self.o)
+            
+        elif what == "!projecteach":
+            return MultiProjector.from_parent(self, "!projecteach", self.o)
+            
+        elif what == "!table":
+            return HistogramTable.from_parent(self, "!table", self.o)
+
+        elif what == "!basket":
+            self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
+            print "adding %s to basket" % self.url
+            return HTTPFound(location=self.url)
+            
+        elif what == "!rebin":
+            return HistogramRebinned.from_parent(self, "!rebin", self.o)
+
+
