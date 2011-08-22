@@ -24,7 +24,11 @@ def start_mongo(db_path):
     from atexit import register
     #from multiprocessing import Process
     from subprocess import Popen
-    p = Popen(["mongod", "--dbpath", db_path])
+    try:
+        p = Popen(["mongod", "--dbpath", db_path])
+    except OSError as err:
+        raise RuntimeError("mongod not found - please comment mongo bits in your ini file or install mongod!")
+
     from time import sleep
     sleep(1)
     register(p.kill)
