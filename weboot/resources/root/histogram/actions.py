@@ -22,7 +22,7 @@ class HistogramTable(RootObject):
             prev = h[i]
             content.append('<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td><td style="text-align: right;">{2:.3%}</td></tr>'.format(*a))
         content.append("</table>")
-        content.append('<div style="float:right;"><img src="../!render?resolution=50&logy" /></div><div style="clear:both;"></div>')
+        content.append('<div style="float:right;"><img src="../?render&resolution=50&logy" /></div><div style="clear:both;"></div>')
         return content
 
 def get_haxis(h, ax):
@@ -46,7 +46,7 @@ class MultiProjector(RootObject):
         a1, a2 = self.axinfo
         nbins = get_haxis(self.obj, a2).GetNbins()
         for i in xrange(1, nbins):
-            content.append('<img src="../../!range/{slice_ax}!{0}!{0}/!project/{proj_ax}/!render/" />'.format(i, slice_ax=a2, proj_ax=a1))
+            content.append('<img src="../../!range/{slice_ax}!{0}!{0}/!project/{proj_ax}/?render" />'.format(i, slice_ax=a2, proj_ax=a1))
         return content
 
     def __getitem__(self, what):

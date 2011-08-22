@@ -52,7 +52,23 @@ def main(global_config, **settings):
         config.add_view('weboot.views.view_listing',
                         context=ctx,
                         renderer='weboot:templates/listing.pt')
+    
+    config.add_view("weboot.views.view_multitraverse", 
+                    context="weboot:resources.multitraverser.MultipleTraverser",
+                    renderer='weboot:templates/result.pt')
                     
+    config.add_view("weboot.views.view_multitraverse_render", 
+                    context="weboot:resources.multitraverser.MultipleTraverser",
+                    request_param="render")
+                    
+    config.add_view("weboot.views.view_root_object",
+                    renderer='weboot:templates/result.pt', 
+                    context="weboot:resources.root.object.RootObject")
+                    
+    config.add_view("weboot.views.view_root_object_render",
+                    context="weboot:resources.root.object.RootObject",
+                    request_param="render")
+    
     config.add_static_view('static', 'weboot:static')
     
     def add_mongo_db(event):

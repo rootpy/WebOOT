@@ -23,14 +23,6 @@ class ListingItem(object):
         """
         return static_url('weboot:static/folder_32.png', self.request)
 
-class RootObjectRender(LocationAware):
-    """
-    A ROOT object being rendered
-    """
-    def __init__(self, request, root_object):
-        self.request = request
-        self.o = root_object
-
 class RootObject(LocationAware, ListingItem):
     """
     A page that shows a ROOT object
@@ -51,7 +43,7 @@ class RootObject(LocationAware, ListingItem):
     def content(self):
         if issubclass(self.cls, R.TH1):
             try:
-                return ['<p><img id="plot" src="{0}" /></p>'.format(self["!render"].url)]
+                return ['<p><img id="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None}))]
             except HTTPError as e:
                 pass               
         return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
@@ -85,10 +77,7 @@ class RootObject(LocationAware, ListingItem):
         from .histogram.actions import (Projector, Profiler, 
             Ranger, MultiProjector, HistogramTable, HistogramRebinned)
             
-        if what == "!render":
-            return RootObjectRender.from_parent(self, "!render", self.obj)
-            
-        elif what == "!project":
+        if what == "!project":
             return Projector.from_parent(self, "!project", self.o)
             
         elif what == "!profile":
