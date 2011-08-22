@@ -66,7 +66,7 @@ class RootObject(LocationAware, ListingItem):
     def icon_url(self):
         try:
             if issubclass(self.cls, R.TH1):
-                return self.sub_url("!render", query={"resolution": 25})
+                return self.sub_url(query={"resolution": 25, "render":None})
         except HTTPError as e:
             # Catch HTTP errors, fall back
             pass

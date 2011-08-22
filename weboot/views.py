@@ -78,7 +78,7 @@ def render_histogram(context, request):
     if "notitle" in request.params:
         h.SetTitle("")
     
-    with render_canvas(min(request.params.get("resolution", 100), 200)) as c:
+    with render_canvas(min(int(request.params.get("resolution", 100)), 200)) as c:
         if "logx" in request.params: c.SetLogx()
         if "logy" in request.params: c.SetLogy()
         if "logz" in request.params: c.SetLogz()
