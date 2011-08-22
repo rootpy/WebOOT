@@ -150,7 +150,7 @@ class RootObject(LocationAware, ListingItem):
 class HistogramRebinned(RootObject):
     def __getitem__(self, what):
         h = self.obj.Clone()
-        get_haxis(h, ax).SetRange(int(lo), int(hi))
+        h = h.Rebin(int(what))
         return RootObject.from_parent(self, what, h)
 
 class HistogramTable(RootObject):
