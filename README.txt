@@ -2,10 +2,11 @@ WebOOT
 
 The web ROOT viewer.
 
-Usage:
+Installation:
 
-./bootstrap.py
-ln -s /path/to/results results
-./development.ini
+Using virtualenv you can install all dependencies
+in the current directory:
 
+./virtualenv.py --distribute env
+env/bin/pip install -e .
 
