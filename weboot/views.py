@@ -11,7 +11,7 @@ from pyramid.view import view_config
 
 import ROOT as R
 
-from minty.histograms import fixup_hist_units
+from .utils import fixup_hist_units
 
 from .resources.multitraverser import MultipleTraverser
 from .resources.filesystem import FilesystemTraverser
