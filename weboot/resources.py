@@ -175,6 +175,9 @@ class HistogramTable(RootObject):
 def get_haxis(h, ax):
     return getattr(h, "Get{0}axis".format(ax.upper()))()
 
+def get_xyz_func(obj, func, ax):
+    return getattr(obj, func.format(ax=ax.upper()))
+
 class MultiProjector(RootObject):
 
     def __init__(self, request, root_obj, axinfo=None):
@@ -210,6 +213,9 @@ class Profiler(RootObject):
     def __getitem__(self, what):
         if "".join(sorted(what)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(what))
+        if self.obj.GetDimension() == 2 and len(what) == 1:
+            profile_hist = get_xyz_func(self.obj, "Profile{ax}", what)()
+            return RootObject.from_parent(self, what, profile_hist)
         if len(what) == 2:
             return RootObject.from_parent(self, what, self.obj.Project3DProfile(what))
         return RootObject.from_parent(self, what, self.obj.Project3DProfile(what))
