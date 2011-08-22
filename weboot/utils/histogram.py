@@ -1,5 +1,7 @@
 import re
 
+from array import array
+
 def fixup_hist_units(orig_hist):
     if "[MeV]" in orig_hist.GetXaxis().GetTitle():
         hist = histaxes_mev_to_gev(orig_hist)

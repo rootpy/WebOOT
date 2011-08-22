@@ -1,10 +1,15 @@
 from os.path import basename, exists, isfile, isdir, join as pjoin
 
+import fnmatch
+import re
+
+from pyramid.traversal import traverse
 from pyramid.url import static_url
 
 import ROOT as R
 
 from ..locationaware import LocationAware
+from ..multitraverser import MultipleTraverser
 from .object import get_key_class, RootObject
 
 
