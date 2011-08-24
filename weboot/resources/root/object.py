@@ -45,7 +45,10 @@ class RootObject(LocationAware, ListingItem):
             try:
                 return ['<p><img id="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None}))]
             except HTTPError as e:
-                pass               
+                pass
+        if self.cls.__name__.startswith("TParameter"):
+            p = self.obj
+            return ["<p>{0} : {1}</p>".format(p.GetName(), p.GetVal())]
         return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
     
     @property
