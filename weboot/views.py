@@ -34,7 +34,8 @@ def build_draw_params(h, params):
 
 def convert_eps(input_name, resolution=100, target_type="png"):
     with NamedTemporaryFile(suffix=".png") as tmpfile:
-        p = Popen(["convert", "-density", str(resolution), input_name, tmpfile.name])
+        options = ["-density", str(resolution)]        
+        p = Popen(["convert"] + options + [input_name, tmpfile.name])
         p.wait()
         with open(tmpfile.name) as fd:
             content = fd.read()
@@ -44,7 +45,7 @@ def convert_eps(input_name, resolution=100, target_type="png"):
 @contextmanager
 def render_canvas(resolution=100, target_type="png"):
     # We need a thread-specific name, otherwise if two canvases exist with the
-    # same name we can get crash
+    # same name we can get a crash
     canvas_name = str(get_ident())
     assert not R.gROOT.GetListOfCanvases().FindObject(canvas_name), (
         "Canvas collision")
@@ -80,7 +81,8 @@ def render_histogram(context, request):
     if "notitle" in request.params:
         h.SetTitle("")
     
-    with render_canvas(min(int(request.params.get("resolution", 100)), 200)) as c:
+    resolution = min(int(request.params.get("resolution", 100)), 200)
+    with render_canvas(resolution) as c:
         if "logx" in request.params: c.SetLogx()
         if "logy" in request.params: c.SetLogy()
         if "logz" in request.params: c.SetLogz()
