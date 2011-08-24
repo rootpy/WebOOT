@@ -60,8 +60,10 @@ def render_canvas(resolution=100, target_type="png"):
         return Response(content, content_type="image/{0}".format(target_type))
             
     c._weboot_canvas_to_response = f
-    yield c    
-
+    yield c
+    # Make the canvas go away. Don't wait for GC.
+    c.IsA().Destructor(c)
+    
 def render_histogram(context, request):
     h = context.obj
     if not isinstance(h, R.TH1):
@@ -87,10 +89,25 @@ def render_histogram(context, request):
         
         return c._weboot_canvas_to_response()
 
+def render_graph(context, request):
+    g = context.obj
+    
+    resolution = min(int(request.params.get("resolution", 100)), 200)
+    with render_canvas(resolution) as c:
+        if "logx" in request.params: c.SetLogx()
+        if "logy" in request.params: c.SetLogy()
+        if "logz" in request.params: c.SetLogz()
+        
+        g.Draw("ACP")
+        
+        return c._weboot_canvas_to_response()
+
 def view_root_object_render(context, request):
     print "I am inside view_roto-object_render:", context, context.o
     if issubclass(context.cls, R.TH1):
         return render_histogram(context, request)
+    if issubclass(context.cls, R.TGraph):
+        return render_graph(context, request)
     return HTTPFound(location=static_url('weboot:static/close_32.png', request))
     
 def build_path(context):
