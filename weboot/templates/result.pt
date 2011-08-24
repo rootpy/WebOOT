@@ -14,7 +14,7 @@
         function (val, key) { return key + "=" + val; })
         .join("&");
 
-        $("#plot").attr("src", p.data("orig-src") + "?" + query_str);
+        $("#plot").attr("src", p.data("orig-src") + "&" + query_str);
     }
     function add_toggleable(what) {
         var props = $("#plot").data("properties");
