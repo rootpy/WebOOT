@@ -43,14 +43,15 @@ def convert_eps(input_name, resolution=100, target_type="png"):
     return content
 
 @contextmanager
-def render_canvas(resolution=100, target_type="png"):
+def render_canvas(resolution=100, target_type="png", c=None):
     # We need a thread-specific name, otherwise if two canvases exist with the
     # same name we can get a crash
     canvas_name = str(get_ident())
     assert not R.gROOT.GetListOfCanvases().FindObject(canvas_name), (
         "Canvas collision")
     
-    c = R.TCanvas(canvas_name)
+    if c is None:
+        c = R.TCanvas(canvas_name)
     def f():
         with NamedTemporaryFile(suffix=".eps") as tmpfile:
             c.SaveAs(tmpfile.name)
@@ -104,12 +105,27 @@ def render_graph(context, request):
         
         return c._weboot_canvas_to_response()
 
+def render_actual_canvas(context, request):
+    canvas = context.obj
+    
+    resolution = min(int(request.params.get("resolution", 100)), 200)
+    with render_canvas(resolution, c=canvas) as c:
+        if "logx" in request.params: c.SetLogx()
+        if "logy" in request.params: c.SetLogy()
+        if "logz" in request.params: c.SetLogz()
+        
+        c.Draw()
+        
+        return c._weboot_canvas_to_response()
+
 def view_root_object_render(context, request):
     print "I am inside view_roto-object_render:", context, context.o
     if issubclass(context.cls, R.TH1):
         return render_histogram(context, request)
     if issubclass(context.cls, R.TGraph):
         return render_graph(context, request)
+    if issubclass(context.cls, R.TCanvas):
+        return render_actual_canvas(context, request)
     return HTTPFound(location=static_url('weboot:static/close_32.png', request))
     
 def build_path(context):

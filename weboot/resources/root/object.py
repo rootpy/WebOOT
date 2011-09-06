@@ -41,7 +41,7 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def content(self):
-        if issubclass(self.cls, (R.TH1, R.TGraph)):
+        if issubclass(self.cls, (R.TH1, R.TGraph, R.TCanvas)):
             try:
                 return ['<p><img id="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None}))]
             except HTTPError as e:
@@ -68,7 +68,7 @@ class RootObject(LocationAware, ListingItem):
     @property
     def icon_url(self):
         try:
-            if issubclass(self.cls, (R.TH1, R.TGraph)):
+            if issubclass(self.cls, (R.TH1, R.TGraph, R.TCanvas)):
                 return self.sub_url(query={"resolution": 25, "render":None})
         except HTTPError as e:
             # Catch HTTP errors, fall back
