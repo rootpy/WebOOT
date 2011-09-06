@@ -13,6 +13,8 @@ Installation:
 Using virtualenv you can install all dependencies
 in the current directory:
 
-./virtualenv.py --distribute env
-env/bin/pip install -e .
-paster serve --reload development.ini
+    ./virtualenv.py --distribute env
+    env/bin/pip install -e .
+    mkdir results/
+    # Copy some histograms to your results/ directory, then run..
+    env/bin/paster serve --reload development.ini
