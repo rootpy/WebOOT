@@ -18,3 +18,4 @@ in the current directory:
     mkdir results/
     # Copy some histograms to your results/ directory, then run..
     env/bin/paster serve --reload development.ini
+
