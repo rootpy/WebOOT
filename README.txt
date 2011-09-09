@@ -19,3 +19,4 @@ in the current directory:
     # Copy some histograms to your results/ directory, then run..
     env/bin/paster serve --reload development.ini
 
+Please see `CONTRIBUTING`.

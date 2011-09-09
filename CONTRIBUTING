@@ -1,0 +1,40 @@
+Hey, cool. You're reading this. That is a good thing.
+
+My vision for WebOOT is to make it a community-driven project. I am modelling 
+this on the linux kernel. This is about sharing cool stuff for the greater 
+good of everybody.
+
+Features win by virtue of being well implemented, useful to people or just cool.
+
+Features which lose are still useful - they allow for iteration and sharing
+concepts. Share your dirty branches.
+
+You can start editing and committing without asking any permissions of anyone.
+I don't even have to know about it.
+
+In the long run I would like to make it an application that can be used to 
+communicate and converse around interesting/digested physics data, in whatever 
+form it comes in. Picture "the github/gitorius of physics analysis".
+
+Things you need to know if you want to contribute:
+
+* All code should be PEP8 compliant to the best possible standard.
+  http://www.python.org/dev/peps/pep-0008/
+
+  It's worth saying that one of the clauses of PEP8 allows for violation of it.
+
+  I think that things about use of whitespace and import ordering are useful.
+
+  Please use "from x import y" (with the exception of, maybe ROOT), and list
+  your imports grouped by "stdlib", "3rd party packages", "other WebOOT modules"
+  
+  In principal it should be possible to "ack" (betterthangrep.com) for names
+  to find out where they are defined. If it isn't, that is a bug.
+
+* Please make your commits granular. Git facilitates this by allowing you to 
+  commit those massive of changes you just made one piece at a time. Go and
+  read about "git add -p" (`man git-add`). This means that in principle people 
+  can glance at your commits and immediately understand what you changed.
+
+  Unlike with SVN, you don't have to think or work "granularly" to achieve this.
+
