@@ -54,6 +54,12 @@ class RootObject(LocationAware, ListingItem):
             from pprint import pformat
             content = pformat(dict(loads(self.obj.GetString().Data())))
             return ["<p><pre>{0}</pre></p>".format(content)]
+            
+        if issubclass(self.cls, R.TTree):
+            content = ('<a href="!tohist/{0}/">{0}</a><br />'.format(l.GetName())
+                       for l in self.obj.GetListOfLeaves())
+            return ["<p><pre>{0}</pre></p>".format("\n".join(content))]
+            
         return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
     
     @property
@@ -84,6 +90,7 @@ class RootObject(LocationAware, ListingItem):
         # TODO: fix this mess
         from .histogram.actions import (Projector, Profiler, 
             Ranger, MultiProjector, HistogramTable, HistogramRebinned)
+        from .ttree import DrawTTree
             
         if what == "!project":
             return Projector.from_parent(self, "!project", self.o)
@@ -107,5 +114,8 @@ class RootObject(LocationAware, ListingItem):
             
         elif what == "!rebin":
             return HistogramRebinned.from_parent(self, "!rebin", self.o)
+        
+        elif what == "!tohist":
+            return DrawTTree.from_parent(self, "!tohist", self.o)
 
 
