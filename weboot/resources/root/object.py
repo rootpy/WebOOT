@@ -49,6 +49,11 @@ class RootObject(LocationAware, ListingItem):
         if self.cls.__name__.startswith("TParameter"):
             p = self.obj
             return ["<p>{0} : {1}</p>".format(p.GetName(), p.GetVal())]
+        if issubclass(self.cls, R.TObjString):
+            from cPickle import loads
+            from pprint import pformat
+            content = pformat(dict(loads(self.obj.GetString().Data())))
+            return ["<p><pre>{0}</pre></p>".format(content)]
         return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
     
     @property
