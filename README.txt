@@ -2,11 +2,15 @@ WebOOT
 
 The web ROOT viewer.
 
+Fed up with writing plot scripts?
+
 Prerequisite:
 
-If this works, then weboot should work:
+If these work, then weboot should work:
 
     $ python -c "import ROOT"
+    $ convert -h
+    (from ImageMagick)
 
 Installation:
 
