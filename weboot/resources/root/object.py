@@ -1,3 +1,5 @@
+from pyramid.httpexceptions import HTTPFound
+from pyramid.traversal import resource_path
 from pyramid.url import static_url
 
 import ROOT as R
