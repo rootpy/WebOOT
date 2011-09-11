@@ -1,11 +1,16 @@
 from os import listdir
 from os.path import basename, exists, isfile, isdir, join as pjoin
 
+import fnmatch
+import re
+
+from pyramid.traversal import traverse
 from pyramid.url import static_url
 
 import ROOT as R
 
 from .locationaware import LocationAware
+from .multitraverser import MultipleTraverser
 from .root.file import RootFileTraverser
 
 
@@ -59,7 +64,7 @@ class FilesystemTraverser(LocationAware):
             return FilesystemTraverser.from_parent(self, subpath, path)
             
         elif "*" in subpath:
-            # Pattern
+            # Pattern            
             pattern = re.compile(fnmatch.translate(subpath))
             contexts = [(f, traverse(self, f)["context"])
                         for f in listdir(self.path) if pattern.match(f)]

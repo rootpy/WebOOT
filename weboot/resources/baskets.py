@@ -82,5 +82,15 @@ class BasketTraverser(LocationAware):
         return [self[i] for i in range(len(self.basket))]
     
     def __getitem__(self, subpath):
+    
+        if not isinstance(subpath, int) and "*" in subpath:
+            things = self.items
+            raise
+            # Pattern            
+            pattern = re.compile(fnmatch.translate(subpath))
+            contexts = [(f, traverse(self, f)["context"])
+                        for f in listdir(self.path) if pattern.match(f)]
+            return MultipleTraverser.from_parent(self, subpath, contexts)
+            
         b = self.basket[int(subpath)]
         return traverse(HomeResource(self.request), b['path'])["context"]

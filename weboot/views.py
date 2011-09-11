@@ -146,7 +146,24 @@ def view_multitraverse(context, request):
                 content="\n".join(content))
 
 def view_multitraverse_render(context, request):
-    return Response("Hello, world", content_type="text/plain")
+    content = "\n".join(str(fc.obj) for name, fc in context.contexts)
+    with render_canvas() as c:
+        if "logx" in request.params: c.SetLogx()
+        if "logy" in request.params: c.SetLogy()
+        if "logz" in request.params: c.SetLogz()
+        
+        objs = [fc.obj for name, fc in context.contexts]
+        max_value = max(o.GetMaximum() for o in objs) * 1.1
+        obj = objs.pop()
+        obj.GetXaxis().SetRangeUser(0, 100e3)
+        obj.Draw("hist")
+        obj.SetMaximum(max_value)
+        for obj in objs:
+            obj.Draw("hist same")
+            
+        return c._weboot_canvas_to_response()
+            
+    return Response("Hello, world" + content, content_type="text/plain")
 
 #@view_config(renderer='weboot:templates/result.pt', context=RootFileTraverser)
 #def view_rootfile(context, request):

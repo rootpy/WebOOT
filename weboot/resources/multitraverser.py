@@ -25,4 +25,5 @@ class MultipleTraverser(LocationAware):
                         for f, c in self.contexts]
         if all(x is None for f, x in new_contexts):
             raise HTTPNotFound("Failed to traverse at {0}".format(subpath))
+        new_contexts = [(f, r) for f, r in new_contexts if r]
         return MultipleTraverser.from_parent(self, subpath, new_contexts)
