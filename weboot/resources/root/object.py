@@ -115,7 +115,32 @@ class RootObject(LocationAware, ListingItem):
         elif what == "!rebin":
             return HistogramRebinned.from_parent(self, "!rebin", self.o)
         
+        elif what == "!freqhist":
+            return FreqHist.from_parent(self, "!freqhist", self.o)
+            
         elif what == "!tohist":
             return DrawTTree.from_parent(self, "!tohist", self.o)
+
+class FreqHist(RootObject):
+    def __init__(self, request, root_object):
+        from cPickle import loads
+        freqs = loads(root_object.ReadObj().GetString().Data())
+        total = sum(freqs.values())
+        n = len(freqs)
+                
+        root_object = R.TH1F("frequencies", "frequencies;frequencies;%", n, 0, n)
+        
+        from yaml import load
+        pdgs = load(open("pdg.yaml"))
+        
+        for i, (pdgid, value) in enumerate(sorted(freqs.iteritems(), key=lambda (k, v): v, reverse=True), 1):
+            root_object.SetBinContent(i, value)
+            root_object.SetBinError(i, value**0.5)
+            root_object.GetXaxis().SetBinLabel(i, pdgs.get(pdgid, "?"))
+            
+        root_object.GetXaxis().SetLabelSize(0.02)
+    
+        root_object.Scale(100. / total)
+        super(FreqHist, self).__init__(request, root_object)
 
 
