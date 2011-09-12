@@ -40,9 +40,9 @@ def main(global_config, **settings):
 
     config = Configurator(root_factory=HomeResource, settings=settings)
 
-    config.add_view('weboot.views.my_view',
+    config.add_view('weboot.views.home',
                     context='weboot:resources.home.HomeResource',
-                    renderer='weboot:templates/mytemplate.pt')
+                    renderer='weboot:templates/home.pt')
                     
     config.add_view('weboot.views.view_environ',
                     context='weboot:resources.home.EnvResource',

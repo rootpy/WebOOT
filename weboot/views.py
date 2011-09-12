@@ -22,7 +22,7 @@ from .resources.filesystem import FilesystemTraverser
 from .resources.root.file import RootFileTraverser
 from .resources.root.object import RootObject
 
-def my_view(request):
+def home(request):
     
     remote_host = "your machine"
     remote_addr = request.environ.get("REMOTE_ADDR", None)
