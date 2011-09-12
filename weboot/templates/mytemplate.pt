@@ -7,6 +7,9 @@
   <meta name="description" content="pyramid web application" />
   <link rel="shortcut icon" href="${request.static_url('weboot:static/favicon.ico')}" />
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <style type="text/css">
+    .host {font-family: courier;}
+  </style>
   <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" media="screen"> -->
   <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" media="screen"> -->
   <!--[if lte IE 6]>
@@ -28,16 +31,30 @@
       <div class="bottom">
         <h1>Welcome, ${user}!</h1>
         <p>You have found an experimental project.</p>
+        <ul>
+            <li>This instance is restricted for 
+                atlas-current-physicists who are part of the 
+                <a href="https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-dev">weboot-dev</a>
+                group.</li>
+            <li>Scalability of <span class="host">weboot.cern.ch</span> is 
+                currently a concern. When we understand the characteristics 
+                better we can open it up to a wider audience. We have access to 
+                more machines and deployment is easy, but first it is necessary to
+                understand what it looks like with a few concurrent users.</li>
+            <li>Whilst useful in its current state, it is currently still a bit 
+                of a mess.</li>
+        </ul>
         <p>Please report broken things, ideas or complaints at 
            <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.        
         </p>
         <br />
         
         <h2>A community project</h2>
-        <p>You are currently looking at one instance of the WebOOT server, running on ${host}. 
-            Anyone can get the source from <a href="https://github.com/pwaller/WebOOT/">github</a> 
-            and start changing/improving it without my permission. You can start your own instance in a matter of 
+        <p>You are currently looking at one instance of the WebOOT server, running on <span class="host">${host}</span>. 
+            You can start your own instance on <span class="host">${remote_host}</span> or wherever you like in a matter of 
             <a href="https://github.com/pwaller/WebOOT/blob/master/README.txt">minutes</a>.
+            Anyone can get the source from <a href="https://github.com/pwaller/WebOOT/">github</a> 
+            and start committing to it without permission from anybody.
             If you <a href="https://github.com/pwaller/WebOOT/blob/master/CONTRIBUTING">make something</a> cool, let us know by sending a 
             <a href="http://help.github.com/send-pull-requests/">pull request</a>. 
             That will make the most of both of our time.</p>
@@ -47,8 +64,8 @@
         <ul>
             <li><a href="${request.url}me/">${request.url}me/</a> : Go and look at 
             some of your plots on AFS</li>
-            <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> : Share plots with others.</li>
             <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> : Find some plots that are being shared with you.</li>
+            <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> : Share plots with others.</li>
         </ul>
         
         <pre>
