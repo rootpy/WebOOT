@@ -2,7 +2,7 @@ from cStringIO import StringIO
 from contextlib import contextmanager
 from os.path import exists, join as pjoin
 from pprint import pformat
-from socket import gethostname
+from socket import gethostname, gethostbyaddr
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from thread import get_ident
@@ -24,11 +24,17 @@ from .resources.root.object import RootObject
 
 def my_view(request):
     
+    remote_host = "your machine"
+    remote_addr = request.environ.get("REMOTE_ADDR", None)
+    if remote_addr:
+        remote_host, _, _ = gethostbyaddr(remote_addr)
+    
     return {
         'project':'WebOOT', 
         'user': request.environ.get("HTTP_ADFS_FIRSTNAME", "uh, I didn't catch your name"), 
         'login': request.environ.get("HTTP_ADFS_LOGIN", "localuser"), 
         'host': gethostname(),
+        'remote_host': remote_host,
         'env': ''}
 
 
