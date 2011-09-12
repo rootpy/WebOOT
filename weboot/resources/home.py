@@ -5,7 +5,9 @@ This file contains the Home object
 from .locationaware import LocationAware
 
 # ** Additional imports appear below to avoid circular dependencies ** #
-
+class EnvResource(LocationAware):
+    def __init__(self, request):
+        self.request = request
 
 class HomeResource(dict, LocationAware):
     def add(self, name, cls, *args, **kwargs):
@@ -16,6 +18,7 @@ class HomeResource(dict, LocationAware):
         
         self.add("browse", FilesystemTraverser)
         self.add("baskets", BasketBrowser)
+        self.add("env", EnvResource)
 
         
 from .baskets import BasketBrowser

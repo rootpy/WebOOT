@@ -43,6 +43,10 @@ def main(global_config, **settings):
     config.add_view('weboot.views.my_view',
                     context='weboot:resources.home.HomeResource',
                     renderer='weboot:templates/mytemplate.pt')
+                    
+    config.add_view('weboot.views.view_environ',
+                    context='weboot:resources.home.EnvResource',
+                    renderer='weboot:templates/env.pt')
     
 
     for ctx in ['weboot:resources.filesystem.FilesystemTraverser',

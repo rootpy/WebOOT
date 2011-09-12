@@ -24,6 +24,10 @@ def my_view(request):
     
     return {'project':'WebOOT', 'user': request.environ.get("HTTP_ADFS_FIRSTNAME", "uh, I didn't catch your name"), 'env': ''}
 
+def view_environ(request):
+    
+    return {'env': pformat(request.environ)}
+
 def build_draw_params(h, params):
     options = ["colz" if isinstance(h, R.TH2) else "box"]
     if "hist" in params:
