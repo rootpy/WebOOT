@@ -3,13 +3,30 @@
 <head>
   <title>WebOOT : Share Physics</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta name="keywords" content="python web application" />
-  <meta name="description" content="pyramid web application" />
+  <!-- <meta name="keywords" content="python web application" />
+  <meta name="description" content="pyramid web application" />-->
+  
   <link rel="shortcut icon" href="${request.static_url('weboot:static/favicon.ico')}" />
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
   <style type="text/css">
     .host {font-family: courier;}
   </style>
+  
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.viewport.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
+  <script type="text/javascript">
+  
+    $(function () {
+        $.getJSON("https://github.com/api/v2/json/issues/list/pwaller/WebOOT/open?callback=?", 
+            function (result) {
+                $("#number_of_issues").text(result["issues"].length);
+            });
+    });
+  </script>
+  
   <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" media="screen"> -->
   <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" media="screen"> -->
   <!--[if lte IE 6]>
@@ -45,7 +62,9 @@
                 of a mess.</li>
         </ul>
         <p>Please report broken things, ideas or complaints at 
-           <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.        
+           <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.
+           There are currently <span id="number_of_issues">lots</span> open but between us we'll get around to it. 
+           If you record an idea, it can't be permanently forgotten.
         </p>
         <br />
         
