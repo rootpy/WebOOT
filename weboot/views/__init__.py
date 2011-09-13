@@ -15,13 +15,13 @@ from pyramid.view import view_config
 
 import ROOT as R
 
-from .utils import fixup_hist_units
-from .utils.timer import timer
+from ..utils import fixup_hist_units
+from ..utils.timer import timer
 
-from .resources.multitraverser import MultipleTraverser
-from .resources.filesystem import FilesystemTraverser
-from .resources.root.file import RootFileTraverser
-from .resources.root.object import RootObject
+from ..resources.multitraverser import MultipleTraverser
+from ..resources.filesystem import FilesystemTraverser
+from ..resources.root.file import RootFileTraverser
+from ..resources.root.object import RootObject
 
 def home(request):
     
