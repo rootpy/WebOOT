@@ -11,6 +11,9 @@ class LocationAware(object):
     
     actions = {}
     
+    def __init__(self, request):
+        self.request = request
+    
     @property
     def forward_url(self):
         pass

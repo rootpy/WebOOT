@@ -208,3 +208,10 @@ def view_listing(context, request):
     return dict(path=build_path(context), 
                 context=context,
                 sections=section_list)
+                
+def view_user(context, request):
+    from pyramid.security import authenticated_userid, effective_principals
+    return Response("You are looking at user: {0} - {1} <pre>{2}</pre>".format(context.user, authenticated_userid(request), "\n".join(sorted(effective_principals(request)))))
+    
+def view_new_user(context, request):
+    return Response("Welcome, new user: {0}".format(context.user))

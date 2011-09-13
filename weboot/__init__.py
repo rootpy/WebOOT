@@ -72,6 +72,12 @@ def main(global_config, **settings):
     config.add_view("weboot.views.view_root_object_render",
                     context="weboot:resources.root.object.RootObject",
                     request_param="render")
+                    
+                    
+    config.add_view("weboot.views.view_user",
+                    context="weboot:resources.user.UserResource")
+    config.add_view("weboot.views.view_new_user",
+                    context="weboot:resources.user.NewUserResource")
     
     config.add_static_view('static', 'weboot:static')
     
