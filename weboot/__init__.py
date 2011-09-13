@@ -44,11 +44,11 @@ def main(global_config, **settings):
                           authentication_policy=ShibbolethAuthenticationPolicy(),
                           settings=settings)
 
-    config.add_view('weboot.views.home',
+    config.add_view('weboot.views.home.view_home',
                     context='weboot:resources.home.HomeResource',
                     renderer='weboot:templates/home.pt')
                     
-    config.add_view('weboot.views.view_environ',
+    config.add_view('weboot.views.env.view_environ',
                     context='weboot:resources.home.EnvResource',
                     renderer='weboot:templates/env.pt')
     
@@ -57,15 +57,15 @@ def main(global_config, **settings):
                 'weboot:resources.root.file.RootFileTraverser',
                 'weboot:resources.baskets.BasketBrowser',
                 'weboot:resources.baskets.BasketTraverser']:
-        config.add_view('weboot.views.view_listing',
+        config.add_view('weboot.views.listing.view_listing',
                         context=ctx,
                         renderer='weboot:templates/listing.pt')
     
-    config.add_view("weboot.views.view_multitraverse", 
+    config.add_view("weboot.views.multitraverse.view_multitraverse", 
                     context="weboot:resources.multitraverser.MultipleTraverser",
                     renderer='weboot:templates/result.pt')
                     
-    config.add_view("weboot.views.view_multitraverse_render", 
+    config.add_view("weboot.views.multitraverse.view_multitraverse_render", 
                     context="weboot:resources.multitraverser.MultipleTraverser",
                     request_param="render")
                     
@@ -73,14 +73,14 @@ def main(global_config, **settings):
                     renderer='weboot:templates/result.pt', 
                     context="weboot:resources.root.object.RootObject")
                     
-    config.add_view("weboot.views.view_root_object_render",
+    config.add_view("weboot.views.root.object.view_root_object_render",
                     context="weboot:resources.root.object.RootObject",
                     request_param="render")
                     
                     
-    config.add_view("weboot.views.view_user",
+    config.add_view("weboot.views.user.view_user",
                     context="weboot:resources.user.UserResource")
-    config.add_view("weboot.views.view_new_user",
+    config.add_view("weboot.views.user.view_new_user",
                     context="weboot:resources.user.NewUserResource")
     
     config.add_static_view('static', 'weboot:static')
