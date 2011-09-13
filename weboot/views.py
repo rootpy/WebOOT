@@ -16,6 +16,7 @@ from pyramid.view import view_config
 import ROOT as R
 
 from .utils import fixup_hist_units
+from .utils.timer import timer
 
 from .resources.multitraverser import MultipleTraverser
 from .resources.filesystem import FilesystemTraverser
@@ -76,7 +77,8 @@ def render_canvas(resolution=100, target_type="png", c=None):
             if target_type == "eps":
                 content = open(tmpfile.name).read()
             else:
-                content = convert_eps(tmpfile.name, resolution, target_type)
+                with timer("Do EPS conversion"):
+                    content = convert_eps(tmpfile.name, resolution, target_type)
         return Response(content, content_type="image/{0}".format(target_type))
             
     c._weboot_canvas_to_response = f
@@ -139,7 +141,8 @@ def render_actual_canvas(context, request):
 def view_root_object_render(context, request):
     print "I am inside view_roto-object_render:", context, context.o
     if issubclass(context.cls, R.TH1):
-        return render_histogram(context, request)
+        with timer("render histogram"):
+            return render_histogram(context, request)
     if issubclass(context.cls, R.TGraph):
         return render_graph(context, request)
     if issubclass(context.cls, R.TCanvas):
