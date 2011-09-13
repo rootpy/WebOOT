@@ -38,7 +38,11 @@ def main(global_config, **settings):
     """
     setup_root()
 
-    config = Configurator(root_factory=HomeResource, settings=settings)
+    from .shibboleth import ShibbolethAuthenticationPolicy
+
+    config = Configurator(root_factory=HomeResource, 
+                          authentication_policy=ShibbolethAuthenticationPolicy(),
+                          settings=settings)
 
     config.add_view('weboot.views.home',
                     context='weboot:resources.home.HomeResource',
