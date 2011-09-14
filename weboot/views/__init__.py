@@ -8,8 +8,6 @@ from pyramid.view import view_config
 
 import ROOT as R
 
-from ..utils import fixup_hist_units
-
 from ..resources.multitraverser import MultipleTraverser
 from ..resources.filesystem import FilesystemTraverser
 from ..resources.root.file import RootFileTraverser

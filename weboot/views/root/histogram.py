@@ -1,5 +1,7 @@
 import ROOT as R
 
+from ...utils import fixup_hist_units
+
 from .canvas import render_canvas
 
 def build_draw_params(h, params):

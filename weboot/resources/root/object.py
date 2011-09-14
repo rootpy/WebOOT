@@ -90,7 +90,7 @@ class RootObject(LocationAware, ListingItem):
     
     def __getitem__(self, what):
         # TODO: fix this mess
-        from .histogram.actions import (Projector, Profiler, 
+        from .histogram.actions import (Projector, Profiler, NormalizeAxis,
             Ranger, MultiProjector, HistogramTable, HistogramRebinned)
         from .ttree import DrawTTree
             
@@ -122,6 +122,9 @@ class RootObject(LocationAware, ListingItem):
             
         elif what == "!tohist":
             return DrawTTree.from_parent(self, "!tohist", self.o)
+            
+        elif what == "!normaxis":
+            return NormalizeAxis.from_parent(self, "!normaxis", self.o)
 
 class FreqHist(RootObject):
     def __init__(self, request, root_object):

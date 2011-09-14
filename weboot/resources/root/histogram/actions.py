@@ -1,3 +1,5 @@
+
+from weboot.utils.histogram import normalize_by_axis
 from ..object import RootObject
 
 class HistogramRebinned(RootObject):
@@ -85,3 +87,10 @@ class Ranger(RootObject):
         get_haxis(h, ax).SetRange(int(lo), int(hi))
         return RootObject.from_parent(self, what, h)
 
+class NormalizeAxis(RootObject):
+    def __getitem__(self, what):
+        if "".join(sorted(what)) not in ("x", "y"):
+            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected x or y axis".format(what))
+        h = normalize_by_axis(self.obj, what == "x")
+        return RootObject.from_parent(self, what, h)
+    
