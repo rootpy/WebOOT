@@ -3,7 +3,7 @@
 def view_multitraverse(context, request):
     content = []
     for name, finalcontext in context.contexts:
-        content.append("<p>{0} -- {1.url}</p>".format(name, finalcontext))
+        content.append('<p>{0}</p><div><img src="{1.url}?render&resolution=50&{2}" /></div>'.format(name, finalcontext, request.query_string))
     return dict(path='You are at {0!r} {1!r} <a href="{2}/?render">Render Me</a>'.format(context.path, context, context.url),
                 content="\n".join(content))
 
