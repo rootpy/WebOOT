@@ -74,10 +74,21 @@ class Profiler(RootObject):
         if "".join(sorted(what)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(what))
         if self.obj.GetDimension() == 2 and len(what) == 1:
-            profile_hist = get_xyz_func(self.obj, "Profile{ax}", what)()
-            return RootObject.from_parent(self, what, profile_hist)
+            other_axis = "x"
+            if what == "x": 
+                other_axis = "y"
+            ya = get_xyz_func(self.obj, "Get{ax}axis", other_axis)()
+            new_hist = get_xyz_func(self.obj, "Profile{ax}", what)()
+            new_hist.GetYaxis().SetTitle(ya.GetTitle())
+            new_hist.SetTitle(self.obj.GetTitle())
+            return RootObject.from_parent(self, what, new_hist)
         if len(what) == 2:
-            return RootObject.from_parent(self, what, self.obj.Project3DProfile(what))
+            new_hist = self.obj.Project3DProfile(what)
+            xa = get_xyz_func(self.obj, "Get{ax}axis", what[0])()
+            ya = get_xyz_func(self.obj, "Get{ax}axis", what[1])()
+            new_hist.GetXaxis().SetTitle(xa.GetTitle())
+            new_hist.GetYaxis().SetTitle(ya.GetTitle())
+            return RootObject.from_parent(self, what, new_hist)
         return RootObject.from_parent(self, what, self.obj.Project3DProfile(what))
 
 class Ranger(RootObject):
