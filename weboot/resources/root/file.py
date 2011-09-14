@@ -47,7 +47,7 @@ class RootFileTraverser(LocationAware):
         keys = [self[k.GetName()] for k in self.rootfile.GetListOfKeys()]
         keys.sort(key=lambda k: k.name)
         return keys
-        
+    
     def __getitem__(self, subpath):
         print "Traversing root object at", subpath
 

@@ -67,7 +67,7 @@ class FilesystemTraverser(LocationAware):
             # Pattern            
             pattern = re.compile(fnmatch.translate(subpath))
             contexts = [(f, traverse(self, f)["context"])
-                        for f in listdir(self.path) if pattern.match(f)]
+                        for f in sorted(listdir(self.path)) if pattern.match(f)]
             return MultipleTraverser.from_parent(self, subpath, contexts)
 
         #raise KeyError(subpath)
