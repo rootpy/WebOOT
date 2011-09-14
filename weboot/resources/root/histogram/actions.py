@@ -60,6 +60,11 @@ class Projector(RootObject):
     def __getitem__(self, what):
         if "".join(sorted(what)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(what))
+        if self.obj.GetDimension() == 2 and len(what) == 1:
+            projected_hist = get_xyz_func(self.obj, "Projection{ax}", what)()
+            return RootObject.from_parent(self, what, projected_hist)
+        if len(what) == 2:
+            return RootObject.from_parent(self, what, self.obj.Project3D(what))
         return RootObject.from_parent(self, what, self.obj.Project3D(what))
         
 class Profiler(RootObject):
