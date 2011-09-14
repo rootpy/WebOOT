@@ -56,6 +56,9 @@ class RootFileTraverser(LocationAware):
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
         
+        if subpath == "!selectclass":
+            return SelectClass.from_parent(self, subpath, self.rootfile)
+        
         if "*" in subpath:
             keys = [l.GetName() for l in self.rootfile.GetListOfKeys()]
             pattern = re.compile(fnmatch.translate(subpath))
@@ -83,3 +86,39 @@ class RootFileTraverser(LocationAware):
             return TObjArrayTraverser.from_parent(self, subpath, leaf)
         
         return RootObject.from_parent(self, subpath, leaf)
+        
+class SelectClass(RootFileTraverser):
+    def __init__(self, request, rootfile, selection=None):
+        super(SelectClass, self).__init__(request, rootfile)
+        self.keys = rootfile.GetListOfKeys()
+        self.selection = selection
+    
+    @property
+    def items(self):
+        if not self.selection:
+            return []
+        keys = [self[k.GetName()] for k in self.keys if k.GetClassName() == self.selection]
+        keys.sort(key=lambda k: k.name)
+        return keys
+        
+    
+    def __getitem__(self, subpath):
+        if self.selection:
+            if "*" in subpath:
+                keys = sorted([k.GetName() for k in self.rootfile.GetListOfKeys() 
+                               if k.GetClassName() == self.selection])
+                pattern = re.compile(fnmatch.translate(subpath))
+                contexts = [(f, traverse(self, f)["context"])
+                            for f in keys if pattern.match(f)]
+                return MultipleTraverser.from_parent(self, subpath, contexts)
+            try:
+                key = (k for k in self.keys 
+                       if k.GetName() == subpath and 
+                          k.GetClassName() == self.selection
+                      ).next()
+            except StopIteration:
+                return
+            else:
+                return super(SelectClass, self).__getitem__(subpath)
+        else:
+            return self.from_parent(self, subpath, self.rootfile, subpath)
