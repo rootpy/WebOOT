@@ -1,3 +1,4 @@
+from pyramid.response import Response
 from pyramid.security import authenticated_userid, effective_principals
                 
 def view_user(context, request):
