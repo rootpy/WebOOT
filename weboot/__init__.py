@@ -1,3 +1,11 @@
+# Must be first import
+from .logger import log
+
+from pkg_resources import resource_string
+__version__ = resource_string(__name__, "version.txt")
+
+import sys
+
 from pyramid.config import Configurator
 from pyramid.events import subscriber, NewRequest
 
