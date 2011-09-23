@@ -35,11 +35,11 @@ COLORS = {
 }
 
 
-class WebOOTFormatter(logging.Formatter):
+class CustomFormatter(logging.Formatter):
     def format(self, record):
         return logging.Formatter.format(self, record)
         
-class ColoredFormatter(WebOOTFormatter):
+class CustomColoredFormatter(CustomFormatter):
     def __init__(self, msg, use_color=True):
         logging.Formatter.__init__(self, msg)
         self.use_color = use_color
@@ -84,11 +84,11 @@ class ExtendedLogger(LoggerClass):
         self.critical(*args)
         
     def __repr__(self):
-        return "<WebOOT logger {0}>".format(self.name)
+        return "<ExtendedLogger {0}>".format(self.name)
 
 ExtendedLogger.__dict__.update(logging._levelNames)
 
-class WebOOTLogManager(logging.Manager):
+class CustomLogManager(logging.Manager):
     """
     Workaround for CPython 2.6
     """
@@ -100,8 +100,18 @@ class WebOOTLogManager(logging.Manager):
 # Reference: 
 # http://hg.python.org/cpython/file/5395f96588d4/Lib/logging/__init__.py#l979
 
-log_manager = WebOOTLogManager(logging.getLogger())
-log = log_manager.getLogger("weboot")
+log_manager = CustomLogManager(logging.getLogger())
+
+def make_custom_logger(name):
+    return log_manager.getLogger(name)
+
+def make_handler(
+
+    FORMAT = "[$BOLD%(name)-20s$RESET][%(levelname)-18s]  %(message)s"
+    if os.isatty(handler.stream.fileno()):
+        handler.setFormatter(ColoredFormatter(insert_seqs(FORMAT)))
+    else:
+        handler.setFormatter(MCVizFormatter(remove_seqs(FORMAT)))
 
 def get_log_handler(singleton={}):
     """
@@ -110,12 +120,6 @@ def get_log_handler(singleton={}):
     if "value" in singleton:
         return singleton["value"]
         
-    handler = logging.StreamHandler()
-    FORMAT = "[$BOLD%(name)-20s$RESET][%(levelname)-18s]  %(message)s"
-    if os.isatty(handler.stream.fileno()):
-        handler.setFormatter(ColoredFormatter(insert_seqs(FORMAT)))
-    else:
-        handler.setFormatter(WebOOTFormatter(remove_seqs(FORMAT)))
     
     # Make the top level logger and make it as verbose as possible.
     # The log messages which make it to the screen are controlled by the handler
