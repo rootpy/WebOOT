@@ -10,7 +10,7 @@ from pyramid.config import Configurator
 from pyramid.events import subscriber, NewRequest
 
 # Database
-import pymongo
+from auto_mongo import MongoStartFailure, configure_mongo
 
 import ROOT as R
 # Prevent ROOT from intercepting 
@@ -25,21 +25,6 @@ def setup_root():
     R.TH1.AddDirectory(False)
     R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
-
-
-def start_mongo(db_path):
-    print "Starting mongo"
-    from atexit import register
-    #from multiprocessing import Process
-    from subprocess import Popen
-    try:
-        p = Popen(["mongod", "--dbpath", db_path])
-    except OSError as err:
-        raise RuntimeError("mongod not found - please comment mongo bits in your ini file or install mongod!")
-
-    from time import sleep
-    sleep(1)
-    register(p.kill)
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -93,22 +78,16 @@ def main(global_config, **settings):
     
     config.add_static_view('static', 'weboot:static')
     
-    def add_mongo_db(event):
-        settings = event.request.registry.settings
-        url = settings['mongo.url']
-        dbname = settings['mongo.dbname']
-        db = settings['mongodb_conn'][dbname]
-        event.request.db = db
-        
-    mongo_url = settings.get('mongo.url', None)
-    if mongo_url:
-        mongo_dbpath = settings.get("mongo.dbpath", None)
-        
-        if mongo_dbpath:
-            start_mongo(mongo_dbpath)
-    
-        config.registry.settings['mongodb_conn'] = pymongo.Connection(mongo_url)
-        config.add_subscriber(add_mongo_db, NewRequest)
+    try:
+        db = configure_mongo(config, settings)
+        def request_setup_db(event):
+            event.request.db = db
+        config.add_subscriber(request_setup_db, NewRequest)        
+    except MongoStartFailure as e:
+        log.warning("MongoDB failed to start: {0}".format(e))
+        def no_mongo_db(event):
+            event.request.db = None
+        config.add_subscriber(no_mongo_db, NewRequest)
     
     config.scan("weboot.views")
     
