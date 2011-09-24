@@ -1,84 +1,73 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head>
-  <title>Results</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.viewport.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
-  <script type="text/javascript">
-    $(function() {
-        $("img").lazyload();
-        $("img:in-viewport").each(function () {
-            $(this).attr("src", $(this).attr("original"));
+<tal:block metal:use-macro="load:master.pt">  
+
+<tal:block metal:fill-slot="title">Share Physics</tal:block>
+
+<tal:block metal:fill-slot="extra_head">
+    <script type="text/javascript">
+        $(function() {
+            $("img").lazyload();
+            $("img:in-viewport").each(function () {
+                $(this).attr("src", $(this).attr("original"));
+            });
         });
-    });
-  </script>
-  <style type="text/css">
-    .breadcrumb {
-        margin: 0 0.25em 0 0.25em;
-        color: #eee;
-        padding: 0.2em;
-        background: #888;
-        border: 1px solid #666;
-    }
-  div.img
-  {
-      margin:2px;
-      border:1px solid #bbf;
-      height:auto;
-      width:auto;
-      float:left;
-      text-align:center;
-  }
-  div.img img
-  {
-      display:inline;
-      margin:3px;
-      border:1px solid #ffffff;
-  }
-  div.img a:hover img
-  {
-    border:1px solid #0000ff;
-  }
-  div.img div.desc
-  {
-      text-align:center;
-      font-weight:normal;
-      width:120px;
-      margin:2px;
-  }
-  </style>
-</head>
-<body>
-  <div id="wrap">
-    <div id="middle">
-      <div class="middle align-center">
+    </script>
+    <style type="text/css">
+        .breadcrumb {
+            margin: 0 0.25em 0 0.25em;
+            color: #eee;
+            padding: 0.2em;
+            background: #888;
+            border: 1px solid #666;
+        }
+        div.img
+        {
+          margin:2px;
+          border:1px solid #bbf;
+          height:auto;
+          width:auto;
+          float:left;
+          text-align:center;
+        }
+        div.img img
+        {
+          display:inline;
+          margin:3px;
+          border:1px solid #ffffff;
+        }
+        div.img a:hover img
+        {
+        border:1px solid #0000ff;
+        }
+        div.img div.desc
+        {
+          text-align:center;
+          font-weight:normal;
+          width:120px;
+          margin:2px;
+        }
+    </style>
+</tal:block>
+
+<tal:block metal:fill-slot="breadcrumbs">
+    <div class="middle align-center">
         <p class="app-welcome">
-          <a href="${request.resource_url(None)}" id="base_url"></a>${path}
+            <a href="${request.resource_url(None)}" id="base_url"></a>${path}
         </p>
-      </div>
     </div>
-    <div id="bottom">
-      <div class="bottom">
-        <p tal:repeat="(name, section_items) sections">
-            <div>Name: ${name}</div>
-            <div class="img" tal:repeat="i section_items">
-                <a href="${i.url}">
+</tal:block>
+
+<tal:block metal:fill-slot="content">
+
+    <p tal:repeat="(name, section_items) sections">
+        <div>Name: ${name}</div>
+        <div class="img" tal:repeat="i section_items">
+            <a href="${i.url}">
                 <img original="${i.icon_url}" src="" />
                 <div class="name">${i.name}</div>
-                </a>
-            </div>
-            <hr style="clear: both;" />
-        </p>
-      </div>
-    </div>
-  </div>
-  <!--<div id="footer">
-    <div class="footer">&copy;</div>
-  </div>-->
-</body>
-</html>
+            </a>
+        </div>
+        <hr style="clear: both;" />
+    </p>
+</tal:block>
+
+</tal:block>

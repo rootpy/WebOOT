@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xml:lang="en" 
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal">
+<head>
+  <title>WebOOT : <tal:block metal:define-slot="title">Share Physics</tal:block></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  
+  <link rel="shortcut icon" href="${request.static_url('weboot:static/favicon.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.viewport.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
+  
+  <tal:block metal:define-slot="extra_head" />
+  
+</head>
+<body>
+  <div id="wrap">
+    <tal:block metal:define-slot="header" />
+        
+    <div id="middle">
+      <div class="middle align-center">
+        <tal:block metal:define-slot="breadcrumbs" />
+      </div>
+    </div>
+    
+    <tal:block metal:define-slot="left_sidebar" />
+    <tal:block metal:define-slot="right_sidebar" />
+    
+    <div id="bottom">
+      <div class="bottom">
+        <tal:block metal:define-slot="content" />
+      </div>
+    </div>
+    
+  </div>
+</body>
+</html>

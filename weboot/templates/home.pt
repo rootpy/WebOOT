@@ -1,100 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head>
-  <title>WebOOT : Share Physics</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <!-- <meta name="keywords" content="python web application" />
-  <meta name="description" content="pyramid web application" />-->
-  
-  <link rel="shortcut icon" href="${request.static_url('weboot:static/favicon.ico')}" />
-  <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
-  <style type="text/css">
+<tal:block metal:use-macro="load:master.pt">  
+
+<tal:block metal:fill-slot="title">Share Physics</tal:block>
+
+<tal:block metal:fill-slot="extra_head">
+    <style type="text/css">
     .host {font-family: courier;}
-  </style>
-  
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.viewport.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
-  <script type="text/javascript">
-  
-    $(function () {
-        $.getJSON("https://github.com/api/v2/json/issues/list/pwaller/WebOOT/open?callback=?", 
-            function (result) {
-                $("#number_of_issues").text(result["issues"].length);
-            });
-    });
-  </script>
-  
-  <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/nobile/stylesheet.css" media="screen"> -->
-  <!-- <link rel="stylesheet" href="http://static.pylonsproject.org/fonts/neuton/stylesheet.css" media="screen"> -->
-  <!--[if lte IE 6]>
-  <link rel="stylesheet" href="${request.static_url('weboot:static/ie6.css')}" type="text/css" media="screen" charset="utf-8" />
-  <![endif]-->
-</head>
-<body>
-  <div id="wrap">
+    </style>
+    
+    <script type="text/javascript">
+        $(function () {
+            $.getJSON("https://github.com/api/v2/json/issues/list/pwaller/WebOOT/open?callback=?", 
+                function (result) {
+                    $("#number_of_issues").text(result["issues"].length);
+                });
+        });
+    </script>
+</tal:block>
+
+<tal:block metal:fill-slot="header">
     <div id="top">
-      <div class="top align-center">
-        <div><img src="${request.static_url('weboot:static/pyramid.png')}" alt="pyramid"/></div>
-      </div>
+        <div class="top align-center">
+            <div><img src="${request.static_url('weboot:static/pyramid.png')}" alt="pyramid"/></div>
+        </div>
     </div>
-    <div id="middle">
-      <div class="middle align-center">
-      </div>
-    </div>
-    <div id="bottom">
-      <div class="bottom">
-        <h1>Welcome, ${user}!</h1>
-        <p>You have found an experimental project.</p>
-        <ul>
-            <li>This instance is restricted for 
-                atlas-current-physicists who are part of the 
-                <a href="https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-dev">weboot-dev</a>
-                group.</li>
-            <li>Scalability of <span class="host">weboot.cern.ch</span> is 
-                currently a concern. When we understand the characteristics 
-                better we can open it up to a wider audience. We have access to 
-                more machines and deployment is easy, but first it is necessary to
-                understand what it looks like with a few concurrent users.</li>
-            <li>Whilst useful in its current state, it is currently still a bit 
-                of a mess.</li>
-        </ul>
-        <p>Please report broken things, ideas or complaints at 
-           <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.
-           There are currently <span id="number_of_issues">lots</span> open but between us we'll get around to it. 
-           If you record an idea, it can't be permanently forgotten.
-        </p>
-        <br />
-        
-        <h2>A community project</h2>
-        <p>You are currently looking at one instance of the WebOOT server, running on <span class="host">${host}</span>. 
-            You can start your own instance on <span class="host">${remote_host}</span> or wherever you like in a matter of 
-            <a href="https://github.com/pwaller/WebOOT/blob/master/README.txt">minutes</a>.
-            Anyone can get the source from <a href="https://github.com/pwaller/WebOOT/">github</a> 
-            and start committing to it without permission from anybody.
-            If you <a href="https://github.com/pwaller/WebOOT/blob/master/CONTRIBUTING">make something</a> cool, let us know by sending a 
-            <a href="http://help.github.com/send-pull-requests/">pull request</a>. 
-            That will make the most of both of our time.</p>
-        <br />
-        
-        <h2>Starting points</h2>
-        <ul>
-            <li><a href="${request.url}me/">${request.url}me/</a> : Go and look at 
-            some of your plots on AFS</li>
-            <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> : Find some plots that are being shared with you.</li>
-            <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> : Share plots with others.</li>
-        </ul>
-        
-        <pre>
-        ${env}
-        </pre>
-      </div>
-    </div>
-  </div>
-  <!-- <div id="footer" style="text-align: right;">
-    <div class="footer" style="width:20%;">&copy; Copyright 2008-2011, Agendaless Consulting.</div>
-  </div>-->
-</body>
-</html>
+</tal:block>
+
+<tal:block metal:fill-slot="content">
+    <h1>Welcome, ${user}!</h1>
+    <p>You have found an experimental project.</p>
+    <ul>
+        <li>This instance is restricted for 
+            atlas-current-physicists who are part of the 
+            <a href="https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-dev">weboot-dev</a>
+            group.</li>
+        <li>Scalability of <span class="host">weboot.cern.ch</span> is 
+            currently a concern. When we understand the characteristics 
+            better we can open it up to a wider audience. We have access to 
+            more machines and deployment is easy, but first it is necessary to
+            understand what it looks like with a few concurrent users.</li>
+        <li>Whilst useful in its current state, it is currently still a bit 
+            of a mess.</li>
+    </ul>
+    <p>Please report broken things, ideas or complaints at 
+       <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.
+       There are currently <span id="number_of_issues">lots</span> open but between us we'll get around to it. 
+       If you record an idea, it can't be permanently forgotten.
+    </p>
+    <br />
+
+    <h2>A community project</h2>
+    <p>You are currently looking at one instance of the WebOOT server, running on <span class="host">${host}</span>. 
+        You can start your own instance on <span class="host">${remote_host}</span> or wherever you like in a matter of 
+        <a href="https://github.com/pwaller/WebOOT/blob/master/README.txt">minutes</a>.
+        Anyone can get the source from <a href="https://github.com/pwaller/WebOOT/">github</a> 
+        and start committing to it without permission from anybody.
+        If you <a href="https://github.com/pwaller/WebOOT/blob/master/CONTRIBUTING">make something</a> cool, let us know by sending a 
+        <a href="http://help.github.com/send-pull-requests/">pull request</a>. 
+        That will make the most of both of our time.</p>
+    <br />
+
+    <h2>Starting points</h2>
+    <ul>
+        <li><a href="${request.url}me/">${request.url}me/</a> : Go and look at 
+        some of your plots on AFS</li>
+        <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> : Find some plots that are being shared with you.</li>
+        <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> : Share plots with others.</li>
+    </ul>
+
+</tal:block>
+
+</tal:block>

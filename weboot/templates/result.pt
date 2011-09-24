@@ -1,11 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head>
-  <title>Results</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
+<tal:block metal:use-macro="load:master.pt">
+
+<tal:block metal:fill-slot="title">Viewing Plot</tal:block>
+
+<tal:block metal:fill-slot="extra_head">
+
+  <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/jquery-ui-1.8.15.custom.css')}" type="text/css" media="screen" charset="utf-8" />
+  <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/overcast.css')}" type="text/css" media="screen" charset="utf-8" />
   <script type="text/javascript" src="${request.static_url('weboot:static/js/lazyload.js')}"></script>
   <script type="text/javascript">
     function update_plots() {
@@ -47,9 +47,7 @@
         add_toggleable("notitle");
     });
   </script>
-  <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
-  <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/jquery-ui-1.8.15.custom.css')}" type="text/css" media="screen" charset="utf-8" />
-  <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/overcast.css')}" type="text/css" media="screen" charset="utf-8" />
+  
   <style type="text/css">
     .breadcrumb {
         margin: 0 0.25em 0 0.25em;
@@ -73,17 +71,17 @@
         margin: 0.4em;
     }
   </style>
-</head>
-<body>
-  <div id="wrap">
-    <div id="middle">
-      <div class="middle align-center">
+</tal:block>
+
+<tal:block metal:fill-slot="breadcrumbs">
+    <div class="middle align-center">
         <p class="app-welcome">
-          <a href="${request.resource_url(None)}" id="base_url"></a>${path}
+            <a href="${request.resource_url(None)}" id="base_url"></a>${path}
         </p>
-      </div>
     </div>
-    <div id="sidebar">
+</tal:block>
+
+<div metal:fill-slot="right_sidebar" id="sidebar">
       <div id="buttons">
         <input type="checkbox" id="logx" /><label for="logx">log X</label>
         <input type="checkbox" id="logy" /><label for="logy">log Y</label>
@@ -102,15 +100,8 @@
         <a class="button" href="!table/">Table</a>
         <a class="button" href="!basket/">Basket</a>
       </div>
-    </div>
-    <div id="bottom">
-      <div class="bottom">
-        ${content}
-      </div>
-    </div>
-  </div>
-  <!--<div id="footer">
-    <div class="footer">&copy;</div>
-  </div>-->
-</body>
-</html>
+</div>
+
+<tal:block metal:fill-slot="content" tal:replace="structure content" />
+
+</tal:block>
