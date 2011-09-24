@@ -1,6 +1,7 @@
 from weboot import log; log = log.getChild("auto_mongo")
 
 import atexit
+import logging
 import sys
 from os import makedirs
 from os.path import exists, join as pjoin
@@ -15,7 +16,52 @@ from pymongo.errors import ConnectionFailure
 class MongoStartFailure(RuntimeError):
     "Raised if we can't start mongo"
 
+
+class PythonizeMongoOutput(object):
+    """
+    A logger used to intercept mongodb log messages and send them to python
+    """
     
+    def __init__(self, logger, level=logging.DEBUG):
+        self.logger, self.level = logger, level
+        
+        self.sub_loggers = {}
+        self.buffer = []
+        self.append = self.buffer.append
+        
+    def get_sublogger(self, name):
+        """
+        Get a log broadcast function who is a child (`name`) of `self.logger`
+        """
+        if name in self.sub_loggers:
+            return self.sub_loggers[name]
+        child_logger = self.logger.getChild(name)
+        level, child_log = self.level, child_logger.log
+        def log_func(message):
+            child_log(level, message)
+        self.sub_loggers[name] = log_func
+        return log_func
+    
+    @staticmethod
+    def parse_message(message):
+        date, _, message = message.partition("[")
+        child, _, message = message.partition("]")
+        return child, message
+    
+    def flush(self):
+        contents = "".join(self.buffer).split("\n")
+        print repr(self.buffer)
+        for line in contents:
+            if not line.strip():
+                continue
+            child, message = self.parse_message(line)
+            self.get_sublogger(child)(message.strip())
+        self.buffer[:] = []        
+    
+    def write(self, contents):
+        self.append(contents)
+    
+
 def start_mongo(bin, settings):
     """
     Attempts to start a mongod process located at bin (or searches the path).
@@ -36,11 +82,11 @@ def start_mongo(bin, settings):
         makedirs(dbpath)
     
     # TODO: cStringIO this output, send it to a different logger
-    from sys import stdout
+    mongo_logger = PythonizeMongoOutput(log.manager.getLogger("mongod"))
     
     try:
         log.info("Mongo args: {0}".format(args))
-        mongo_process = spawn(bin, args, logfile=stdout)
+        mongo_process = spawn(bin, args, logfile=mongo_logger, timeout=None)
     except ExceptionPexpect as e:
         if not e.value.startswith("The command was not found"):
             # Something weird happened that we don't know how to deal with
