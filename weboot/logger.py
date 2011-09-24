@@ -66,6 +66,8 @@ class ExtendedLogger(LoggerClass):
         """
         Taken from CPython 2.7, modified to remove duplicate prefix and suffixes
         """
+        if suffix is None:
+            return self
         if self.root is not self:
             if suffix.startswith(self.name + "."):
                 # Remove duplicate prefix

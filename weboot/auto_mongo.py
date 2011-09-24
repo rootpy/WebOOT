@@ -48,7 +48,7 @@ class PythonizeMongoOutput(object):
         child, rb, message = message.partition("]")
         if lb and rb:
             return child, message
-        return "mongo", message
+        return None, original_message
     
     def flush(self):
         contents = "".join(self.buffer).split("\n")
