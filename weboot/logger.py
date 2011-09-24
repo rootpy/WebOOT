@@ -3,7 +3,8 @@ import os
 import logging
 
 from contextlib import contextmanager
-
+from functools import wraps
+from time import time
 
 VERBOSE_LEVEL = 15
 logging.addLevelName(VERBOSE_LEVEL, "VERBOSE")
@@ -40,13 +41,13 @@ class CustomFormatter(logging.Formatter):
         return logging.Formatter.format(self, record)
         
 class CustomColoredFormatter(CustomFormatter):
-    def __init__(self, msg, use_color=True):
-        logging.Formatter.__init__(self, msg)
+    def __init__(self, msg, datefmt=None, use_color=True):
+        msg = insert_seqs(msg)
+        logging.Formatter.__init__(self, msg, datefmt)
         self.use_color = use_color
 
     def format(self, record):
         levelname = record.levelname
-            
         if self.use_color and levelname in COLORS:
             color_seq = COLOR_SEQ % (30 + COLORS[levelname])
             record.levelname = color_seq + levelname + RESET_SEQ
@@ -57,6 +58,9 @@ LoggerClass = logging.getLoggerClass()
 class ExtendedLogger(LoggerClass):
     def __init__(self, name):
         LoggerClass.__init__(self, name)
+    
+    def trace(self, level=logging.DEBUG):
+        return log_trace(self, level)
 
     def getChild(self, suffix):
         """
@@ -141,6 +145,21 @@ def log_level(level):
         yield
     finally:
         handler.setLevel(old_level)
+
+def log_trace(logger, level=logging.DEBUG, show_enter=True, show_exit=True):
+    def wrap(function):
+        log = logger.getChild(function.__name__).log
+        @wraps(function)
+        def thunk(*args, **kwargs):
+            start = time()
+            if show_enter:
+                log(level, "__enter__ {0} {1}".format(args, kwargs))
+            result = function(*args, **kwargs)
+            if show_exit:
+                log(level, "__exit__ [{0:.2f} sec]".format(time() - start))
+            return result
+        return thunk
+    return wrap
 
 def get_logger_level(quiet, verbose):
     if quiet:
