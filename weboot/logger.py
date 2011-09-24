@@ -106,46 +106,6 @@ class CustomLogManager(logging.Manager):
 
 log_manager = CustomLogManager(logging.getLogger())
 
-def make_custom_logger(name):
-    return log_manager.getLogger(name)
-
-def make_handler(
-
-    FORMAT = "[$BOLD%(name)-20s$RESET][%(levelname)-18s]  %(message)s"
-    if os.isatty(handler.stream.fileno()):
-        handler.setFormatter(ColoredFormatter(insert_seqs(FORMAT)))
-    else:
-        handler.setFormatter(MCVizFormatter(remove_seqs(FORMAT)))
-
-def get_log_handler(singleton={}):
-    """
-    Return the STDOUT handler singleton used for all weboot logging.
-    """
-    if "value" in singleton:
-        return singleton["value"]
-        
-    
-    # Make the top level logger and make it as verbose as possible.
-    # The log messages which make it to the screen are controlled by the handler
-    log.addHandler(handler)
-    log.setLevel(logging.DEBUG)
-
-    singleton["value"] = handler
-    return handler
-
-@contextmanager
-def log_level(level):
-    """
-    A log level context manager. Changes the log level for the duration.
-    """
-    handler = get_log_handler()
-    old_level = handler.level
-    try:
-        handler.setLevel(level)
-        yield
-    finally:
-        handler.setLevel(old_level)
-
 def log_trace(logger, level=logging.DEBUG, show_enter=True, show_exit=True):
     def wrap(function):
         log = logger.getChild(function.__name__).log
@@ -161,14 +121,3 @@ def log_trace(logger, level=logging.DEBUG, show_enter=True, show_exit=True):
         return thunk
     return wrap
 
-def get_logger_level(quiet, verbose):
-    if quiet:
-        log_level = logging.WARNING
-    elif not verbose:
-        log_level = logging.INFO
-    elif verbose == 1:
-        log_level = VERBOSE_LEVEL
-    elif verbose > 1:
-        log_level = logging.DEBUG
-        
-    return log_level
