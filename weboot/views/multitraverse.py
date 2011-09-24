@@ -1,7 +1,7 @@
 from weboot.resources.multitraverser import MultipleTraverser
+from .root.canvas import render_canvas
 
 from .breadcrumb import build_breadcrumbs
-
 def view_multitraverse(context, request):
     content = []
     for name, finalcontext in context.contexts:

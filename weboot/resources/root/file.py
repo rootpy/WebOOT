@@ -1,3 +1,5 @@
+from .. import log; log = log.getChild(__name__)
+
 from os.path import basename, exists, isfile, isdir, join as pjoin
 
 import fnmatch
@@ -50,11 +52,11 @@ class RootFileTraverser(LocationAware):
         return keys
     
     def __getitem__(self, subpath):
-        print "Traversing root object at", subpath
+        log.debug("Traversing root object at '{0}'".format(subpath))
 
         if subpath == "!basket":
             self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
-            print "adding %s to basket" % self.url
+            log.debug("adding {0} to basket".format(self.url))
             return HTTPFound(location=self.url)
         
         if subpath == "!selectclass":
@@ -63,7 +65,7 @@ class RootFileTraverser(LocationAware):
         if "*" in subpath:
             keys = [l.GetName() for l in self.rootfile.GetListOfKeys()]
             pattern = re.compile(fnmatch.translate(subpath))
-            print "Matching keys:", [f for f in keys if pattern.match(f)]
+            log.debug("Matching keys: {0}".format([f for f in keys if pattern.match(f)]))
             contexts = [(f, traverse(self, f)["context"])
                         for f in keys if pattern.match(f)]
             return MultipleTraverser.from_parent(self, subpath, contexts)
@@ -73,7 +75,7 @@ class RootFileTraverser(LocationAware):
             return
             
         leaf_cls = get_key_class(leaf)
-        print "--", self.rootfile, subpath, leaf.GetClassName()
+        log.debug("-- {0} {1} {2}".format(self.rootfile, subpath, leaf.GetClassName()))
                 
         if not leaf or not leaf_cls:
             return

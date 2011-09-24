@@ -1,5 +1,6 @@
 import ROOT as R
 
+from ... import log; log = log.getChild("views.root.histogram")
 from ...utils import fixup_hist_units
 
 from .canvas import render_canvas
@@ -12,13 +13,11 @@ def build_draw_params(h, params):
         options.append("e0x0")
     return " ".join(options)
 
-    
+@log.trace()
 def render_histogram(context, request):
     h = context.obj
     if not isinstance(h, R.TH1):
         raise HTTPNotFound("Not a histogram")
-    
-    print "Will attempt to render", h
         
     if "unit_fixup" in request.params:
         h = fixup_hist_units(h)

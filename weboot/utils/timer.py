@@ -3,6 +3,7 @@ from time import time
 
 @contextmanager
 def timer(what):
+    raise RuntimeError("DEPRECATED!")
     start = time()
     try:
         yield

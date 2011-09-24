@@ -10,9 +10,10 @@ import ROOT as R
 
 from pyramid.response import Response
 
+from ... import log; log = log.getChild("views.root.canvas")
 from ...utils.timer import timer
 
-
+@log.trace()
 def convert_eps(input_name, resolution=100, target_type="png"):
     """
     Call convert on an eps file in order to rewrite it to another type.
@@ -44,8 +45,7 @@ def render_canvas(resolution=100, target_type="png", c=None):
             if target_type == "eps":
                 content = open(tmpfile.name).read()
             else:
-                with timer("Do EPS conversion"):
-                    content = convert_eps(tmpfile.name, resolution, target_type)
+                content = convert_eps(tmpfile.name, resolution, target_type)
         return Response(content, content_type="image/{0}".format(target_type))
             
     c._weboot_canvas_to_response = f

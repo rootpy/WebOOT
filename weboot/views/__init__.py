@@ -1,3 +1,5 @@
+from .. import log; log = log.getChild(__name__)
+
 from cStringIO import StringIO
 from os.path import exists, join as pjoin
 

@@ -43,14 +43,15 @@ class PythonizeMongoOutput(object):
         return log_func
     
     @staticmethod
-    def parse_message(message):
-        date, _, message = message.partition("[")
-        child, _, message = message.partition("]")
-        return child, message
+    def parse_message(original_message):
+        date, lb, message = original_message.partition("[")
+        child, rb, message = message.partition("]")
+        if lb and rb:
+            return child, message
+        return "mongo", message
     
     def flush(self):
         contents = "".join(self.buffer).split("\n")
-        print repr(self.buffer)
         for line in contents:
             if not line.strip():
                 continue
@@ -74,7 +75,6 @@ def start_mongo(bin, settings):
     args = []
     for item, value in settings.iteritems():
         if item.startswith("mongo.args."):
-            print item, value
             args.extend(["--" + item[len("mongo.args."):], value])
     
     dbpath = settings.get("mongo.args.dbpath", None)
