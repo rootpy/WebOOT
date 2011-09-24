@@ -8,28 +8,33 @@
   <script type="text/javascript" src="${request.static_url('weboot:static/js/breadcrumbs.js')}"></script>
   <script type="text/javascript" src="${request.static_url('weboot:static/js/lazyload.js')}"></script>
   <script type="text/javascript">
-    function update_plot() {
-        var p = $("#plot");
+    function update_plots() {
+        var p = $(".plot");
         query_str = $.map(p.data("properties"), 
-        function (val, key) { return key + "=" + val; })
-        .join("&");
+            function (val, key) { return key + "=" + val; }
+        ).join("&");
 
-        $("#plot").attr("src", p.data("orig-src") + "&" + query_str);
+        $(".plot").each(function () {
+            $(this).attr("src", $(this).data("orig-src") + "&" + query_str);
+        });
     }
     function add_toggleable(what) {
-        var props = $("#plot").data("properties");
+        var props = $(".plot").data("properties");
         $("#" + what)
         .button().disableSelection()
         .click(function (){
             if (this.checked) props[what] = true;
             else delete props[what];
-            update_plot();
+            update_plots();
         });
     }
 
     $(function () {
-        $("#plot").data("properties", {});
-        $("#plot").data("orig-src", $("#plot").attr("src"));
+        $(".plot").data("properties", {});
+        $(".plot").each(function () { 
+            $(this).data("orig-src", $(this).attr("src"));
+        });
+        
         $(".button").button();
 
         add_toggleable("logx");
@@ -91,6 +96,9 @@
         <a class="button" href="!project/x/">Project X</a>
         <a class="button" href="!project/y/">Project Y</a>
         <a class="button" href="!project/z/">Project Z</a>
+        <a class="button" href="!profile/x/">Profile X</a>
+        <a class="button" href="!profile/y/">Profile Y</a>
+        <a class="button" href="!rebin/5/">Downbin</a>
         <a class="button" href="!table/">Table</a>
         <a class="button" href="!basket/">Basket</a>
       </div>
