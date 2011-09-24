@@ -1,5 +1,5 @@
 
-from ..views import build_path
+from .breadcrumb import build_breadcrumbs
 
 def view_listing(context, request):
 
@@ -16,6 +16,6 @@ def view_listing(context, request):
             section_list.append((sec, sections.pop(sec)))
     section_list.extend(sections.iteritems())
     
-    return dict(path=build_path(context), 
+    return dict(path=build_breadcrumbs(context), 
                 context=context,
                 sections=section_list)
