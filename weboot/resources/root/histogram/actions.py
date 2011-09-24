@@ -1,4 +1,5 @@
 
+from weboot.utils.thousands import split_thousands
 from weboot.utils.histogram import normalize_by_axis
 from ..object import RootObject
 
@@ -20,7 +21,8 @@ class HistogramTable(RootObject):
         content.append('<table style="float:left"><thead><tr><th>Bin</th><th>Content</th><th width="200px">% prev</th></tr></thead>')
         prev = h[1]
         for i in xrange(1, xa.GetNbins()):
-            a = xa.GetBinLabel(i), int(h[i]), h[i] / prev if prev else 0
+            count = split_thousands("{0:.2f}".format(h[i]))
+            a = xa.GetBinLabel(i), count, h[i] / prev if prev else 0
             prev = h[i]
             content.append('<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td><td style="text-align: right;">{2:.3%}</td></tr>'.format(*a))
         content.append("</table>")
