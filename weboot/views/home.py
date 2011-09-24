@@ -1,4 +1,4 @@
-from socket import gethostname, gethostbyaddr
+from socket import gethostname, gethostbyaddr, herror
 
 
 def view_home(request):
@@ -6,7 +6,10 @@ def view_home(request):
     remote_host = "your machine"
     remote_addr = request.environ.get("REMOTE_ADDR", None)
     if remote_addr:
-        remote_host, _, _ = gethostbyaddr(remote_addr)
+        try:
+            remote_host, _, _ = gethostbyaddr(remote_addr)
+        except herror:
+            pass
     
     return {
         'project':'WebOOT', 
