@@ -45,6 +45,7 @@ class RootFileTraverser(LocationAware):
     @property
     def items(self):
         keys = [self[k.GetName()] for k in self.rootfile.GetListOfKeys()]
+        keys = [k for k in keys if k]
         keys.sort(key=lambda k: k.name)
         return keys
     
@@ -74,8 +75,8 @@ class RootFileTraverser(LocationAware):
         leaf_cls = get_key_class(leaf)
         print "--", self.rootfile, subpath, leaf.GetClassName()
                 
-        if not leaf:
-            raise HTTPNotFound(subpath)
+        if not leaf or not leaf_cls:
+            return
             
         if issubclass(leaf_cls, R.TDirectory):
             leaf = self.rootfile.Get(subpath)
