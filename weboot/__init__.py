@@ -13,7 +13,7 @@ from pyramid.events import subscriber, NewRequest
 from auto_mongo import MongoStartFailure, configure_mongo
 
 import ROOT as R
-# Prevent ROOT from intercepting 
+# Prevent ROOT from intercepting commandline args
 R.PyConfig.IgnoreCommandLineOptions = True
 
 from weboot.resources.home import HomeResource

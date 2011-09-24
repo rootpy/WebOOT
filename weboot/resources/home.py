@@ -18,9 +18,9 @@ class HomeResource(LocationAware, dict):
     def __init__(self, request):
         super(HomeResource, self).__init__(request)
         
-        self.add("browse", FilesystemTraverser)
+        self.add("browse",  FilesystemTraverser)
         self.add("baskets", BasketBrowser)
-        self.add("env", EnvResource)
+        self.add("env",     EnvResource)
         
     def add(self, name, cls, *args, **kwargs):
         self[name] = cls.from_parent(self, name, *args, **kwargs)
