@@ -50,7 +50,9 @@ def main(global_config, **settings):
     for ctx in ['weboot:resources.filesystem.FilesystemTraverser',
                 'weboot:resources.root.file.RootFileTraverser',
                 'weboot:resources.baskets.BasketBrowser',
-                'weboot:resources.baskets.BasketTraverser']:
+                'weboot:resources.baskets.BasketTraverser',
+                'weboot:resources.root.ttree.DrawTTree',
+                ]:
         config.add_view('weboot.views.listing.view_listing',
                         context=ctx,
                         renderer='weboot:templates/listing.pt')

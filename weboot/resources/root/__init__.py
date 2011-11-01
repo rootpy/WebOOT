@@ -3,3 +3,4 @@ Avoid putting imports here. It hides information and can cause circular import p
 """
 from .. import log; log = log.getChild(__name__)
 
+import ttree
