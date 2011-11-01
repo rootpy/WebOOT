@@ -2,6 +2,7 @@
 """
 
 from contextlib import contextmanager
+from random import randint
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from thread import get_ident
@@ -33,7 +34,9 @@ def convert_eps(input_name, resolution=100, target_type="png"):
 def render_canvas(resolution=100, target_type="png", c=None):
     # We need a thread-specific name, otherwise if two canvases exist with the
     # same name we can get a crash
-    canvas_name = str(get_ident())
+    canvas_name = str(get_ident()) + str(randint(0, int(1e14)))
+    log.debug("Operating with canvas {0} ({1} alive)"
+              .format(canvas_name, len(R.gROOT.GetListOfCanvases())))
     assert not R.gROOT.GetListOfCanvases().FindObject(canvas_name), (
         "Canvas collision")
     
