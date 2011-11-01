@@ -45,7 +45,7 @@ class RootObject(LocationAware, ListingItem):
     def content(self):
         if issubclass(self.cls, (R.TH1, R.TGraph, R.TCanvas)):
             try:
-                return ['<p><img class="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None}))]
+                return ['<p><img class="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None, "resolution":70}))]
             except HTTPError as e:
                 pass
         if self.cls.__name__.startswith("TParameter"):
