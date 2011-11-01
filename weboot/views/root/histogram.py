@@ -6,12 +6,19 @@ from ...utils import fixup_hist_units
 from .canvas import render_canvas
 
 def build_draw_params(h, params):
-    options = ["colz" if isinstance(h, R.TH2) else "box"]
+    options = []
+    O = options.append
+    if isinstance(h, R.TH3):
+        O("box")
+    elif isinstance(h, R.TH2):
+        O("colz")
     if "hist" in params:
-        options.append("hist")
+        O("hist")
     if "e0x0" in params:
-        options.append("e0x0")
-    return " ".join(options)
+        O("e0x0")
+    opts = " ".join(options)
+    log.debug("Drawing with {0}".format(opts))
+    return opts
 
 @log.trace()
 def render_histogram(context, request):
