@@ -3,6 +3,9 @@ from .. import log; log = log.getChild(__name__)
 from collections import defaultdict
 from pprint import pformat
 
+import ROOT as R
+
+from pyramid.location import lineage
 from pyramid.response import Response
 
 from weboot.resources.multitraverser import MultipleTraverser
@@ -86,18 +89,21 @@ def build_plot_view(request, values):
     content = []
     
     for value in values:
+        content.append("<pre>{0}</pre>".format(value[:-1]))
+    
+    for value in values:
         #content.append("<pre>{0}\n</pre>".format(value))
         if not value[-1]:
             content.append("<pre>N/A</pre>")
             continue
-        content.append('<img class="plot" src="{0.url}?render&resolution=30&{1}" />'.format(value[-1], request.query_string))
+        content.append('<img class="plot" title="{0!r}" src="{1.url}?render&resolution=30&{2}" />'.format(value[:-1], value[-1], request.query_string))
     return content
 
 def view_multitraverse(context, request):
     content = []
     
     result = list(flatten_contexts(context))
-    
+    #raise RuntimeError("Yarg.")
     #return Response(pformat(result), content_type="text/plain")
     
     if request.params.get("transpose"):
@@ -106,12 +112,23 @@ def view_multitraverse(context, request):
     
     result = dictize(result)
     fill_missing_pieces(result)
+    
+    l = list(reversed(list(l.__name__ for l in lineage(context))))
+    
         
     for name, value in sorted(result.iteritems()):
         #name = subcontext.name
-        content.append("<p>{name}</p>".format(**locals()))
+        content.append("<p>{name}</p>".format(name=name))
         
-        content.extend(build_plot_view(request, value))
+        #content.extend(build_plot_view(request, value))
+        
+        url = "https://hep.ph.liv.ac.uk/~pwaller/weboot"
+        l1 = l[:]
+        l1[l.index("*", l.index("*")+1)] = name
+        url += "/".join(l1)
+        
+        content.append('<img class="plot" src="{0}?render&resolution=30&{1}" />'.format(url, request.query_string))
+        
         
         """
         if isinstance(subcontext, MultipleTraverser):
@@ -136,11 +153,23 @@ def view_multitraverse_render(context, request):
         if "logz" in request.params: c.SetLogz()
         
         objs = [fc.obj for name, fc in context.contexts]
+        
+        for obj, col in zip(objs, [R.kBlue, R.kRed, R.kGreen]):
+            obj.SetLineColor(col)
+            obj.SetLineWidth(2)
+        
+        if "shape" in request.params:
+            #objs.pop(0)
+            for obj in objs:
+                obj.Scale(1. / obj.Integral())
+                
         max_value = max(o.GetMaximum() for o in objs) * 1.1
-        obj = objs.pop()
-        obj.GetXaxis().SetRangeUser(0, 100e3)
+        
+        obj = objs.pop(0)
+        #obj.GetXaxis().SetRangeUser(0, 100e3)
         obj.Draw("hist")
         obj.SetMaximum(max_value)
+        
         for obj in objs:
             obj.Draw("hist same")
             
