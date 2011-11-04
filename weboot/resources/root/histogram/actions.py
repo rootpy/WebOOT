@@ -89,9 +89,16 @@ class Projector(RootObject):
         if self.obj.GetDimension() == 2 and len(what) == 1:
             projected_hist = get_xyz_func(self.obj, "Projection{ax}", what)()
             return RootObject.from_parent(self, what, projected_hist)
-        if len(what) == 2:
-            return RootObject.from_parent(self, what, self.obj.Project3D(what))
-        return RootObject.from_parent(self, what, self.obj.Project3D(what))
+        
+        # Thread safety, histograms are named by anything which remains in the 
+        # option string, and they clobber each other, yay ROOT!
+        
+        from random import randint
+        random_name = str(randint(0, 2**32-1))
+        optstring = "{0}{1}".format(what, random_name)
+        h = self.obj.Project3D(optstring)
+        h.SetName(h.GetName()[:-len(random_name)])
+        return RootObject.from_parent(self, what, h)
         
 class Profiler(RootObject):
     def __getitem__(self, what):
