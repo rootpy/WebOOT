@@ -91,7 +91,7 @@ class RootObject(LocationAware, ListingItem):
     def __getitem__(self, what):
         # TODO: fix this mess
         from .histogram.actions import (Projector, Profiler, NormalizeAxis,
-            Ranger, MultiProjector, HistogramTable, HistogramRebinned)
+            Ranger, MultiProjector, HistogramTable, HistogramRebinned, Exploder)
         from .ttree import DrawTTree
             
         if what == "!project":
@@ -105,6 +105,9 @@ class RootObject(LocationAware, ListingItem):
             
         elif what == "!projecteach":
             return MultiProjector.from_parent(self, "!projecteach", self.o)
+            
+        elif what == "!explode":
+            return Exploder.from_parent(self, "!explode", self.o)
             
         elif what == "!table":
             return HistogramTable.from_parent(self, "!table", self.o)

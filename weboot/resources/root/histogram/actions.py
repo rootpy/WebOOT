@@ -1,6 +1,8 @@
 
 from weboot.utils.thousands import split_thousands
 from weboot.utils.histogram import normalize_by_axis
+
+from weboot.resources.multitraverser import MultipleTraverser
 from ..object import RootObject
 
 class HistogramRebinned(RootObject):
@@ -29,11 +31,11 @@ class HistogramTable(RootObject):
         content.append('<div style="float:right;"><img src="../?render&resolution=50&logy" /></div><div style="clear:both;"></div>')
         return content
 
-def get_haxis(h, ax):
-    return getattr(h, "Get{0}axis".format(ax.upper()))()
-
 def get_xyz_func(obj, func, ax):
     return getattr(obj, func.format(ax=ax.upper()))
+    
+def get_haxis(h, ax):
+    return get_xyz_func(h, "Get{ax}axis", ax)()
 
 class MultiProjector(RootObject):
 
@@ -59,6 +61,26 @@ class MultiProjector(RootObject):
             return
         axinfo = what.split("!")
         return MultiProjector.from_parent(self, what, self.obj, axinfo)
+
+class Exploder(RootObject):
+
+    def __getitem__(self, ax):
+        assert ax in "xyz"
+
+        axis = get_haxis(self.obj, ax)
+
+        def build_bin(i):
+            r = Ranger.from_parent(self.__parent__, "!range", self.obj)
+            r = r["{0}!{1}!{1}".format(ax, i)]
+            s = "bin {0:03d}: [{1}, {2}) {3}"
+            lo = axis.GetBinLowEdge(i) if i else "-inf"
+            up = axis.GetBinUpEdge(i) if i != axis.GetNbins()+1 else "+inf"
+            s = s.format(i, lo, up, axis.GetTitle())
+            return s, r
+
+        new_contexts = [build_bin(i) for i in xrange(1, axis.GetNbins())]
+        
+        return MultipleTraverser.from_parent(self, ax, new_contexts)
 
 class Projector(RootObject):
     def __getitem__(self, what):
