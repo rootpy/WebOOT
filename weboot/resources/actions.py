@@ -36,6 +36,9 @@ class HasActionsMeta(type):
                     self.actions["!" + key] = value.thunk
 
 class HasActions(object):
+    """
+    Inherit from this class to use the @action decorator
+    """
     __metaclass__ = HasActionsMeta
     
     @action
@@ -55,6 +58,10 @@ class HasActions(object):
 from weboot.resources.locationaware import LocationAware
             
 class ArgumentCollector(LocationAware):
+    """
+    An intermediate class which collects arguments and passes them all in one 
+    go to the desired function
+    """
     def __init__(self, request, function, parameters, resource, args=()):
         self.request = request
         self.function, self.parameters, self.resource = function, parameters, resource
@@ -71,6 +78,7 @@ class ArgumentCollector(LocationAware):
 class CodeDefinition(LocationAware):
     """
     Represents the source code of a function object
+    TODO(pwaller): Support for classes, link to online viewer
     """
     def __init__(self, request, function):
         super(CodeDefinition, self).__init__(request)

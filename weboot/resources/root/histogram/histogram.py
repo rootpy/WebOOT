@@ -1,5 +1,7 @@
 import ROOT as R
 
+from weboot.resources.actions import action
+
 from weboot.resources.root.object import RootObject
 
 class Histogram(RootObject):

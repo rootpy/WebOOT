@@ -67,46 +67,48 @@ class RootObject(LocationAware, ListingItem):
             pass
         return static_url('weboot:static/close_32.png', self.request)
     
-    def __getitem__(self, what):
+    def __getitem__(self, key):
+        res = self.try_action(key)
+        if res: return res
         # TODO: fix this mess
         from .histogram.actions import (Projector, Profiler, NormalizeAxis,
             Ranger, MultiProjector, HistogramTable, HistogramRebinned, Exploder)
         from .histogram import FreqHist
         from .ttree import DrawTTree
             
-        if what == "!project":
+        if key == "!project":
             return Projector.from_parent(self, "!project", self.o)
             
-        elif what == "!profile":
+        elif key == "!profile":
             return Profiler.from_parent(self, "!profile", self.o)
             
-        elif what == "!range":
+        elif key == "!range":
             return Ranger.from_parent(self, "!range", self.o)
             
-        elif what == "!projecteach":
+        elif key == "!projecteach":
             return MultiProjector.from_parent(self, "!projecteach", self.o)
             
-        elif what == "!explode":
+        elif key == "!explode":
             return Exploder.from_parent(self, "!explode", self.o)
             
-        elif what == "!table":
+        elif key == "!table":
             return HistogramTable.from_parent(self, "!table", self.o)
 
-        elif what == "!basket":
+        elif key == "!basket":
             self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
             
-        elif what == "!rebin":
+        elif key == "!rebin":
             return HistogramRebinned.from_parent(self, "!rebin", self.o)
         
-        elif what == "!freqhist":
+        elif key == "!freqhist":
             return FreqHist.from_parent(self, "!freqhist", self.o)
             
-        elif what == "!tohist":
+        elif key == "!tohist":
             return DrawTTree.from_parent(self, "!tohist", self.o)
             
-        elif what == "!normaxis":
+        elif key == "!normaxis":
             return NormalizeAxis.from_parent(self, "!normaxis", self.o)
 
 
