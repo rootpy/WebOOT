@@ -6,16 +6,8 @@ import ROOT as R
 
 from ..locationaware import LocationAware
 
+from .util import get_key_class
 
-def get_key_class(key):
-    if not isinstance(key, R.TKey):
-        return type(key)
-    class_name = key.GetClassName()
-    try:
-        class_object = getattr(R, class_name)
-        return class_object
-    except AttributeError:
-        return None
 
 class ListingItem(object):    
     @property
@@ -43,24 +35,11 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def content(self):
-        if issubclass(self.cls, (R.TH1, R.TGraph, R.TCanvas)):
-            try:
-                return ['<p><img class="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None, "resolution":70}))]
-            except HTTPError as e:
-                pass
-        if self.cls.__name__.startswith("TParameter"):
-            p = self.obj
-            return ["<p>{0} : {1}</p>".format(p.GetName(), p.GetVal())]
         if issubclass(self.cls, R.TObjString):
             from cPickle import loads
             from pprint import pformat
             content = pformat(dict(loads(self.obj.GetString().Data())))
             return ["<p><pre>{0}</pre></p>".format(content)]
-            
-        if issubclass(self.cls, R.TTree):
-            content = ('<a href="!tohist/{0}/">{0}</a><br />'.format(l.GetName())
-                       for l in self.obj.GetListOfLeaves())
-            return ["<p><pre>{0}</pre></p>".format("\n".join(content))]
             
         return ["<p>Hm, I don't know how to render a {0}</p>".format(self.cls.__name__)]
     
@@ -92,6 +71,7 @@ class RootObject(LocationAware, ListingItem):
         # TODO: fix this mess
         from .histogram.actions import (Projector, Profiler, NormalizeAxis,
             Ranger, MultiProjector, HistogramTable, HistogramRebinned, Exploder)
+        from .histogram import FreqHist
         from .ttree import DrawTTree
             
         if what == "!project":
@@ -129,26 +109,5 @@ class RootObject(LocationAware, ListingItem):
         elif what == "!normaxis":
             return NormalizeAxis.from_parent(self, "!normaxis", self.o)
 
-class FreqHist(RootObject):
-    def __init__(self, request, root_object):
-        from cPickle import loads
-        freqs = loads(root_object.ReadObj().GetString().Data())
-        total = sum(freqs.values())
-        n = len(freqs)
-                
-        root_object = R.TH1F("frequencies", "frequencies;frequencies;%", n, 0, n)
-        
-        from yaml import load
-        pdgs = load(open("pdg.yaml"))
-        
-        for i, (pdgid, value) in enumerate(sorted(freqs.iteritems(), key=lambda (k, v): v, reverse=True), 1):
-            root_object.SetBinContent(i, value)
-            root_object.SetBinError(i, value**0.5)
-            root_object.GetXaxis().SetBinLabel(i, pdgs.get(pdgid, "?"))
-            
-        root_object.GetXaxis().SetLabelSize(0.02)
-    
-        root_object.Scale(100. / total)
-        super(FreqHist, self).__init__(request, root_object)
 
 

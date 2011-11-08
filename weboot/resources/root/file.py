@@ -12,7 +12,9 @@ import ROOT as R
 
 from ..locationaware import LocationAware
 from ..multitraverser import MultipleTraverser
-from .object import get_key_class, RootObject
+from .util import get_key_class
+from .object import RootObject
+from .builder import build_root_object
 
 
 class RootFileTraverser(LocationAware):
@@ -88,7 +90,8 @@ class RootFileTraverser(LocationAware):
             leaf = self.rootfile.Get(subpath)
             return TObjArrayTraverser.from_parent(self, subpath, leaf)
         
-        return RootObject.from_parent(self, subpath, leaf)
+        return build_root_object(self, subpath, leaf)
+        #return RootObject.from_parent(self, subpath, leaf)
         
 class SelectClass(RootFileTraverser):
     def __init__(self, request, rootfile, selection=None):
