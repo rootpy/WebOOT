@@ -50,24 +50,25 @@ class FilesystemTraverser(LocationAware):
         items.sort(key=lambda o: o.name)
         return items
     
-    def __getitem__(self, subpath):
-        path = pjoin(self.path, subpath)
+    @property
+    def keys(self):
+        return sorted(listdir(self.path))
+    
+    def __iter__(self):
+        return iter(self.keys)
+            
+    def __getitem__(self, key):
+        path = pjoin(self.path, key)
         if isfile(path) and path.endswith(".root"):
             # File
             f = R.TFile(path)
             if f.IsZombie() or not f.IsOpen():
                 raise HTTPNotFound("Failed to open {0}".format(path))
-            return RootFileTraverser.from_parent(self, subpath, f)
+            return RootFileTraverser.from_parent(self, key, f)
             
         elif isdir(path):
             # Subdirectory
-            return FilesystemTraverser.from_parent(self, subpath, path)
+            return FilesystemTraverser.from_parent(self, key, path)
             
-        elif "*" in subpath:
-            # Pattern            
-            pattern = re.compile(fnmatch.translate(subpath))
-            contexts = [(f, traverse(self, f)["context"])
-                        for f in sorted(listdir(self.path)) if pattern.match(f)]
-            return MultipleTraverser.from_parent(self, subpath, contexts)
-
-        #raise KeyError(subpath)
+        elif "*" in key:
+            return MultipleTraverser.from_listable(self, key)

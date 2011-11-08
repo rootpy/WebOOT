@@ -47,51 +47,53 @@ class RootFileTraverser(LocationAware):
         return "".join(link(p) for p in keys)
     
     @property
+    def keys(self):
+        return sorted(k.GetName() for k in self.rootfile.GetListOfKeys())
+    
+    def __iter__(self):
+        return iter(self.keys)
+    
+    @property
     def items(self):
         keys = [self[k.GetName()] for k in self.rootfile.GetListOfKeys()]
         keys = [k for k in keys if k]
         keys.sort(key=lambda k: k.name)
         return keys
     
-    def __getitem__(self, subpath):
-        log.debug("Traversing root object at '{0}'".format(subpath))
+    def __getitem__(self, key):
+        log.debug("Traversing root object at '{0}'".format(key))
 
-        if subpath == "!basket":
+        if key == "!basket":
             self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             log.debug("adding {0} to basket".format(self.url))
             return HTTPFound(location=self.url)
         
-        if subpath == "!selectclass":
-            return SelectClass.from_parent(self, subpath, self.rootfile)
+        if key == "!selectclass":
+            return SelectClass.from_parent(self, key, self.rootfile)
         
-        if "*" in subpath:
-            keys = [l.GetName() for l in self.rootfile.GetListOfKeys()]
-            pattern = re.compile(fnmatch.translate(subpath))
-            log.debug("Matching keys: {0}".format([f for f in keys if pattern.match(f)]))
-            contexts = [(f, traverse(self, f)["context"])
-                        for f in keys if pattern.match(f)]
-            return MultipleTraverser.from_parent(self, subpath, contexts)
+        if "*" in key:
+            return MultipleTraverser.from_listable(self, key)
             
-        leaf = self.rootfile.GetKey(subpath)
+        leaf = self.rootfile.GetKey(key)
         if not leaf:
             return
             
         leaf_cls = get_key_class(leaf)
-        log.debug("-- {0} {1} {2}".format(self.rootfile, subpath, leaf.GetClassName()))
+        log.debug("-- {0} {1} {2}".format(self.rootfile, key, leaf.GetClassName()))
                 
         if not leaf or not leaf_cls:
             return
             
         if issubclass(leaf_cls, R.TDirectory):
-            leaf = self.rootfile.Get(subpath)
-            return RootFileTraverser.from_parent(self, subpath, leaf)
+            leaf = self.rootfile.Get(key)
+            return RootFileTraverser.from_parent(self, key, leaf)
         
         if issubclass(leaf_cls, R.TObjArray):
-            leaf = self.rootfile.Get(subpath)
-            return TObjArrayTraverser.from_parent(self, subpath, leaf)
+            leaf = self.rootfile.Get(key)
+            return TObjArrayTraverser.from_parent(self, key, leaf)
         
-        return build_root_object(self, subpath, leaf)
-        #return RootObject.from_parent(self, subpath, leaf)
+        return build_root_object(self, key, leaf)
+        #return RootObject.from_parent(self, key, leaf)
         
 class SelectClass(RootFileTraverser):
     def __init__(self, request, rootfile, selection=None):
@@ -108,23 +110,23 @@ class SelectClass(RootFileTraverser):
         return keys
         
     
-    def __getitem__(self, subpath):
+    def __getitem__(self, key):
         if self.selection:
-            if "*" in subpath:
+            if "*" in key:
                 keys = sorted([k.GetName() for k in self.rootfile.GetListOfKeys() 
                                if k.GetClassName() == self.selection])
-                pattern = re.compile(fnmatch.translate(subpath))
+                pattern = re.compile(fnmatch.translate(key))
                 contexts = [(f, traverse(self, f)["context"])
                             for f in keys if pattern.match(f)]
-                return MultipleTraverser.from_parent(self, subpath, contexts)
+                return MultipleTraverser.from_parent(self, key, contexts)
             try:
-                key = (k for k in self.keys 
-                       if k.GetName() == subpath and 
-                          k.GetClassName() == self.selection
-                      ).next()
+                (k for k in self.keys 
+                 if k.GetName() == key and 
+                   k.GetClassName() == self.selection
+                ).next()
             except StopIteration:
                 return
             else:
-                return super(SelectClass, self).__getitem__(subpath)
+                return super(SelectClass, self).__getitem__(key)
         else:
-            return self.from_parent(self, subpath, self.rootfile, subpath)
+            return self.from_parent(self, key, self.rootfile, key)
