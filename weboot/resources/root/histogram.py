@@ -10,6 +10,9 @@ from weboot.resources.multitraverser import MultipleTraverser
 from weboot.resources.root.object import RootObject
 
 class HistogramTable(RootObject):
+    """
+    TODO(pwaller): Fixme
+    """
     @property
     def content(self):
         if "cut" not in self.name:
@@ -65,6 +68,9 @@ class Histogram(RootObject):
     
     @action
     def rebin(self, parent, key, n):
+        """
+        Rebin a 1D histogram
+        """
         n = make_int(n)
         
         new_hist = self.obj.Clone()
@@ -95,6 +101,9 @@ class Histogram(RootObject):
     
     @action
     def profile(self, parent, key, axes):
+        """
+        Create a TProfile
+        """
     
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
@@ -116,19 +125,20 @@ class Histogram(RootObject):
             new_hist.GetXaxis().SetTitle(xa.GetTitle())
             new_hist.GetYaxis().SetTitle(ya.GetTitle())
             return Histogram.from_parent(parent, key, new_hist)
+            
         return Histogram.from_parent(parent, key, self.obj.Project3DProfile(axes))
     
     @action
     def explode(self, parent, key, ax):
+        """
+        Returns many histograms, one per bin in axis `ax`, with the range configured.
+        """
         assert ax in "xyz"
 
         axis = get_haxis(self.obj, ax)
 
         def build_bin(i):
-            #r = Ranger.from_parent(self.__parent__, "!range", self.obj)
-            #r = self.range(self, "!range", ax, i, i)
             r = self["!range"][ax][i][i]
-            #r = r["{0}!{1}!{1}".format(ax, i)]
             s = "bin {0:03d}: [{1}, {2}) {3}"
             lo = axis.GetBinLowEdge(i) if i else "-inf"
             up = axis.GetBinUpEdge(i) if i != axis.GetNbins()+1 else "+inf"
