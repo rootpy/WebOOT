@@ -13,14 +13,6 @@ from .root.canvas import render_canvas
 
 from .breadcrumb import build_breadcrumbs
 
-def flatten_contexts(table, parents=()):
-    for name, element in table.contexts:
-        if isinstance(element, MultipleTraverser):
-            for sub in flatten_contexts(element, parents + (name,)):
-                yield sub
-        else:
-            yield parents + (name, element)
-
 def get_missing_ordering(length, ordering):
     return ordering + tuple(x for x in xrange(length) if x not in ordering)
 
@@ -35,7 +27,7 @@ def rearrange_contexts(table, ordering=()):
     assert len(set(ordering)) == len(ordering), "Multiple axes specified repeatedly"
 
     # Build the complete ordering list
-    ordering = get_missing_ordering(len(table[0]), ordering)
+    #ordering = get_missing_ordering(len(table[0]), ordering)
     
     result = []
     for element in table:
@@ -53,19 +45,6 @@ def dictize(table, depth=None):
         else:
             result[key] = dictize(element, depth - 1)
     return dict(result)
-
-def select(table, index, value):
-    return [e for e in table if e[index] == value]
-
-def test_rearrange_contexts():
-    flattened = list(flatten_contexts(EXAMPLE_TABLE))
-    
-    re = rearrange_contexts(flattened, (1, 2))
-    #re.sort()
-    #re = select(re, 2, '1')
-    re = dictize(re, 3)
-        
-    pprint(re)
 
 def fill_missing_pieces(result):
     
@@ -99,15 +78,53 @@ def build_plot_view(request, values):
         content.append('<img class="plot" title="{0!r}" src="{1.url}?render&resolution=30&{2}" />'.format(value[:-1], value[-1], request.query_string))
     return content
 
+def find_nth(lst, what, n):
+    assert n >= 0
+    assert n < len(lst)
+    pos = lst.index(what)
+    for i in xrange(n):
+        pos = lst.index(what, pos+1)
+    return pos
+
 def view_multitraverse(context, request):
     content = []
+    """
+    A = content.append
     
-    result = list(flatten_contexts(context))
+    #A(repr(context))
+    
+    def trav(c, depth=0):
+        A((" "*depth) + repr(c))
+        if isinstance(c, MultipleTraverser):
+            for cc in c.contexts:
+                trav(cc, depth+1)
+        elif isinstance(c, tuple):
+            name, c = c
+            A((" "*depth) + name)
+            trav(c, depth+1)
+            
+            
+    trav(context)
+    
+    A("")
+    A("")
+    A("")
+    
+    for a, b in context.flattened:
+        A(repr(a) + repr(b))
+    
+    return Response("\n".join(content), content_type="text/plain")
+    return dict(path=build_breadcrumbs(context),
+                content="\n".join(content))
+    """
+    
+    result = context.flattened
     #raise RuntimeError("Yarg.")
     #return Response(pformat(result), content_type="text/plain")
-    
+    ordering = tuple(xrange(len(result[0])))
     if request.params.get("transpose"):
         ordering = tuple(map(int, request.params["transpose"].split(",")))
+        ordering = get_missing_ordering(len(result[0]), ordering)
         result = rearrange_contexts(result, ordering)
     
     result = dictize(result)
@@ -120,11 +137,16 @@ def view_multitraverse(context, request):
         #name = subcontext.name
         content.append("<p>{name}</p>".format(name=name))
         
-        #content.extend(build_plot_view(request, value))
+        content.extend(build_plot_view(request, value))
+        
+        continue
         
         url = "https://hep.ph.liv.ac.uk/~pwaller/weboot"
         l1 = l[:]
-        l1[l.index("*", l.index("*")+1)] = name
+        # 
+        l1[find_nth(l1, "*", ordering[0])] = name
+        #l1[l.index("*", l.index("*")+1)] = name
+        
         url += "/".join(l1)
         
         content.append('<img class="plot" src="{0}?render&resolution=30&{1}" />'.format(url, request.query_string))

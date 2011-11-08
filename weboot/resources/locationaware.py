@@ -21,6 +21,9 @@ class LocationAware(object):
     def sub_url(self, *args, **kwargs):
         return self.request.resource_url(self, *args, **kwargs)
 
+    def __repr__(self):
+        return "<{self.__class__.__name__} url={self.url}>".format(self=self)
+
     @property
     def url(self):
         return self.sub_url()
