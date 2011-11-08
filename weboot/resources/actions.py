@@ -53,6 +53,14 @@ class HasActions(object):
     def try_action(self, key):
         if key in self.actions:
             return self.actions[key](self, key)
+    
+    def __getitem__(self, key):
+        """
+        This code needs to be called from subclasses, either through copy-pasting
+        or super().
+        """
+        ret = self.try_action(key)
+        if ret: return ret
 
 # LocationAware inherits from HasActions.
 from weboot.resources.locationaware import LocationAware

@@ -60,12 +60,6 @@ class RootObject(LocationAware, ListingItem):
         
     @property
     def icon_url(self):
-        try:
-            if issubclass(self.cls, (R.TH1, R.TGraph, R.TCanvas)):
-                return self.sub_url(query={"resolution": 25, "render":None})
-        except HTTPError as e:
-            # Catch HTTP errors, fall back
-            pass
         return static_url('weboot:static/close_32.png', self.request)
     
     def __getitem__(self, key):

@@ -75,7 +75,7 @@ def build_plot_view(request, values):
         if not value[-1]:
             content.append("<pre>N/A</pre>")
             continue
-        content.append('<img class="plot" title="{0!r}" src="{1.url}?render&resolution=30&{2}" />'.format(value[:-1], value[-1], request.query_string))
+        content.append('<img class="plot" title="{0!r}" src="{1.icon_url}" />'.format(value[:-1], value[-1], request.query_string))
     return content
 
 def find_nth(lst, what, n):
@@ -86,8 +86,14 @@ def find_nth(lst, what, n):
         pos = lst.index(what, pos+1)
     return pos
 
-def view_multitraverse(context, request):
+def view_multitraverse(multitravese_context, request):
     content = []
+    for index_tuple, context in multitravese_context.indexed_contexts:
+        content.append('<p>{0} {1!r}</p><img src="{1.icon_url}" />'
+                       .format(index_tuple, context))
+    
+    return dict(path=build_breadcrumbs(multitravese_context),
+                content="\n".join(content))
     """
     A = content.append
     
@@ -149,7 +155,7 @@ def view_multitraverse(context, request):
         
         url += "/".join(l1)
         
-        content.append('<img class="plot" src="{0}?render&resolution=30&{1}" />'.format(url, request.query_string))
+        content.append('<img class="plot" src="{0}?{1}" />'.format(url, request.query_string))
         
         
         """

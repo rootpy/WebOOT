@@ -9,8 +9,11 @@ from pyramid.traversal import traverse
 from pyramid.url import static_url
 
 from weboot.resources.actions import action
+from weboot.resources.combination import Combination
 from .locationaware import LocationAware
 #from .root.stackplot import StackPlot
+
+
 
 def transpose_fragments_fixup(fragments, to_fill):
     """
@@ -44,8 +47,13 @@ class MultipleTraverser(LocationAware):
     """
     Represents an arbitrary-dimensioned matrix of objects
     """
-    def __init__(self, request, indexed_contexts, order=1, slot_filler=None, ordering=None):
+    def __init__(self, request, indexed_contexts, order=1, slot_filler=None, 
+                 ordering=None):
         """
+        Create a multiple traverser
+        
+        `index_contexts` is a list of (index_tuple, context) where index_tuple
+            contains one name per dimension of the traverser.
         """
         self.request = request
         
@@ -63,6 +71,9 @@ class MultipleTraverser(LocationAware):
 
     @classmethod
     def from_listable(cls, parent, key):
+        """
+        Build a MultipleTraverser by matching `key` against iter(parent)
+        """
         pattern = re.compile(fnmatch.translate(key))
         match = pattern.match
         indexed_contexts = [((f,), parent[f]) for f in parent if match(f)]
@@ -117,15 +128,43 @@ class MultipleTraverser(LocationAware):
         return result
 
     def __repr__(self):
-        s = '<{self.__class__.__name__} url="{self.url}" order={self.order} nitems={n} slot_filler={self.slot_filler}>'
+        s = ('<{self.__class__.__name__} url="{self.url}" order={self.order} '
+             'nitems={n} slot_filler={self.slot_filler}>')
         return s.format(self=self, n=len(self.indexed_contexts))
 
     def get_missing_ordering(self, ordering):
         """
-        Returns the "complete ordering", in the sense that it contains all indices,
-        given `ordering`, a possibly incomplete list of indices.
+        Returns the "complete ordering", in the sense that it contains all 
+        indices, given `ordering`, a possibly incomplete list of indices.
         """
         return ordering + tuple(x for x in xrange(self.order) if x not in ordering)
+    
+    @action
+    def archive(self, parent, key, format):
+        """
+        !archive/bz2/png
+        Create an archive (e.g.) .zip of by calling !render on all contexts
+        """
+        raise NotImplementedError()
+        
+    @action
+    def reorder(self, parent, key):
+        """
+        !reorder
+        Not yet implemented: Somehow re-order indexed_contexts according to the 
+        first index of index_tuple
+        """
+        raise NotImplementedError()
+    
+    @action
+    def select(self, parent, key, selection):
+        selection_set = set(selection.split(","))
+        indexed_contexts = [(index_tuple, context)
+                            for index_tuple, context in self.indexed_contexts
+                            if index_tuple[0] in selection_set]
+        
+        return self.from_parent(parent, key, indexed_contexts,
+            order=self.order, ordering=self.ordering)
     
     @action
     def transpose(self, parent, key, axes):
@@ -161,9 +200,8 @@ class MultipleTraverser(LocationAware):
     @action
     def compose(self, parent, key, composition_type):
         """
-        Compose the first axis into a set of combination objects in terms of the other axes
-        
-        !compose
+        !compose/composition_type
+        Compose the first axis into a set of combination objects in terms of the other axes        
         """
         
         to_compose = {}
@@ -173,7 +211,7 @@ class MultipleTraverser(LocationAware):
         new_contexts = []
         for index_tuple, stack in sorted(to_compose.iteritems()):
             filled = self.fill_slots(enumerate(index_tuple, 1))["!compose"]
-            composed = Combination.from_parent(filled, composition_type, stack)
+            composed = Combination.from_parent(filled, key, stack, composition_type)
             new_contexts.append((index_tuple, composed))
         
         if self.order == 1:
