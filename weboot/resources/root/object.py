@@ -4,6 +4,7 @@ from pyramid.url import static_url
 
 import ROOT as R
 
+from weboot.resources.actions import action
 from ..locationaware import LocationAware
 
 from .util import get_key_class
@@ -70,46 +71,24 @@ class RootObject(LocationAware, ListingItem):
     def __getitem__(self, key):
         res = self.try_action(key)
         if res: return res
-        # TODO: fix this mess
-        from .histogram.actions import (Projector, Profiler, NormalizeAxis,
-            Ranger, MultiProjector, HistogramTable, HistogramRebinned, Exploder)
-        from .histogram import FreqHist
+        
+        # TODO(pwaller): fix this mess
+        from .histogram import FreqHist, HistogramTable
         from .ttree import DrawTTree
             
-        if key == "!project":
-            return Projector.from_parent(self, "!project", self.o)
-            
-        elif key == "!profile":
-            return Profiler.from_parent(self, "!profile", self.o)
-            
-        elif key == "!range":
-            return Ranger.from_parent(self, "!range", self.o)
-            
-        elif key == "!projecteach":
-            return MultiProjector.from_parent(self, "!projecteach", self.o)
-            
-        elif key == "!explode":
-            return Exploder.from_parent(self, "!explode", self.o)
-            
-        elif key == "!table":
+        if key == "!table":
             return HistogramTable.from_parent(self, "!table", self.o)
 
         elif key == "!basket":
             self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
             print "adding %s to basket" % self.url
             return HTTPFound(location=self.url)
-            
-        elif key == "!rebin":
-            return HistogramRebinned.from_parent(self, "!rebin", self.o)
         
         elif key == "!freqhist":
             return FreqHist.from_parent(self, "!freqhist", self.o)
             
         elif key == "!tohist":
             return DrawTTree.from_parent(self, "!tohist", self.o)
-            
-        elif key == "!normaxis":
-            return NormalizeAxis.from_parent(self, "!normaxis", self.o)
 
 
 
