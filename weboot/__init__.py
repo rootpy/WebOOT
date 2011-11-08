@@ -69,6 +69,10 @@ def main(global_config, **settings):
                     renderer='weboot:templates/result.pt', 
                     context="weboot:resources.root.object.RootObject")
                     
+    config.add_view("weboot.views.view_root_object",
+                    renderer='weboot:templates/result.pt', 
+                    context="weboot:resources.combination.Combination")
+                    
     config.add_view("weboot.views.root.object.view_root_object_render",
                     context="weboot:resources.root.object.RootObject",
                     request_param="render")
@@ -84,6 +88,10 @@ def main(global_config, **settings):
                     context="weboot:resources.user.UserResource")
     config.add_view("weboot.views.user.view_new_user",
                     context="weboot:resources.user.NewUserResource")
+                    
+                    
+    config.add_view("weboot.resources.renderable.renderable_view",
+                    context="weboot:resources.renderable.Renderer")
     
     config.add_static_view('static', 'weboot:static')
     
