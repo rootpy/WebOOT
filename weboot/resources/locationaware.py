@@ -4,8 +4,9 @@ Resources which know where they live should inherit from LocationAware.
 This gives them a .url property, and "from_parent" class method.
 """
 
+from .actions import HasActions
 
-class LocationAware(object):
+class LocationAware(HasActions):
     __name__ = ""
     __parent__ = None
     

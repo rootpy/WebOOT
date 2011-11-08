@@ -5,6 +5,7 @@ This file contains the Home object
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
 
+from .actions import HasActions
 from .locationaware import LocationAware
 from .user import UserResource
 
