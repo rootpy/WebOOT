@@ -31,8 +31,7 @@ class LocationAware(HasActions):
 
     @classmethod
     def from_parent(cls, parent, name, *args, **kwargs):
-        c = cls(parent.request, *args)
+        c = cls(parent.request, *args, **kwargs)
         c.__name__ = name
         c.__parent__ = parent
-        c.__dict__.update(kwargs)
         return c
