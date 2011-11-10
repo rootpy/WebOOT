@@ -6,6 +6,8 @@ from .actions import action
 from .locationaware import LocationAware
 from .renderable import Renderable, Renderer, RootRenderer
 
+from weboot import log; log = log.getChild("combination")
+
 etabins = [0.6, 0.8, 1.15, 1.37, 1.52, 1.81, 2.01, 2.37, 2.47]
 
 cuts = {
@@ -41,6 +43,8 @@ cuts = {
 }
 
 class CombinationStackRenderer(RootRenderer):
+
+    # This is a Hack
     @action
     def slot(self, parent, key, name):
         params = {"slot": name}
@@ -200,4 +204,4 @@ class Combination(Renderable, LocationAware):
     def content(self):
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
-        return ['<p><img class="plot" src="{0}" /></p>'.format(self.rendered("png").url)]
+        return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
