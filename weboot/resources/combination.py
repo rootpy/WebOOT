@@ -42,9 +42,9 @@ cuts = {
     "wstot" : [2.95,      4.4,      3.26,3.4,-9999.,3.8,2.4,1.64,-9999.],
 }
 
-def get_legend(data=[], signal=[], mc=[], sum_mc=None):
+def get_legend(data=[], signal=[], mc=[], mc_sum=None):
     llen = 1 + len(data) + len(mc) + len(signal)
-    mtop, mright, width, hinc = 0.07, 0.25, 0.15, 0.01
+    mtop, mright, width, hinc = 0.10, 0.25, 0.20, 0.01
     x1, y1 = 1.0 - mright - width, 1.0 - mtop
     x2, y2 = 1.0 - mtop, 1.0 - mright - hinc*llen
     print x1, y1, x2, y2
@@ -61,9 +61,9 @@ def get_legend(data=[], signal=[], mc=[], sum_mc=None):
         return h.GetTitle()
     for d in data:
         legend.AddEntry(d, name(d), "p")
-    if not sum_mc is None:
+    if not mc_sum is None:
         # omit this entry for 2D histogram
-        legend.AddEntry(sum_mc, name(sum_mc), "flp")
+        legend.AddEntry(mc_sum, name(mc_sum), "flp")
     for h in mc: # sorted by initial XS
         legend.AddEntry(h, name(h), "f")
     for s in signal:
@@ -72,12 +72,45 @@ def get_legend(data=[], signal=[], mc=[], sum_mc=None):
 
 def get_lumi_label(lumi="1.02", unit="fb", energy="7 TeV"):
     x, y = 0.15, 0.75
-    n = TLatex()
+    n = R.TLatex()
     n.SetNDC()
     n.SetTextFont(32)
-    n.SetTextColor(kBlack)
+    n.SetTextColor(R.kBlack)
     n.DrawLatex(x, y,"#sqrt{s} = %s, #intL dt ~ %s %s^{-1}" % (energy, lumi, unit))
     return n
+
+def create_mc_sum(mc_list):
+    if not mc_list:
+        return None, None
+    mc_sum = mc_list[0].Clone("mc_sum")
+    mc_sum.SetDirectory(0)
+    for h in mc_list[1:]:
+        mc_sum.Add(h)
+    mc_sum.SetMarkerSize(0)
+    mc_sum.SetLineColor(R.kRed)
+    mc_sum_line = mc_sum.Clone("mc_sum_line")
+    mc_sum_line.SetDirectory(0)
+    mc_sum_line.SetFillStyle(0)
+    mc_sum_line.SetFillColor(R.kWhite)
+    mc_sum_line.SetFillStyle(0)
+    mc_sum.SetFillColor(R.kOrange)
+    mc_sum.SetFillStyle(3006)
+    mc_sum.SetTitle("SM (stat)")
+    return mc_sum_line, mc_sum
+
+#NB: [ATLAS Preliminary label for when plots are approved only: 
+def preliminary(approved=False):
+    #x, y = 0.21, 0.65
+    x, y = 0.15, 0.85
+    l = R.TLatex()
+    l.SetNDC()
+    l.SetTextFont(42)
+    l.SetTextColor(R.kBlack)
+    if approved:
+        l.DrawLatex(x,y,"#bf{#it{ATLAS preliminary}}")
+    else:
+        l.DrawLatex(x,y,"#bf{#it{ATLAS work in progress}}")
+    return l
 
 class CombinationStackRenderer(RootRenderer):
 
@@ -196,37 +229,81 @@ class EbkeCombinationStackRenderer(RootRenderer):
         }
         
         from ROOT import kAzure, kBlue, kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring
-        clrs = (kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kSpring, kBlue, kMagenta)
+        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray]
+
+        mc = []
+        signals = []
+        data = []
+        name_of = {}
+
+        def is_data(h):
+            return h.GetTitle().lower().startswith("data")
 
         for name, obj in zip(names, objs):
-            #obj.SetTitle("");
+            name_of[obj] = name
             obj.SetStats(False)
-            obj.SetLineWidth(2)
-
-        for name, obj, col in zip(names, objs, clrs):
-            if name in colordict:
-                obj.SetLineColor(colordict[name])
+            if is_data(obj):
+                data.append(obj)
             else:
-                obj.SetLineColor(col)
-            obj.SetMarkerColor(col)
-        
-        if "shape" in params:
-            for obj in objs:
-                if obj.Integral():
-                    obj.Scale(1. / obj.Integral())
-        
-        max_value = max(o.GetMaximum() for o in objs) * 1.1
+                mc.append(obj)
+            #obj.SetTitle(name)
+            #obj.SetFillStyle(1001)
 
+        for h in data:
+            h.SetMarkerStyle(20)
+            h.SetMarkerSize(1.2)
+            h.SetFillStyle(0)
 
-        obj = objs.pop(0)
-        obj.Draw("")
-        obj.SetMaximum(max_value)
-        #obj.SetMinimum(0)
+        mc.sort(key=lambda h : h.GetMaximum())
+        for h, col in zip(reversed(mc), clrs):
+            if name_of[h] in colordict:
+                col = colordict[name_of[h]]
+            log.warning("Giving %s the color %s" % (name_of[h], col))
+            h.SetMarkerColor(col)
+            h.SetLineColor(R.kBlack)
+            h.SetLineWidth(2)
+            h.SetFillColor(col)
+            h.SetFillStyle(2001)
         
-        for obj in objs:
-            obj.Draw("same")
-         
+        # get min/max
+        ymax = 1 + max(sum(h.GetMaximum() for h in mc), max(h.GetMaximum() for h in data+signals))
+        ymax *= (1.5 if not canvas.GetLogy() else 100)
+        ymin = min(sum(h.GetMinimum() for h in mc), min(h.GetMinimum() for h in data+signals))
+        ymin = max(1e-1, ymin)
 
+        # Create Stack of MC
+        mcstack = R.THStack()
+        for h in mc:
+            mcstack.Add(h)
+        keep_alive(mcstack)
+
+        axis = None
+        mc_sum_error = None
+        if mc:
+            axis = mcstack
+            mcstack.Draw("Hist")
+            mc_sum_line, mc_sum_error = create_mc_sum(mc)
+            keep_alive(mc_sum_line)
+            keep_alive(mc_sum_error)
+            mc_sum_error.Draw("e2same")
+            mc_sum_line.Draw("hist same")
+
+        for signal in signals:
+            if not axis:
+                axis = signal
+                signal.Draw("hist")
+            else:
+                signal.Draw("hist same")
+
+        for d in data:
+            if not axis:
+                axis = d
+                d.Draw("pe")
+            else:
+                d.Draw("pe same")
+
+        axis.SetMaximum(ymax)
+        axis.SetMinimum(ymin)
 
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
@@ -256,10 +333,19 @@ class EbkeCombinationStackRenderer(RootRenderer):
                     line(x)
         
         if not self.request.params.get("legend", None) is None:
-            legend = get_legend(mc=objs)
+            legend = get_legend(mc=mc, data=data, signal=signals, mc_sum=mc_sum_error)
             legend.Draw()
             keep_alive(legend)
-        
+
+        if not self.request.params.get("lumi", None) is None:
+            label = get_lumi_label(lumi=self.request.params["lumi"])
+            label.Draw()
+            keep_alive(label)
+       
+        p = preliminary()
+        p.Draw()
+        keep_alive(p)
+
         return
         
         if "unit_fixup" in params:
