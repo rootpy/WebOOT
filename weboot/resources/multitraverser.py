@@ -1,19 +1,151 @@
 import fnmatch
 import re
 
+from contextlib import closing
+from cStringIO import StringIO
 from itertools import groupby
+from tarfile import open as open_tar, TarInfo
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.location import lineage
+from pyramid.response import Response
 from pyramid.traversal import traverse
 from pyramid.url import static_url
 
 from weboot.resources.actions import action
 from weboot.resources.combination import Combination
+
+from weboot.utils.plat import TemporaryDirectory
+
 from .locationaware import LocationAware
+from .renderable import Renderable, Renderer, context_renderable_as
 #from .root.stackplot import StackPlot
 
+# This dictionary is from http://pypi.python.org/pypi/tex
+# MIT license (C) 2010 Volker Grabsch
+_latex_special_chars = {
+    u'$':  u'\\$',
+    u'%':  u'\\%',
+    u'&':  u'\\&',
+    u'#':  u'\\#',
+    u'_':  u'\\_',
+    u'{':  u'\\{',
+    u'}':  u'\\}',
+    u'[':  u'{[}',
+    u']':  u'{]}',
+    u'"':  u"{''}",
+    u'\\': u'\\textbackslash{}',
+    u'~':  u'\\textasciitilde{}',
+    u'<':  u'\\textless{}',
+    u'>':  u'\\textgreater{}',
+    u'^':  u'\\textasciicircum{}',
+    u'`':  u'{}`',   # avoid ?` and !`
+    u'\n': u'\\\\',
+}
 
+def latex_escape_string(s):
+    return "".join(_latex_special_chars.get(c, c) for c in s)
+
+class ArchiveBuilder(Renderer):
+    def tarfile(self, format, filename, content_type):
+        from .root.histogram import Histogram
+        from .combination import Combination
+        imgformat = "eps"
+        
+        tarred_contents = StringIO()
+        with closing(open_tar(mode="w"+format, fileobj=tarred_contents)) as tar:
+            for key, context in self.resource_to_render.indexed_contexts:
+                if not context_renderable_as(context, imgformat):
+                    continue
+                name = "/".join(map(str, key))
+                content = context.rendered(imgformat).content.body
+                
+                info = TarInfo(name=name + "." + imgformat)
+                info.size = len(content)    
+                tar.addfile(tarinfo=info, fileobj=StringIO(content))
+        
+        return Response(tarred_contents.getvalue(), content_type=content_type, 
+            content_disposition=("Content-Disposition: attachment; filename={0};"
+                                 .format(filename)))
+
+    @property
+    def bz2(self):
+        return self.tarfile(":bz2", "archive.tar.bz2", "application/x-bzip")
+
+    @property
+    def beamer(self):
+        from subprocess import Popen
+        from textwrap import dedent
+        from os.path import join as pjoin
+        from pkg_resources import resource_string
+        
+        from .root.histogram import Histogram
+        from .combination import Combination
+        
+        with TemporaryDirectory() as d:
+                
+            imgs = []
+            
+            for i, (key, context) in enumerate(self.resource_to_render.indexed_contexts):
+                if not context_renderable_as(context, "pdf"):
+                    continue
+                name = "{0:05d}".format(i)
+                title = " / ".join(map(str, key))
+                content = context.rendered("pdf").content.body
+                with open(pjoin(d, name) + ".pdf", "wb") as fd:
+                    fd.write(content)
+                    
+                imgs.append((name, title))
+            
+            def make_slide(img):
+                path, title = img
+                title = latex_escape_string(title)
+                return dedent(r"""
+                    \begin{{frame}}
+                    \begin{{center}}
+                    \frametitle{{{title}}}
+                    \includegraphics[width=0.9 \paperwidth]{{{path}}}
+                    \end{{center}}
+                    \end{{frame}}
+                """).strip().format(title=title, path=path)
+            
+            slides = map(make_slide, imgs)
+                    
+            with open(pjoin(d, "beamer.tex"), "wb") as latex_fd:
+                template = resource_string("weboot.templates", "beamer/beamer.tex")
+                latex = template.replace("##slides##", "\n\n".join(slides))
+                print latex
+                latex_fd.write(latex)
+            
+            p = Popen(["pdflatex", "beamer.tex"], cwd=d, stdout=None, stderr=None)
+            p.wait()
+            
+            with open(pjoin(d, "beamer.pdf")) as fd:
+                contents = fd.read()
+        
+        return Response(contents, content_type="application/x-pdf", 
+            content_disposition="Content-Disposition: attachment; filename=beamer.pdf;")
+
+    @property
+    def content(self):
+    
+        if self.format == "bz2":
+            return self.bz2
+            
+        if self.format == "beamer":
+            return self.beamer
+        
+        content = []
+        
+        content.append("Archive format: {0}".format(self.format))
+        for key, context in self.resource_to_render.indexed_contexts:
+            content.append(" / ".join(key))
+            content.append(" -- {0.url}".format(context))
+        
+            
+        
+        return Response("\n".join(content), content_type="text/plain")
+         
 
 def transpose_fragments_fixup(fragments, to_fill):
     """
@@ -42,7 +174,9 @@ def transpose_fragments_fixup(fragments, to_fill):
             continue
         result.append(this)
     return result
-        
+
+
+
 class MultipleTraverser(LocationAware):
     """
     Represents an arbitrary-dimensioned matrix of objects
@@ -123,12 +257,17 @@ class MultipleTraverser(LocationAware):
         """
         result = self
         # Process in sorted order so that we can correct the fill index
-        for n_removed, (slot, value) in enumerate(sorted(index_values)):
+        to_fill = sorted(index_values)
+        for n_removed, (slot, value) in enumerate(to_fill):
             result = result.fill_slot(slot - n_removed, value)
         return result
 
+    @property
+    def types(self):
+        return set(type(c) for i, c in self.indexed_contexts)
+        
     def __repr__(self):
-        s = ('<{self.__class__.__name__} url="{self.url}" order={self.order} '
+        s = ('<{self.__class__.__name__} types="{self.types}" url="{self.url}" order={self.order} '
              'nitems={n} slot_filler={self.slot_filler}>')
         return s.format(self=self, n=len(self.indexed_contexts))
 
@@ -145,7 +284,7 @@ class MultipleTraverser(LocationAware):
         !archive/bz2/png
         Create an archive (e.g.) .zip of by calling !render on all contexts
         """
-        raise NotImplementedError()
+        return ArchiveBuilder.from_parent(parent, key, self, format)
         
     @action
     def reorder(self, parent, key):
@@ -161,7 +300,7 @@ class MultipleTraverser(LocationAware):
         selection_set = set(selection.split(","))
         indexed_contexts = [(index_tuple, context)
                             for index_tuple, context in self.indexed_contexts
-                            if index_tuple[0] in selection_set]
+                            if index_tuple[-1] in selection_set]
         
         return self.from_parent(parent, key, indexed_contexts,
             order=self.order, ordering=self.ordering)
@@ -213,7 +352,7 @@ class MultipleTraverser(LocationAware):
             filled = self.fill_slots(enumerate(index_tuple, 1))["!compose"]
             composed = Combination.from_parent(filled, key, stack, composition_type)
             new_contexts.append((index_tuple, composed))
-        
+                
         if self.order == 1:
             assert len(new_contexts) == 1
             idx, composition = new_contexts[0]
@@ -232,7 +371,9 @@ class MultipleTraverser(LocationAware):
         new_contexts = []
         for index_tuple, context in self.indexed_contexts:
             if context is None: continue
-            new_contexts.append((index_tuple, context[key]))
+            new_context = context[key]
+            if not new_context: continue
+            new_contexts.append((index_tuple, new_context))
         
         # Check that new_contexts either contains all MultiTraversers, or none.
         mts = set(isinstance(c, MultipleTraverser) for i, c in new_contexts)
@@ -247,6 +388,7 @@ class MultipleTraverser(LocationAware):
             flattened_contexts = []
             for index_tuple, context in new_contexts:
                 for idx, sub_context in context.indexed_contexts:
+                    if not sub_context: continue
                     new_index_tuple = index_tuple + idx
                     flattened_contexts.append((new_index_tuple, sub_context))
             

@@ -88,9 +88,22 @@ def find_nth(lst, what, n):
 
 def view_multitraverse(multitravese_context, request):
     content = []
-    for index_tuple, context in multitravese_context.indexed_contexts:
-        content.append('<p>{0} {1!r}</p><img src="{1.icon_url}" />'
-                       .format(index_tuple, context))
+    prev_idx = None
+    for index_tuple, context in sorted(multitravese_context.indexed_contexts):
+        print index_tuple, context.icon, context
+        if not context.icon:
+            # TODO(pwaller): If a context doesn't have an icon, we should
+            #                 show something else, but I haven't decided what 
+            #                 yet
+            continue
+        str_index_tuple = map(str, index_tuple)
+        this_idx = str_index_tuple[0]
+        if prev_idx != this_idx:
+            content.append("<h2>{0}</h2>".format(this_idx))
+        prev_idx = str_index_tuple[0]
+        content.append('<img class="plot" src="{1.icon_url}?{2}" title="{0}" />'
+                       .format(" / ".join(str_index_tuple), context, 
+                       request.environ.get("QUERY_STRING", "")))
     
     return dict(path=build_breadcrumbs(multitravese_context),
                 content="\n".join(content))

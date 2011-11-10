@@ -76,13 +76,15 @@ def main(global_config, **settings):
     config.add_view("weboot.views.root.object.view_root_object_render",
                     context="weboot:resources.root.object.RootObject",
                     request_param="render")
-                    
+
+    """
     config.add_view("weboot.views.view_root_object",
                     renderer='weboot:templates/result.pt', 
                     context="weboot:resources.multitraverser.StackPlot")
     config.add_view("weboot.views.root.histogram.render_stack",
                     context="weboot:resources.multitraverser.StackPlot",
                     request_param="render")
+    """
                     
     config.add_view("weboot.views.user.view_user",
                     context="weboot:resources.user.UserResource")
@@ -90,7 +92,7 @@ def main(global_config, **settings):
                     context="weboot:resources.user.NewUserResource")
                     
                     
-    config.add_view("weboot.resources.renderable.renderable_view",
+    config.add_view("weboot.resources.renderable.renderer_view",
                     context="weboot:resources.renderable.Renderer")
     
     config.add_static_view('static', 'weboot:static')

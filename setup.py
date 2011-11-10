@@ -46,6 +46,9 @@ requires = [
     # 'velruse', 
     # Used to host HTTPs servers
     'pyOpenSSL', 
+    
+    # Markdown format rendering
+    'markdown',
 ]
 
 setup(

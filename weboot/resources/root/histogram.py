@@ -5,7 +5,7 @@ from weboot.utils.thousands import split_thousands
 from weboot.utils.histogram import normalize_by_axis
 
 from weboot.resources.actions import action
-from weboot.resources.renderable import Renderable, Renderer
+from weboot.resources.renderable import Renderable, RootRenderer
 from weboot.resources.locationaware import LocationAware
 from weboot.resources.multitraverser import MultipleTraverser
 
@@ -49,7 +49,22 @@ def make_int(x):
             pass
     raise RuntimeError("Expected integer, got '{0!r}'".format(x))
 
-class HistogramRenderer(Renderer):
+
+def build_draw_params(h, params):
+    options = []
+    O = options.append
+    if isinstance(h, R.TH3):
+        O("box")
+    elif isinstance(h, R.TH2):
+        O("colz")
+    if "hist" in params:
+        O("hist")
+    if "e0x0" in params:
+        O("e0x0")
+    opts = " ".join(options)
+    return opts
+
+class HistogramRenderer(RootRenderer):
     def render(self, canvas, keep_alive):
         params = self.request.params
         h = self.resource_to_render.obj
@@ -64,7 +79,7 @@ class HistogramRenderer(Renderer):
             h.SetTitle("")
         
         # TODO(pwaller): bring back draw options
-        h.Draw()
+        h.Draw(build_draw_params(h, params))
 
 class Histogram(Renderable, RootObject):
     renderer = HistogramRenderer
@@ -102,7 +117,7 @@ class Histogram(Renderable, RootObject):
     
     @staticmethod
     def multiproject_slot_filler(multitraverser, key):
-        return multitraverser[key]
+        return multitraverser.__parent__[key]
     
     @action
     def project(self, parent, key, axes):
@@ -169,6 +184,7 @@ class Histogram(Renderable, RootObject):
     @staticmethod
     def explode_slot_filler(multipletraverser, key):
         axis, bin = key.axis, key.bin
+        #raise RuntimeError
         return multipletraverser.__parent__.__parent__["!range"][axis][bin][bin]
         
     class ExplodeSlotKey(object):
@@ -182,6 +198,7 @@ class Histogram(Renderable, RootObject):
         @property
         def tup(self): return self.axis, self.bin, self.pretty_name
         def __eq__(self, rhs): return self.tup == rhs.tup
+        def __lt__(self, rhs): return self.pretty_name < rhs.pretty_name
         def __hash__(self): return hash(self.tup)
         def __str__(self): return self.pretty_name
         def __repr__(self): return repr(self.pretty_name)
@@ -204,9 +221,9 @@ class Histogram(Renderable, RootObject):
             s = s.format(i, lo, up, axis.GetTitle())
             return ((self.ExplodeSlotKey(ax, i, s),), r)
 
-        new_contexts = [build_bin(i) for i in xrange(1, axis.GetNbins())]
+        new_contexts = [build_bin(i) for i in xrange(1, axis.GetNbins()+1)]
         
-        return MultipleTraverser.from_parent(self, ax, new_contexts, 
+        return MultipleTraverser.from_parent(parent, ax, new_contexts, 
             slot_filler=self.explode_slot_filler)
     
     @action

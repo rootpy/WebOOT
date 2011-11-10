@@ -1,7 +1,12 @@
 from inspect import getsourcelines
 
-from weboot.utils.func import wraps
-# LocationAware is imported below to avoid circular imports
+from pyramid.response import Response
+
+from weboot.utils.func import wraps, unwrap
+
+# imported below to avoid circular imports:
+# .locationaware.LocationAware is 
+# .renderable.Renderable is imported bel
 
 def action(function):
     """
@@ -14,13 +19,12 @@ def action(function):
     if n_args <= 0:
         thunk = function
     else:
-        @wraps(function)
         def thunk(orig_resource, key):
             args = orig_resource, key, function, n_args, orig_resource
             return ArgumentCollector.from_parent(*args)
-    
+           
     function.is_action = True
-    function.thunk = thunk
+    function._action_thunk = thunk
     return function
     
 class HasActionsMeta(type):
@@ -33,7 +37,7 @@ class HasActionsMeta(type):
             for key, value in cls.__dict__.iteritems():
                 if getattr(value, "is_action", None):
                     # TODO(pwaller): Assert that value's 
-                    self.actions["!" + key] = value.thunk
+                    self.actions["!" + key] = value
 
 class HasActions(object):
     """
@@ -42,17 +46,29 @@ class HasActions(object):
     __metaclass__ = HasActionsMeta
     
     @action
+    def throw(self, key):
+        raise RuntimeError("!throw action requested")
+    
+    @action
     def definition(self, parent, key, name):
-        if key in self.actions:
+        if name in self.actions:
             return CodeDefinition.from_parent(parent, key, self.actions[name])
     
     @action
     def list_actions(self, key):
         return ActionList.from_parent(self, key, self.actions)
     
+    @action
+    def p(self, parent, key, param, value):
+        """
+        Collect a parameter
+        """
+        self.request.params[param] = value
+        return self.from_parent(parent, key)
+    
     def try_action(self, key):
         if key in self.actions:
-            return self.actions[key](self, key)
+            return self.actions[key]._action_thunk(self, key)
     
     def __getitem__(self, key):
         """
@@ -74,7 +90,16 @@ class ArgumentCollector(LocationAware):
         self.request = request
         self.function, self.parameters, self.resource = function, parameters, resource
         self.args = args
-        
+    
+    @property
+    def target(self):
+        return self.function.__name__
+    
+    def __repr__(self):
+        return ('<ArgumentCollector target={self.target} '
+                 'collected_args={self.args} url="{self.url}">'
+                 .format(self=self))
+    
     def __getitem__(self, key):
         args = self.args + (key,)   
         if len(args) >= self.parameters:
@@ -83,20 +108,51 @@ class ArgumentCollector(LocationAware):
         # Collect this argument
         return ArgumentCollector.from_parent(self, key, self.function, self.parameters, self.resource, args)
 
-class CodeDefinition(LocationAware):
+# Needs to go here to avoid circular imports
+from .renderable import Renderer
+
+class CodeDefinition(Renderer):
     """
     Represents the source code of a function object
     TODO(pwaller): Support for classes, link to online viewer
     """
     def __init__(self, request, function):
-        super(CodeDefinition, self).__init__(request)
-        self.code = "".join(inspect.getsourcelines(unwrap(function))[0])
+        super(CodeDefinition, self).__init__(request, self, None)
+        self.function = function
 
-class ActionList(LocationAware):
+    @property
+    def content(self):
+        f = self.function
+        code = "".join(getsourcelines(f)[0])
+        return Response(code, content_type="text/plain")
+
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+    }
+
+def html_escape(text):
+    """Produce entities within text."""
+    return "".join(html_escape_table.get(c,c) for c in text)
+
+class ActionList(Renderer):
     """
     List available actions on an object
     """
     def __init__(self, request, actions):
-        super(ActionList, self).__init__(request)
+        super(ActionList, self).__init__(request, self, None)
         self.actions = actions
     
+    @property
+    def content(self):
+        c = []
+        for key, action in sorted(self.actions.iteritems()):
+            c.append("<h1>{0}</h1>".format(key))
+            c.append("<pre>")
+            c.append(html_escape(self.__parent__["!definition"][key].content.body))
+            c.append("</pre>")
+        
+        return Response("\n\n".join(c), content_type="text/html")

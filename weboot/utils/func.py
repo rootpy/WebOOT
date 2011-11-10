@@ -2,10 +2,12 @@ from functools import wraps as builtin_wraps
 
 def wraps(function):
     f = builtin_wraps(function)
-    f.__wrapped__ = function
+    print "I am in WRAPS"
+    f._weboot_wrapped = function
+    print f._weboot_wrapped
     return f
     
 def unwrap(f):
-    while hasattr(f, "__wrapped__"):
-        f = f.__wrapped__
+    while hasattr(f, "_weboot_wrapped"):
+        f = f._weboot_wrapped
     return f

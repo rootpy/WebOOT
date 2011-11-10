@@ -12,6 +12,7 @@ import ROOT as R
 from .locationaware import LocationAware
 from .multitraverser import MultipleTraverser
 from .root.file import RootFileTraverser
+from ._markdown import MarkdownResource
 
 
 class FilesystemTraverser(LocationAware):
@@ -59,7 +60,12 @@ class FilesystemTraverser(LocationAware):
             
     def __getitem__(self, key):
         path = pjoin(self.path, key)
+        if isfile(path) and path.endswith(".markdown"):
+            return MarkdownResource.from_parent(self, key, path)
+        
         if isfile(path) and path.endswith(".root"):
+            # TODO(pwaller): This belongs inside the RootFileTraverser 
+            #                 constructor
             # File
             f = R.TFile(path)
             if f.IsZombie() or not f.IsOpen():

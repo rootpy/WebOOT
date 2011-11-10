@@ -16,7 +16,18 @@ class LocationAware(HasActions):
         self.request = request
     
     @property
+    def icon(self):
+        """
+        Override this in base classes, should return an icon resource if there 
+        is one
+        """
+        return None
+    
+    @property
     def forward_url(self):
+        """
+        TODO(pwaller): Fix or eliminate this
+        """
         pass
 
     def sub_url(self, *args, **kwargs):
