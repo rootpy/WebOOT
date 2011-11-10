@@ -6,6 +6,7 @@ import re
 
 from pyramid.traversal import traverse
 from pyramid.url import static_url
+from pyramid.httpexceptions import HTTPNotFound
 
 import ROOT as R
 
@@ -46,14 +47,17 @@ class FilesystemTraverser(LocationAware):
     
     @property
     def items(self):
-        items = [self[i] for i in listdir(self.path)]
+        items = [self[i] for i in self]
         items = [i for i in items if i]
         items.sort(key=lambda o: o.name)
         return items
     
     @property
     def keys(self):
-        return sorted(listdir(self.path))
+        try:
+            return sorted(listdir(self.path))
+        except OSError as err:
+            raise HTTPNotFound("Failed to open {0}: {1}".format(self.path, err))
     
     def __iter__(self):
         return iter(self.keys)
