@@ -42,6 +42,43 @@ cuts = {
     "wstot" : [2.95,      4.4,      3.26,3.4,-9999.,3.8,2.4,1.64,-9999.],
 }
 
+def get_legend(data=[], signal=[], mc=[], sum_mc=None):
+    llen = 1 + len(data) + len(mc) + len(signal)
+    mtop, mright, width, hinc = 0.07, 0.25, 0.15, 0.01
+    x1, y1 = 1.0 - mright - width, 1.0 - mtop
+    x2, y2 = 1.0 - mtop, 1.0 - mright - hinc*llen
+    print x1, y1, x2, y2
+    legend = R.TLegend(x1, y1, x2, y2)
+    legend.SetNColumns(2)
+    legend.SetColumnSeparation(0.05)
+    legend.SetBorderSize(0)
+    legend.SetTextFont(42)
+    legend.SetTextSize(0.04)
+    legend.SetFillColor(0)
+    legend.SetFillStyle(0)
+    legend.SetLineColor(0)
+    def name(h):
+        return h.GetTitle()
+    for d in data:
+        legend.AddEntry(d, name(d), "p")
+    if not sum_mc is None:
+        # omit this entry for 2D histogram
+        legend.AddEntry(sum_mc, name(sum_mc), "flp")
+    for h in mc: # sorted by initial XS
+        legend.AddEntry(h, name(h), "f")
+    for s in signal:
+       legend.AddEntry(s, name(s), "l")
+    return legend
+
+def get_lumi_label(lumi="1.02", unit="fb", energy="7 TeV"):
+    x, y = 0.15, 0.75
+    n = TLatex()
+    n.SetNDC()
+    n.SetTextFont(32)
+    n.SetTextColor(kBlack)
+    n.DrawLatex(x, y,"#sqrt{s} = %s, #intL dt ~ %s %s^{-1}" % (energy, lumi, unit))
+    return n
+
 class CombinationStackRenderer(RootRenderer):
 
     # This is a Hack
@@ -132,6 +169,110 @@ class CombinationStackRenderer(RootRenderer):
         
         # TODO(pwaller): bring back draw options
         h.Draw()
+
+class EbkeCombinationStackRenderer(RootRenderer):
+
+    # This is a Hack
+    @action
+    def slot(self, parent, key, name):
+        params = {"slot": name}
+        params.update(self.params)
+        args = parent, key, self.resource_to_render, self.format, params
+        return self.from_parent(*args)
+        
+    def render(self, canvas, keep_alive):
+        
+        params = self.request.params
+        names, histograms = zip(*self.resource_to_render.stack)
+        #print "Rendering stack with {0} histograms".format(len(histograms))
+        
+        objs = [h.obj for h in histograms]
+
+
+        colordict = {
+            "all"   :R.kBlue,
+            "signal":R.kGreen,
+            "fake"  :R.kRed,
+        }
+        
+        from ROOT import kAzure, kBlue, kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring
+        clrs = (kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kSpring, kBlue, kMagenta)
+
+        for name, obj in zip(names, objs):
+            #obj.SetTitle("");
+            obj.SetStats(False)
+            obj.SetLineWidth(2)
+
+        for name, obj, col in zip(names, objs, clrs):
+            if name in colordict:
+                obj.SetLineColor(colordict[name])
+            else:
+                obj.SetLineColor(col)
+            obj.SetMarkerColor(col)
+        
+        if "shape" in params:
+            for obj in objs:
+                if obj.Integral():
+                    obj.Scale(1. / obj.Integral())
+        
+        max_value = max(o.GetMaximum() for o in objs) * 1.1
+
+
+        obj = objs.pop(0)
+        obj.Draw("")
+        obj.SetMaximum(max_value)
+        #obj.SetMinimum(0)
+        
+        for obj in objs:
+            obj.Draw("same")
+         
+
+
+        logy = canvas.GetLogy()
+        canvas.SetLogy(False)
+        canvas.Update()
+        ymin, ymax = canvas.GetUymin(), canvas.GetUymax()
+        canvas.SetLogy(logy)
+        canvas.Update()
+        
+        def line(x):
+            args = x, ymin, x, ymax
+            l = R.TLine(*args)
+            l.SetLineWidth(1); l.SetLineStyle(2)
+            l.Draw()
+            keep_alive(l)
+        
+        # Draw cuts
+        slot = self.request.params.get("slot", None)
+        if not slot:
+            # Determine slot from path
+            for p in lineage(self):
+                if p.__name__ in cuts:
+                    slot = p.__name__
+                    
+        if slot:
+            for x in set(cuts[slot]):
+                if canvas.GetUxmin() < x < canvas.GetUxmax():
+                    line(x)
+        
+        if not self.request.params.get("legend", None) is None:
+            legend = get_legend(mc=objs)
+            legend.Draw()
+            keep_alive(legend)
+        
+        return
+        
+        if "unit_fixup" in params:
+            h = fixup_hist_units(h)
+        
+        if "nostat" in params:
+            h.SetStats(False)
+        
+        if "notitle" in params:
+            h.SetTitle("")
+        
+        # TODO(pwaller): bring back draw options
+        h.Draw()
         
 class CombinationDualRenderer(RootRenderer):
     def render(self, canvas, keep_alive):
@@ -191,6 +332,9 @@ class Combination(Renderable, LocationAware):
 
         if self.composition_type == "dual":
             self.renderer = CombinationDualRenderer
+
+        if self.composition_type == "ebke":
+            self.renderer = EbkeCombinationStackRenderer
             
         print "Using renderer:", self.renderer
     
