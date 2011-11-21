@@ -246,7 +246,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
                 data.append(obj)
             else:
                 mc.append(obj)
-            #obj.SetTitle(name)
+            obj.SetTitle(name)
             #obj.SetFillStyle(1001)
 
         for h in data:
@@ -266,9 +266,13 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetFillStyle(2001)
         
         # get min/max
-        ymax = 1 + max(sum(h.GetMaximum() for h in mc), max(h.GetMaximum() for h in data+signals))
+        ymax = sum(h.GetMaximum() for h in mc)
+        ymin = sum(h.GetMinimum() for h in mc)
+        if data or signals:
+            ymax = max(ymax, max(h.GetMaximum() for h in data+signals))
+            ymin = min(ymin, min(h.GetMinimum() for h in data+signals))
+        ymax += 1
         ymax *= (1.5 if not canvas.GetLogy() else 100)
-        ymin = min(sum(h.GetMinimum() for h in mc), min(h.GetMinimum() for h in data+signals))
         ymin = max(1e-1, ymin)
 
         # Create Stack of MC
