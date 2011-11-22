@@ -12,6 +12,7 @@ from pyramid.response import Response
 from pyramid.traversal import traverse
 from pyramid.url import static_url
 
+from weboot import log; log = log.getChild("multitraverser")
 from weboot.resources.actions import action
 from weboot.resources.combination import Combination
 
@@ -182,7 +183,7 @@ class MultipleTraverser(LocationAware):
     Represents an arbitrary-dimensioned matrix of objects
     """
     def __init__(self, request, indexed_contexts, order=1, slot_filler=None, 
-                 ordering=None):
+                 ordering=()):
         """
         Create a multiple traverser
         
@@ -194,7 +195,8 @@ class MultipleTraverser(LocationAware):
         self.indexed_contexts = indexed_contexts
         self.order = order
         self.slot_filler = slot_filler
-        self.ordering = tuple(xrange(self.order)) if ordering is None else ordering
+        #self.ordering = tuple(xrange(self.order)) if ordering is None else ordering
+        self.ordering = self.get_missing_ordering(ordering) 
         
         if indexed_contexts:
             assert all(len(x) == order for x, y in indexed_contexts)
@@ -239,6 +241,7 @@ class MultipleTraverser(LocationAware):
         
         # Get the (as yet incomplete) resource with the slot filled
         filled_traverser = filler_function(fragments[filler_index], value)
+        assert filled_traverser
         
         # Get the path which needs to be appended to this traverser
         remaining_fragments = [f.__name__ for f in fragments[filler_index+1:]]
@@ -260,6 +263,7 @@ class MultipleTraverser(LocationAware):
         to_fill = sorted(index_values)
         for n_removed, (slot, value) in enumerate(to_fill):
             result = result.fill_slot(slot - n_removed, value)
+            assert result
         return result
 
     @property
@@ -333,6 +337,8 @@ class MultipleTraverser(LocationAware):
         
         new_ordering = tuple(self.ordering[i] for i in complete_ordering)
         
+        log.error("Transpose, new ordering: {0}".format(new_ordering))
+        
         return MultipleTraverser.from_parent(parent, key, new_contexts,
                                               order=self.order, ordering=new_ordering)
     
@@ -359,9 +365,13 @@ class MultipleTraverser(LocationAware):
             assert idx == ()
             return composition
             
+        new_ordering = ordering=self.ordering[1:]
+        
+        log.error("New ordering after compose = {0}".format(new_ordering))
+        
         # Otherwise build a multitraverser whose order is reduced by one.
         return MultipleTraverser.from_parent(parent, composition_type, new_contexts,
-                                              order=self.order-1)
+                                              order=self.order-1, ordering=new_ordering)
     
     def __getitem__(self, key):
         res = self.try_action(key)
@@ -374,6 +384,10 @@ class MultipleTraverser(LocationAware):
             new_context = context[key]
             if not new_context: continue
             new_contexts.append((index_tuple, new_context))
+        
+        if not new_contexts:
+            # Not a valid resource, since there is nothing below here.
+            return
         
         # Check that new_contexts either contains all MultiTraversers, or none.
         mts = set(isinstance(c, MultipleTraverser) for i, c in new_contexts)
@@ -393,6 +407,6 @@ class MultipleTraverser(LocationAware):
                     flattened_contexts.append((new_index_tuple, sub_context))
             
             return MultipleTraverser.from_parent(self, key, flattened_contexts,
-                                               self.order+1, slot_filler)
+                                               self.order+1, slot_filler, ordering=self.ordering)
         else:
-            return MultipleTraverser.from_parent(self, key, new_contexts, self.order)
+            return MultipleTraverser.from_parent(self, key, new_contexts, self.order, ordering=self.ordering)
