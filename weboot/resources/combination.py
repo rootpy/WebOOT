@@ -435,3 +435,10 @@ class Combination(Renderable, LocationAware):
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
         return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
+        
+    def __getitem__(self, key):
+        res = self.try_action(key)
+        if res: return res
+        
+        stack = [(n, c) for n, c in [(n, c[key]) for n, c in self.stack] if c]
+        return self.from_parent(self, key, stack, self.composition_type)
