@@ -22,11 +22,11 @@
   <div id="wrap">
     <tal:block metal:define-slot="header" />
         
-    <div id="middle">
-      <div class="middle align-center">
+    <!--<div id="middle">
+      <div class="middle align-center">-->
         <tal:block metal:define-slot="breadcrumbs" />
-      </div>
-    </div>
+      <!--</div>
+    </div>-->
     
     <tal:block metal:define-slot="left_sidebar" />
     <tal:block metal:define-slot="right_sidebar" />
