@@ -220,18 +220,22 @@ class MultipleTraverser(LocationAware):
     def flattened(self):
         return self.indexed_contexts
 
+    @property
+    def slot_fillers(self):
+        fillers = []
+        for i, resource in enumerate(reversed(list(lineage(self)))):
+            if isinstance(resource, MultipleTraverser) and resource.slot_filler:
+                fillers.append((i, resource.slot_filler))
+        return fillers #[-self.order:]
+        
+
     def fill_slot(self, index, value):
         """
         Fill the `index`th slot of the URL with `value`
         """
-        fragments, fillers = [], []
-        
-        # Build a list of URL fragments (resources) and slot fillers
-        for i, resource in enumerate(reversed(list(lineage(self)))):
-            if isinstance(resource, MultipleTraverser) and resource.slot_filler:
-                fillers.append((i, resource.slot_filler))
-            fragments.append(resource)
-        
+        fragments = list(reversed(list(lineage(self))))
+        fillers = self.slot_fillers
+                
         assert index < len(fillers)
         
         # Index into the path for filling the `index`th slot and a function
@@ -373,6 +377,13 @@ class MultipleTraverser(LocationAware):
         return MultipleTraverser.from_parent(parent, composition_type, new_contexts,
                                               order=self.order-1, ordering=new_ordering)
     
+    def keys(self):
+        # TODO(pwaller): This is very inefficient and causes OOM quite quickly..
+        subkeys = [set(getattr(c, "keys", lambda: [])())
+                   for n, c in self.indexed_contexts]
+        return sorted(reduce(set.union, subkeys))
+        return []
+    
     def __getitem__(self, key):
         res = self.try_action(key)
         if res: return res
@@ -391,6 +402,8 @@ class MultipleTraverser(LocationAware):
         
         # Check that new_contexts either contains all MultiTraversers, or none.
         mts = set(isinstance(c, MultipleTraverser) for i, c in new_contexts)
+        if not mts: return
+        
         assert len(mts) == 1, "Uneven shape encountered"
         all_multitraversers = mts.pop()
         

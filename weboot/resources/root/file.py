@@ -46,12 +46,11 @@ class RootFileTraverser(LocationAware):
             return '<p><a href="{0}">{1}</a><img src="{0}/render?resolution=25" height="10%"/></p>'.format(url, p)
         return "".join(link(p) for p in keys)
     
-    @property
     def keys(self):
         return sorted(k.GetName() for k in self.rootfile.GetListOfKeys())
     
     def __iter__(self):
-        return iter(self.keys)
+        return iter(self.keys())
     
     @property
     def items(self):
