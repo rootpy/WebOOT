@@ -82,7 +82,9 @@ class BasketTraverser(LocationAware):
         return [self[i] for i in range(len(self.basket))]
     
     def __getitem__(self, subpath):
-    
+        if not isinstance(subpath, int) and not subpath.isdigit():
+            return
+        
         if not isinstance(subpath, int) and "*" in subpath:
             things = self.items
             raise
