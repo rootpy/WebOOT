@@ -154,12 +154,15 @@ class CombinationStackRenderer(RootRenderer):
         
         
         obj = objs.pop(0)
-        obj.Draw("")
+        from root.histogram import build_draw_params
+        dp = "hist" #build_draw_params(obj, self.request.params, True)
+        
+        obj.Draw(dp)
         obj.SetMaximum(max_value)
         #obj.SetMinimum(0)
         
         for obj in objs:
-            obj.Draw("same")
+            obj.Draw(dp + " same")
         
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
@@ -171,7 +174,7 @@ class CombinationStackRenderer(RootRenderer):
         def line(x):
             args = x, ymin, x, ymax
             l = R.TLine(*args)
-            l.SetLineWidth(1); l.SetLineStyle(2)
+            l.SetLineWidth(3); l.SetLineStyle(2)
             l.Draw()
             keep_alive(l)
         
