@@ -136,6 +136,12 @@ class Histogram(Renderable, RootObject):
         
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+        
+        if self.obj.GetDimension() == 1:
+            if axes == "x":
+                # Only x projection is valid for 1D histogram
+                return Histogram.from_parent(parent, key, self.obj)
+            return
             
         if self.obj.GetDimension() == 2 and len(axes) == 1:
             projected_hist = get_xyz_func(self.obj, "Projection{ax}", axes)()
