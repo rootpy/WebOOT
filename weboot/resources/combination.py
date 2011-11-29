@@ -8,7 +8,7 @@ from .renderable import Renderable, Renderer, RootRenderer
 
 from weboot import log; log = log.getChild("combination")
 
-etabins = [0.6, 0.8, 1.15, 1.37, 1.52, 1.81, 2.01, 2.37, 2.47]
+etabins = [0, 0.6, 0.8, 1.15, 1.37, 1.52, 1.81, 2.01, 2.37, 2.47]
 
 cuts = {
     "DeltaE" : [92,92,99,111,-9999.,92,110,148,-9999.],
@@ -167,11 +167,12 @@ class CombinationStackRenderer(RootRenderer):
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
         canvas.Update()
-        ymin, ymax = canvas.GetUymin(), canvas.GetUymax()
+        canvas_yrange = ymin, ymax = canvas.GetUymin(), canvas.GetUymax()
         canvas.SetLogy(logy)
         canvas.Update()
         
-        def line(x):
+        def line(x, yrange):
+            ymin, ymax = yrange
             args = x, ymin, x, ymax
             l = R.TLine(*args)
             l.SetLineWidth(3); l.SetLineStyle(2)
@@ -187,9 +188,9 @@ class CombinationStackRenderer(RootRenderer):
                     slot = p.__name__
                     
         if slot:
-            for x in set(cuts[slot]):
+            for x, yrange in zip(cuts[slot], zip(etabins, etabins[1:])):
                 if canvas.GetUxmin() < x < canvas.GetUxmax():
-                    line(x)
+                    line(x, canvas_yrange if obj.GetDimension() != 2 else yrange)
         
         
         return
