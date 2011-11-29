@@ -50,13 +50,13 @@ def make_int(x):
     raise RuntimeError("Expected integer, got '{0!r}'".format(x))
 
 
-def build_draw_params(h, params):
+def build_draw_params(h, params, box2d=False):
     options = []
     O = options.append
     if isinstance(h, R.TH3):
         O("box")
     elif isinstance(h, R.TH2):
-        O("colz")
+        O("box" if box2d else "colz")
     if "hist" in params:
         O("hist")
     if "e0x0" in params:
