@@ -25,6 +25,12 @@
     color: white;
 }
 
+#menu li li:after
+{
+    content: ''; 
+    color: white;
+}
+
 #menu li
 {
     float: left;
@@ -120,7 +126,7 @@
     white-space: nowrap;
     float: none;
     text-transform: none;
-    border: 1px solid red;
+    //border: 1px solid red;
 }
 
 *html #menu ul a /* IE6 */

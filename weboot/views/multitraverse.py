@@ -91,22 +91,34 @@ def view_multitraverse(multitravese_context, request):
     prev_idx = None
     for index_tuple, context in sorted(multitravese_context.indexed_contexts):
         print index_tuple, context.icon, context
+        str_index_tuple = map(str, index_tuple)
+        this_idx = index_tuple[0]
+        if prev_idx != this_idx:
+            content.append('<h2><a href="{1.url}">{0}</a></h2>'.format(str_index_tuple[0], multitravese_context.fill_slot(0, this_idx)))
+        prev_idx = index_tuple[0]
         if not context.icon:
             # TODO(pwaller): If a context doesn't have an icon, we should
             #                 show something else, but I haven't decided what 
             #                 yet
+            if isinstance(context, MultipleTraverser):
+                for i, c in context.indexed_contexts:
+                    content.append('<a href="{1.url}?{2}">{0}</a>'.format(" / ".join(str_index_tuple), c, request.environ.get("QUERY_STRING", "")))
+            else:
+                #content.append("Ya? <pre>{0}</pre>".format(context))
+                for item in context:
+                    subcontext = context[item]
+                    if not subcontext: continue
+                    content.append('<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
+                                   .format(" / ".join(str_index_tuple), context[item], 
+                                   request.environ.get("QUERY_STRING", "")))
             continue
-        str_index_tuple = map(str, index_tuple)
-        this_idx = str_index_tuple[0]
-        if prev_idx != this_idx:
-            content.append("<h2>{0}</h2>".format(this_idx))
-        prev_idx = str_index_tuple[0]
-        content.append('<img class="plot" src="{1.icon_url}?{2}" title="{0}" />'
+        content.append('<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
                        .format(" / ".join(str_index_tuple), context, 
                        request.environ.get("QUERY_STRING", "")))
     
     return dict(path=build_breadcrumbs(multitravese_context),
-                content="\n".join(content))
+                content="\n".join(content),
+                sidebar="")
     """
     A = content.append
     

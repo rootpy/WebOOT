@@ -8,6 +8,7 @@
   
   <link rel="shortcut icon" href="${request.static_url('weboot:static/favicon.ico')}" />
   <link rel="stylesheet" href="${request.static_url('weboot:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+  <link rel="stylesheet" href="${request.static_url('weboot:static/dropdown.css')}" type="text/css" media="screen" charset="utf-8" />
   
   <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-1.6.2.js')}"></script>
   <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery-ui-1.8.15.custom.min.js')}"></script>
