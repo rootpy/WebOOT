@@ -319,6 +319,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
 
         axis.SetMaximum(ymax)
         axis.SetMinimum(ymin)
+        axis.GetXaxis().SetRange(objs[0].GetXaxis().GetFirst(), objs[0].GetXaxis().GetLast())
 
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
