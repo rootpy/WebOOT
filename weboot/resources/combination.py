@@ -85,6 +85,15 @@ def create_mc_sum(mc_list):
     mc_sum = mc_list[0].Clone("mc_sum")
     mc_sum.SetDirectory(0)
     for h in mc_list[1:]:
+        for b in xrange(1, h.GetXaxis().GetNbins()+1):
+            # If there is negative weight in one channel, it should not
+            # be subtracted from other channels
+            if not (0 < h.GetBinContent(b)):
+                h.SetBinContent(b, 0.0)
+            # Sometimes negative Errors occur - they play havoc with the
+            # Display of error bands...
+            if not (0 < h.GetBinError(b)):
+                h.SetBinError(b, 0.0)
         mc_sum.Add(h)
     mc_sum.SetMarkerSize(0)
     mc_sum.SetLineColor(R.kRed)
@@ -242,11 +251,13 @@ class EbkeCombinationStackRenderer(RootRenderer):
         for name, obj in zip(names, objs):
             name_of[obj] = name
             obj.SetStats(False)
+            if not obj.GetTitle():
+                obj.SetTitle(name.replace(".root",""))
             if is_data(obj):
                 data.append(obj)
             else:
                 mc.append(obj)
-            #obj.SetTitle(name)
+
             #obj.SetFillStyle(1001)
 
         for h in data:
@@ -266,9 +277,13 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetFillStyle(2001)
         
         # get min/max
-        ymax = 1 + max(sum(h.GetMaximum() for h in mc), max(h.GetMaximum() for h in data+signals))
+        ymax = sum(h.GetMaximum() for h in mc)
+        ymin = sum(h.GetMinimum() for h in mc)
+        if data or signals:
+            ymax = max(ymax, max(h.GetMaximum() for h in data+signals))
+            ymin = min(ymin, min(h.GetMinimum() for h in data+signals))
+        ymax += 1
         ymax *= (1.5 if not canvas.GetLogy() else 100)
-        ymin = min(sum(h.GetMinimum() for h in mc), min(h.GetMinimum() for h in data+signals))
         ymin = max(1e-1, ymin)
 
         # Create Stack of MC
@@ -304,6 +319,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
 
         axis.SetMaximum(ymax)
         axis.SetMinimum(ymin)
+        axis.GetXaxis().SetRange(objs[0].GetXaxis().GetFirst(), objs[0].GetXaxis().GetLast())
 
         logy = canvas.GetLogy()
         canvas.SetLogy(False)

@@ -49,6 +49,16 @@ def make_int(x):
             pass
     raise RuntimeError("Expected integer, got '{0!r}'".format(x))
 
+def make_float(x):
+    if isinstance(x, basestring):
+        try:
+            return float(x)
+        except ValueError:
+            pass
+    else:
+        return float(x)
+    raise RuntimeError("Expected number, got '{0!r}'".format(x))
+
 
 def build_draw_params(h, params):
     options = []
@@ -96,6 +106,22 @@ class Histogram(Renderable, RootObject):
         if axis.lower() not in "xyz":
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
         
+        first = make_float(first)
+        last = make_float(last)
+        
+        hist = self.obj.Clone()
+        get_haxis(hist, axis).SetRangeUser(first, last)
+        return Histogram.from_parent(parent, key, hist)
+
+    @action
+    def binrange(self, parent, key, axis, first, last):
+        """
+        TH*/!binrange/axis/first/last
+        Apply a range to an axis for projection purposes
+        """
+        if axis.lower() not in "xyz":
+            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+        
         first = make_int(first)
         last = make_int(last)
         
@@ -113,6 +139,9 @@ class Histogram(Renderable, RootObject):
         
         new_hist = self.obj.Clone()
         new_hist = new_hist.Rebin(n)
+        new_hist.GetXaxis().SetRange(self.obj.GetXaxis().GetFirst(), self.obj.GetXaxis().GetLast())
+        new_hist.GetYaxis().SetRange(self.obj.GetYaxis().GetFirst(), self.obj.GetYaxis().GetLast())
+        new_hist.GetZaxis().SetRange(self.obj.GetZaxis().GetFirst(), self.obj.GetZaxis().GetLast())
         return Histogram.from_parent(parent, key, new_hist)
     
     @staticmethod
