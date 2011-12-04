@@ -85,6 +85,15 @@ def create_mc_sum(mc_list):
     mc_sum = mc_list[0].Clone("mc_sum")
     mc_sum.SetDirectory(0)
     for h in mc_list[1:]:
+        for b in xrange(1, h.GetXaxis().GetNbins()+1):
+            # If there is negative weight in one channel, it should not
+            # be subtracted from other channels
+            if not (0 < h.GetBinContent(b)):
+                h.SetBinContent(b, 0.0)
+            # Sometimes negative Errors occur - they play havoc with the
+            # Display of error bands...
+            if not (0 < h.GetBinError(b)):
+                h.SetBinError(b, 0.0)
         mc_sum.Add(h)
     mc_sum.SetMarkerSize(0)
     mc_sum.SetLineColor(R.kRed)
@@ -242,11 +251,13 @@ class EbkeCombinationStackRenderer(RootRenderer):
         for name, obj in zip(names, objs):
             name_of[obj] = name
             obj.SetStats(False)
+            if not obj.GetTitle():
+                obj.SetTitle(name.replace(".root",""))
             if is_data(obj):
                 data.append(obj)
             else:
                 mc.append(obj)
-            obj.SetTitle(name)
+
             #obj.SetFillStyle(1001)
 
         for h in data:
