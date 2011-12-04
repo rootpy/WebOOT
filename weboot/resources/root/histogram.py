@@ -60,13 +60,13 @@ def make_float(x):
     raise RuntimeError("Expected number, got '{0!r}'".format(x))
 
 
-def build_draw_params(h, params):
+def build_draw_params(h, params, box2d=False):
     options = []
     O = options.append
     if isinstance(h, R.TH3):
         O("box")
     elif isinstance(h, R.TH2):
-        O("colz")
+        O("box" if box2d else "colz")
     if "hist" in params:
         O("hist")
     if "e0x0" in params:
@@ -165,6 +165,12 @@ class Histogram(Renderable, RootObject):
         
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
             raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+        
+        if self.obj.GetDimension() == 1:
+            if axes == "x":
+                # Only x projection is valid for 1D histogram
+                return Histogram.from_parent(parent, key, self.obj)
+            return
             
         if self.obj.GetDimension() == 2 and len(axes) == 1:
             projected_hist = get_xyz_func(self.obj, "Projection{ax}", axes)()

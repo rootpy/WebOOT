@@ -52,7 +52,6 @@ class FilesystemTraverser(LocationAware):
         items.sort(key=lambda o: o.name)
         return items
     
-    @property
     def keys(self):
         try:
             return sorted(listdir(self.path))
@@ -60,7 +59,7 @@ class FilesystemTraverser(LocationAware):
             raise HTTPNotFound("Failed to open {0}: {1}".format(self.path, err))
     
     def __iter__(self):
-        return iter(self.keys)
+        return iter(self.keys())
             
     def __getitem__(self, key):
         path = pjoin(self.path, key)

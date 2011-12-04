@@ -58,6 +58,7 @@ LoggerClass = logging.getLoggerClass()
 class ExtendedLogger(LoggerClass):
     def __init__(self, name):
         LoggerClass.__init__(self, name)
+        self.__dict__.update(logging._levelNames)
     
     def trace(self, level=logging.DEBUG):
         return log_trace(self, level)
@@ -92,7 +93,6 @@ class ExtendedLogger(LoggerClass):
     def __repr__(self):
         return "<ExtendedLogger {0}>".format(self.name)
 
-ExtendedLogger.__dict__.update(logging._levelNames)
 
 class CustomLogManager(logging.Manager):
     """

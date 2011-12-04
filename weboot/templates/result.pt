@@ -73,15 +73,19 @@
   </style>
 </tal:block>
 
-<tal:block metal:fill-slot="breadcrumbs">
+<tal:block metal:fill-slot="breadcrumbs" tal:content="structure path">
+    <!--
     <div class="middle align-center">
         <p class="app-welcome">
             <a href="${request.resource_url(None)}" id="base_url"></a>${path}
         </p>
     </div>
+    -->
 </tal:block>
 
 <div metal:fill-slot="right_sidebar" id="sidebar">
+      <div id="buttons" tal:content="structure sidebar">
+      </div>
       <div id="buttons">
         <input type="checkbox" id="logx" /><label for="logx">log X</label>
         <input type="checkbox" id="logy" /><label for="logy">log Y</label>

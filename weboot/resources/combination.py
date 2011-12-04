@@ -8,7 +8,7 @@ from .renderable import Renderable, Renderer, RootRenderer
 
 from weboot import log; log = log.getChild("combination")
 
-etabins = [0.6, 0.8, 1.15, 1.37, 1.52, 1.81, 2.01, 2.37, 2.47]
+etabins = [0, 0.6, 0.8, 1.15, 1.37, 1.52, 1.81, 2.01, 2.37, 2.47]
 
 cuts = {
     "DeltaE" : [92,92,99,111,-9999.,92,110,148,-9999.],
@@ -163,24 +163,28 @@ class CombinationStackRenderer(RootRenderer):
         
         
         obj = objs.pop(0)
-        obj.Draw("")
+        from root.histogram import build_draw_params
+        dp = "hist" #build_draw_params(obj, self.request.params, True)
+        
+        obj.Draw(dp)
         obj.SetMaximum(max_value)
         #obj.SetMinimum(0)
         
         for obj in objs:
-            obj.Draw("same")
+            obj.Draw(dp + " same")
         
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
         canvas.Update()
-        ymin, ymax = canvas.GetUymin(), canvas.GetUymax()
+        canvas_yrange = ymin, ymax = canvas.GetUymin(), canvas.GetUymax()
         canvas.SetLogy(logy)
         canvas.Update()
         
-        def line(x):
+        def line(x, yrange):
+            ymin, ymax = yrange
             args = x, ymin, x, ymax
             l = R.TLine(*args)
-            l.SetLineWidth(1); l.SetLineStyle(2)
+            l.SetLineWidth(3); l.SetLineStyle(2)
             l.Draw()
             keep_alive(l)
         
@@ -193,9 +197,9 @@ class CombinationStackRenderer(RootRenderer):
                     slot = p.__name__
                     
         if slot:
-            for x in set(cuts[slot]):
+            for x, yrange in zip(cuts[slot], zip(etabins, etabins[1:])):
                 if canvas.GetUxmin() < x < canvas.GetUxmax():
-                    line(x)
+                    line(x, canvas_yrange if obj.GetDimension() != 2 else yrange)
         
         
         return
@@ -416,18 +420,18 @@ class Combination(Renderable, LocationAware):
         self.stack = stack
         self.composition_type = composition_type
         
-        object_types = set(type(context) for name, context in self.stack)
+        #object_types = 
         
-        print "Object types:", object_types
+        #print "Object types:", object_types
         
-        assert len(object_types) == 1, "Tried to combine objects of differen types?"
-        stack_type = object_types.pop()
-        if not issubclass(stack_type, Renderable):
-            print "Can't combine:", stack_type
+        #assert len(object_types) == 1, "Tried to combine objects of differen types?"
+        #stack_type = object_types.pop()
+        #if not issubclass(stack_type, Renderable):
+            #print "Can't combine:", stack_type
             #raise NotImplementedError()
-            return
+            #return
         
-        print "Combinable!", stack_type
+        #print "Combinable!", stack_type
         
         if self.composition_type == "stack":
             self.renderer = CombinationStackRenderer
@@ -441,6 +445,10 @@ class Combination(Renderable, LocationAware):
         print "Using renderer:", self.renderer
     
     @property
+    def object_types(self):
+        return set(type(context) for name, context in self.stack)
+    
+    @property
     def _supported_formats(self):
         # hm, kludge.
         supported_sets = [c._supported_formats for n, c in self.stack]
@@ -448,6 +456,7 @@ class Combination(Renderable, LocationAware):
     
     @property
     def content(self):
+        assert len(self.object_types) == 1
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
         return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
