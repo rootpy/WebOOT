@@ -112,8 +112,11 @@ class ArchiveBuilder(Renderer):
             slides = map(make_slide, imgs)
                     
             with open(pjoin(d, "beamer.tex"), "wb") as latex_fd:
-                template = resource_string("weboot.templates", "beamer/beamer.tex")
-                latex = template.replace("##slides##", "\n\n".join(slides))
+                latex = resource_string("weboot.templates", "beamer/beamer.tex")
+                latex = latex.replace("##slides##", "\n\n".join(slides))
+                latex = latex.replace("##authorname##", self.request.params.get("author", ""))
+                latex = latex.replace("##institute##", self.request.params.get("institute", ""))
+                latex = latex.replace("##title##", self.request.params.get("title", "Beautiful Presentation Using Beamer"))
                 print latex
                 latex_fd.write(latex)
             
