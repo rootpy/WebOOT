@@ -10,8 +10,7 @@ from pyramid.view import view_config
 import ROOT as R
 
 from ..resources.multitraverser import MultipleTraverser
-from ..resources.filesystem import FilesystemTraverser
-from ..resources.root.file import RootFileTraverser
+from ..resources.vfs import VFSTraverser
 from ..resources.root.object import RootObject
 
 from .breadcrumb import build_breadcrumbs

@@ -153,6 +153,13 @@ class RootVFS(object):
         self.recent[name] = res
         return res
 
+    def get(self, path):
+        try:
+            res = self[path]
+        except KeyError:
+            return
+        return res
+
     def rvfs_split(self, dir):
         rp = os.path.realpath(dir)
         if not os.path.realpath(dir).startswith(self.chroot_jail):
