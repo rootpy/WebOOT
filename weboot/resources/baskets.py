@@ -4,7 +4,9 @@ from pyramid.url import static_url
 
 import ROOT as R
 
+from .actions import action
 from .locationaware import LocationAware
+from .multitraverser import MultipleTraverser
 from .home import HomeResource
 
 class BasketBrowser(LocationAware):
@@ -79,13 +81,26 @@ class BasketTraverser(LocationAware):
     
     @property
     def items(self):
-        return [self[i] for i in range(len(self.basket))]
+        return [x for x in [self[i] for i in range(len(self.basket))] if x]
     
-    def __getitem__(self, subpath):
-        if not isinstance(subpath, int) and not subpath.isdigit():
+    @action
+    def mt(self, key):
+        items = self.items
+        indexed_contexts = [((k.__name__,), k) for k in items]
+        def i_dont_know(mt, key):
+            #raise RuntimeError("Hmm.")
+            #return self[key]
+            return indexed_contexts[0][1]
+        return MultipleTraverser.from_parent(self, key, indexed_contexts, slot_filler=i_dont_know)
+    
+    def __getitem__(self, key):
+        res = self.try_action(key)
+        if res: return res
+    
+        if not isinstance(key, int) and not key.isdigit():
             return
         
-        if not isinstance(subpath, int) and "*" in subpath:
+        if not isinstance(key, int) and "*" in key:
             things = self.items
             raise
             # Pattern            
@@ -94,5 +109,5 @@ class BasketTraverser(LocationAware):
                         for f in listdir(self.path) if pattern.match(f)]
             return MultipleTraverser.from_parent(self, subpath, contexts)
             
-        b = self.basket[int(subpath)]
+        b = self.basket[int(key)]
         return traverse(HomeResource(self.request), b['path'])["context"]
