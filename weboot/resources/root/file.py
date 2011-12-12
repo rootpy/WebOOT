@@ -70,7 +70,7 @@ class RootFileTraverser(LocationAware):
         if key == "!selectclass":
             return SelectClass.from_parent(self, key, self.rootfile)
         
-        if "*" in key:
+        if MultipleTraverser.should_multitraverse(key):
             return MultipleTraverser.from_listable(self, key)
             
         leaf = self.rootfile.GetKey(key)

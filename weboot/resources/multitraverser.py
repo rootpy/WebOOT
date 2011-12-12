@@ -204,6 +204,11 @@ class MultipleTraverser(LocationAware):
         if indexed_contexts:
             assert all(len(x) == order for x, y in indexed_contexts)
 
+    @classmethod
+    def should_multitraverse(cls, key):
+        if "*" in key or "," in key:
+            return True
+
     @staticmethod
     def default_slot_filler(multipletraverser, key):
         return multipletraverser.__parent__[key]
@@ -213,6 +218,13 @@ class MultipleTraverser(LocationAware):
         """
         Build a MultipleTraverser by matching `key` against iter(parent)
         """
+        if "," in key:
+            # Assume list is provided
+            lst = key.split(",")
+            indexed_contexts = [((f,), parent[f]) for f in lst]
+            slot_filler = getattr(parent, "slot_filler", cls.default_slot_filler)
+            return cls.from_parent(parent, key, indexed_contexts, slot_filler=slot_filler)
+            
         pattern = re.compile(fnmatch.translate(key))
         match = pattern.match
         indexed_contexts = [((f,), parent[f]) for f in parent if match(f)]

@@ -79,5 +79,5 @@ class FilesystemTraverser(LocationAware):
             # Subdirectory
             return FilesystemTraverser.from_parent(self, key, path)
             
-        elif "*" in key:
+        elif MultipleTraverser.should_multitraverse(key):
             return MultipleTraverser.from_listable(self, key)
