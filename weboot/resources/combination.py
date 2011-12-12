@@ -431,6 +431,39 @@ class CombinationDualRenderer(RootRenderer):
         p2.cd()
         h2.SetLineColor(R.kRed)
         h2.Draw("Y+")
+        
+class CombinationEffRenderer(RootRenderer):
+    def render(self, canvas, keep_alive):
+                
+        params = self.request.params
+        names, histograms = zip(*self.resource_to_render.stack)
+        assert len(names) == 2
+        
+        h1, h2 = sorted([h.obj for h in histograms], key=lambda x: x.GetEntries())
+        
+        eff = R.TEfficiency(h1, h2)
+        keep_alive(eff)
+        
+        eff.SetFillColor(R.kRed)
+        eff.Draw("AP")
+        
+class CombinationDiffRenderer(RootRenderer):
+    def render(self, canvas, keep_alive):
+                
+        params = self.request.params
+        names, histograms = zip(*self.resource_to_render.stack)
+        assert len(names) == 2
+        
+        h1, h2 = [h.obj for h in histograms]
+        
+        h = h2.Clone()
+        keep_alive(h)
+        
+        h.Add(h1, -1)
+        h.Draw()
+        
+        
+        
 
 class UnknownCombinationRenderer(Renderer):
     """
@@ -466,6 +499,12 @@ class Combination(Renderable, LocationAware):
 
         if self.composition_type == "ebke":
             self.renderer = EbkeCombinationStackRenderer
+
+        if self.composition_type == "eff":
+            self.renderer = CombinationEffRenderer
+            
+        if self.composition_type == "diff":
+            self.renderer = CombinationDiffRenderer
             
         print "Using renderer:", self.renderer
     
