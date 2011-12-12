@@ -524,10 +524,34 @@ class Combination(Renderable, LocationAware):
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
         return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
-        
+    
+    
+    def keys(self):
+        log.error("{0}".format(self.object_types))
+        if any(hasattr(t, "keys") for t in self.object_types):
+            keys = [set(x.keys()) for n, x in self.stack if hasattr(x, "keys")]
+            result = reduce(set.union, keys, set())
+            log.error("--- {0}".format(result))
+            return result
+        return []
+        #if all(hasattr(
+        #return sorted(name for name, context in self.stack)
+    
+    def __iter__(self):
+        return iter(self.keys())
+    
     def __getitem__(self, key):
         res = self.try_action(key)
         if res: return res
         
-        stack = [(n, c) for n, c in [(n, c[key]) for n, c in self.stack] if c]
+        if not isinstance(key, basestring):
+            key = str(key)
+        
+        if "*" in key:
+            from .multitraverser import MultipleTraverser
+            return MultipleTraverser.from_listable(self, key)
+        
+        stack = [(n, c) for n, c in [(n, c[key]) for n, c in self.stack if c] if c]
         return self.from_parent(self, key, stack, self.composition_type)
+
+
