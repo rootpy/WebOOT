@@ -138,7 +138,7 @@ class Histogram(Renderable, RootObject):
         n = make_int(n)
         
         new_hist = self.obj.Clone()
-        new_hist = new_hist.Rebin(n)
+        new_hist.Rebin(n)
         new_hist.GetXaxis().SetRange(self.obj.GetXaxis().GetFirst(), self.obj.GetXaxis().GetLast())
         new_hist.GetYaxis().SetRange(self.obj.GetYaxis().GetFirst(), self.obj.GetYaxis().GetLast())
         new_hist.GetZaxis().SetRange(self.obj.GetZaxis().GetFirst(), self.obj.GetZaxis().GetLast())
