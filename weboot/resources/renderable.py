@@ -202,6 +202,7 @@ class RootRenderer(Renderer):
             #                    problem, but it's still a black box.
             # with open(tmpfile.name) as eps_fd: epsdata = eps_fd.read()
             
+            log.error("RENDERING {0} -- {1}".format(self.format, rootformat))
             if self.format == rootformat:
                 # No conversion necessary, ROOT did it directly.
                 # grab the file from disk
@@ -216,6 +217,7 @@ class RootRenderer(Renderer):
             
             extra_args = {}
             if "attach" in params:
+                log.error("Attaching rendered image")
                 # Give the file a sensible name, rather than the last fragment
                 # of the URL which was visited.
                 extra_args.update(content_disposition=(
