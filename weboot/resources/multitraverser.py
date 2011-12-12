@@ -241,6 +241,8 @@ class MultipleTraverser(LocationAware):
         for i, resource in enumerate(reversed(list(lineage(self)))):
             if isinstance(resource, MultipleTraverser) and resource.slot_filler:
                 fillers.append((i, resource.slot_filler))
+            if isinstance(resource, Combination) and fillers:
+                fillers.pop()
         return fillers #[-self.order:]
         
 
@@ -368,13 +370,24 @@ class MultipleTraverser(LocationAware):
         Compose the first axis into a set of combination objects in terms of the other axes        
         """
         
+        i_to_yank = -1
+        
+        assert len(self.indexed_contexts), "Nothing to compose!"
+        
+        def yank_index(index, what):
+            return what[index], what[:index] + what[index:][1:]
+        
         to_compose = {}
         for index_tuple, o in self.indexed_contexts:
-            to_compose.setdefault(index_tuple[1:], []).append((index_tuple[0], o))
-            
+            index, new_index_tuple = yank_index(i_to_yank, index_tuple)
+            to_compose.setdefault(new_index_tuple, []).append((index, o))
+        
+        cardinals = list(range(len(index_tuple)))
+        _, cardinals = yank_index(i_to_yank, cardinals)
+        
         new_contexts = []
         for index_tuple, stack in sorted(to_compose.iteritems()):
-            filled = self.fill_slots(enumerate(index_tuple, 1))["!compose"]
+            filled = self.fill_slots(zip(cardinals, index_tuple))["!compose"]
             composed = Combination.from_parent(filled, key, stack, composition_type)
             new_contexts.append((index_tuple, composed))
                 
@@ -384,7 +397,7 @@ class MultipleTraverser(LocationAware):
             assert idx == ()
             return composition
             
-        new_ordering = ordering=self.ordering[1:]
+        _, new_ordering = yank_index(i_to_yank, self.ordering)
         
         log.error("New ordering after compose = {0}".format(new_ordering))
         
