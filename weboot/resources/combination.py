@@ -95,6 +95,12 @@ def create_mc_sum(mc_list):
             if not (0 < h.GetBinError(b)):
                 h.SetBinError(b, 0.0)
         mc_sum.Add(h)
+    for b in xrange(1, mc_sum.GetXaxis().GetNbins()+1):
+        # Sometimes negative Errors occur - they play havoc with the
+        # Display of error bands...
+        if not (0 < mc_sum.GetBinError(b)):
+            h.SetBinError(b, 0.0)
+
     mc_sum.SetMarkerSize(0)
     mc_sum.SetLineColor(R.kRed)
     mc_sum_line = mc_sum.Clone("mc_sum_line")
@@ -242,7 +248,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
         }
         
         from ROOT import kAzure, kBlue, kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring
-        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray]
+        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray, kRed, kAzure]
 
         mc = []
         signals = []
@@ -252,6 +258,9 @@ class EbkeCombinationStackRenderer(RootRenderer):
         def is_data(h):
             return h.GetTitle().lower().startswith("data")
 
+        def is_signal(h):
+            return h.GetTitle().lower().startswith("higgs")
+
         for name, obj in zip(names, objs):
             name_of[obj] = name
             obj.SetStats(False)
@@ -259,6 +268,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
                 obj.SetTitle(name.replace(".root",""))
             if is_data(obj):
                 data.append(obj)
+            elif is_signal(obj):
+                signals.append(obj)
             else:
                 mc.append(obj)
 
@@ -278,7 +289,12 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetLineColor(R.kBlack)
             h.SetLineWidth(2)
             h.SetFillColor(col)
-            h.SetFillStyle(2001)
+            h.SetFillStyle(1001)
+
+        for h, col in zip(reversed(signals), (R.kRed, R.kBlue, R.kGreen)):
+            h.SetLineColor(col)
+            h.SetLineWidth(2)
+            h.SetLineStyle(2)
         
         # get min/max
         ymax = sum(h.GetMaximum() for h in mc)
@@ -287,8 +303,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
             ymax = max(ymax, max(h.GetMaximum() for h in data+signals))
             ymin = min(ymin, min(h.GetMinimum() for h in data+signals))
         ymax += 1
-        ymax *= (1.5 if not canvas.GetLogy() else 100)
-        ymin = max(1e-1, ymin)
+        ymax *= (1.5 if not canvas.GetLogy() else 120)
+        ymin = max(5e-1, ymin)
 
         # Create Stack of MC
         mcstack = R.THStack()
@@ -297,22 +313,26 @@ class EbkeCombinationStackRenderer(RootRenderer):
         keep_alive(mcstack)
 
         axis = None
-        mc_sum_error = None
+        mc_sum_line, mc_sum_error = None, None
         if mc:
             axis = mcstack
             mcstack.Draw("Hist")
             mc_sum_line, mc_sum_error = create_mc_sum(mc)
             keep_alive(mc_sum_line)
             keep_alive(mc_sum_error)
-            mc_sum_error.Draw("e2same")
-            mc_sum_line.Draw("hist same")
 
         for signal in signals:
+            if mc:
+                signal.Add(mc_sum_line)
             if not axis:
                 axis = signal
                 signal.Draw("hist")
             else:
                 signal.Draw("hist same")
+
+        if mc:
+            mc_sum_error.Draw("e2same")
+            mc_sum_line.Draw("hist same")
 
         for d in data:
             if not axis:
@@ -324,6 +344,11 @@ class EbkeCombinationStackRenderer(RootRenderer):
         axis.SetMaximum(ymax)
         axis.SetMinimum(ymin)
         axis.GetXaxis().SetRange(objs[0].GetXaxis().GetFirst(), objs[0].GetXaxis().GetLast())
+        axis.GetXaxis().SetTitle(objs[0].GetXaxis().GetTitle())
+        if not self.request.params.get("xlabel", None) is None:
+            axis.GetXaxis().SetTitle(self.request.params["xlabel"])
+        if not self.request.params.get("ylabel", None) is None:
+            axis.GetYaxis().SetTitle(self.request.params["ylabel"])
 
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
