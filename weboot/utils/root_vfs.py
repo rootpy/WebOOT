@@ -1,8 +1,8 @@
-#from .. import log; log = log.getChild(__name__)
+from .. import log; log = log.getChild("vfs")
 
 import os
 import time
-from threading import Lock
+from threading import Lock, Thread
 
 import ROOT as R
 
@@ -32,6 +32,16 @@ directory_ls_timeout = 2 #seconds
 root_file_validate_timeout = 2 #seconds
 root_file_close_timeout = 30 #seconds
 
+
+def get_key_class(key):
+    if not isinstance(key, R.TKey):
+        return type(key)
+    class_name = key.GetClassName()
+    try:
+        class_object = getattr(R, class_name)
+        return class_object
+    except AttributeError:
+        return None
 class VFSDirectory(object):
     isdir = lambda self : True
     infile = isvfile = isobject = lambda self : False
@@ -113,10 +123,12 @@ class VFSRootObject(object):
     def __init__(self, _rcf, _ref):
         self._rcf = _rcf
         self._ref = _ref
+        self.name = _ref.name()
         self.class_name = _ref.class_name
         self.info = _ref.info
 
     def get(self):
+        log.warning("VFS Root get of %s"%self.name)
         rf = self._rcf.root_file
         return self._ref.get_from(rf)
 
@@ -213,22 +225,28 @@ class RootObjectRef(object):
         return root_file
     def add(self, subdir):
         return SimpleObjectRef(subdir)
+    def name(self):
+        return os.path.basename(self.name)
+
 
 class SimpleObjectRef(object):
     def __init__(self, name):
-        self.name = name
+        self.dir = name
 
     def get_from(self, root_file):
-        return root_file.Get(self.name)
+        return root_file.Get(self.dir)
 
     def add(self, subdir):
-        return SimpleObjectRef(os.path.join(self.name, subdir))
+        return SimpleObjectRef(os.path.join(self.dir, subdir))
 
-    def add_objarray(self, subdir):
-        return NestedObjectRef((('G', self.name), ('O', subdir)))
+    def add_objarray(self, subdir, name):
+        return NestedObjectRef((('G', self.dir), ('O', subdir, name)))
+
+    def name(self):
+        return os.path.basename(self.dir)
 
 class NestedObjectRef(object):
-    """ Access Tuple format: (('G', objarray_name), ('O', <index>), ('G',hist))
+    """ Access Tuple format: (('G', objarray_name), ('O', <index>, name), ('G',hist))
         G for Get, O for TObjArray
     """
     def __init__(self, access_tuple):
@@ -250,8 +268,11 @@ class NestedObjectRef(object):
     def add(self, subdir):
         return NestedObjectRef(self.access_tuple + ('G', subdir))
 
-    def add_objarray(self, index):
-        return NestedObjectRef(self.access_tuple + ('O', index))
+    def add_objarray(self, index, name):
+        return NestedObjectRef(self.access_tuple + ('O', index, name))
+
+    def name(self):
+        return os.path.basename(self.access_tuple[-1][-1])
 
 class RootCacheFile(object):
     _open_root_files_lock = Lock()
@@ -274,7 +295,7 @@ class RootCacheFile(object):
             self.entries = self.root_listing()
         self.entries_flat[""] = self.entries
         later = time.time()
-        print "Read ", len(self.entries_flat), " entries in ", (later-now), "s"
+        log.warning("Read %i entries in %.4f seconds"  % (len(self.entries_flat), (later-now)))
 
     @property
     def exists(self):
@@ -340,17 +361,25 @@ class RootCacheFile(object):
         self.vtime = now
         return self._valid
 
-    def root_listing(self, dir_ref=RootObjectRef(), dir_name=""):
-        o = dir_ref.get_from(self.root_file)
-        if isinstance(o, R.TDirectory):
+    def root_listing(self, dir_ref=RootObjectRef(), dir_name="", key=None):
+        o = None
+        if key:
+            cls = get_key_class(key)
+        else:
+            o = dir_ref.get_from(self.root_file)
+            cls = o.__class__
+            
+        if issubclass(cls, R.TDirectory):
+            o = o or dir_ref.get_from(self.root_file)
             entries = {}
             for key in o.GetListOfKeys():
                 name = key.GetName()
                 absname = os.path.join(dir_name, name)
-                entries[name] = self.root_listing(dir_ref.add(name), absname)
+                entries[name] = self.root_listing(dir_ref.add(name), absname, key=key)
                 self.entries_flat[absname] = entries[name]
             return entries            
-        elif isinstance(o, R.TObjArray):
+        elif issubclass(cls, R.TObjArray):
+            o = o or dir_ref.get_from(self.root_file)
             entries = {}
             for i, item in enumerate(o):
                 orig_name = name = item.GetName()
@@ -359,12 +388,12 @@ class RootCacheFile(object):
                     name = "{0};{1}".format(orig_name, n)
                     n += 1
                 absname = os.path.join(dir_name, name)
-                entries[name] = self.root_listing(dir_ref.add_objarray(i), absname)
+                entries[name] = self.root_listing(dir_ref.add_objarray(i, name), absname, key=key)
                 self.entries_flat[absname] = entries[name]
             return entries
         else:
-            dir_ref.class_name = o.ClassName()
-            dir_ref.info = extract_info(o)
+            dir_ref.class_name = cls.__name__
+            dir_ref.info = {} # extract_info(o)
             self.entries_flat[dir_name] = dir_ref
             return dir_ref
 
@@ -387,6 +416,7 @@ class RootCache(object):
         with RootCache.lock:
             result = RootCache.file_cache.get(name, None)
             if result is None or not result.valid:
+                log.warning("refreshing rootcache for file %s"%name)
                 result = RootCacheFile(name, realname)
                 if result.root_file:
                     RootCache.file_cache[name] = result
@@ -397,3 +427,10 @@ class RootCache(object):
 rc = RootCache()
 #f = rc["data.root"]
 
+def maintenance_main():
+    while True:
+        time.sleep(15)
+        RootCacheFile.maintenance()
+maintenance_thread = Thread()
+maintenance_thread.run = maintenance_main
+maintenance_thread.start()

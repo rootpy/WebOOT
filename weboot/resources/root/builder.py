@@ -1,6 +1,6 @@
 import ROOT as R
 
-from .util import get_key_class
+from .util import get_root_class
 
 from .object import RootObject
 
@@ -21,7 +21,7 @@ RESOURCE_MAPPING = [
 ]
 
 def build_root_object(parent, key, obj):
-    cls = get_key_class(obj)
+    cls = get_root_class(obj.class_name)
     
     # Find the resource_type for the matching super class
     for root_type, resource_type in RESOURCE_MAPPING:

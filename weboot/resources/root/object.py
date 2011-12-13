@@ -7,7 +7,7 @@ import ROOT as R
 from weboot.resources.actions import action
 from ..locationaware import LocationAware
 
-from .util import get_key_class
+from .util import get_root_class
 
 
 class ListingItem(object):    
@@ -25,7 +25,7 @@ class RootObject(LocationAware, ListingItem):
     def __init__(self, request, root_object):
         self.request = request
         self.o = root_object
-        self.cls = get_key_class(self.o)
+        self.cls = get_root_class(self.o.class_name)
     
     @property
     def section(self):
@@ -46,17 +46,15 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def obj(self):
-        if isinstance(self.o, R.TKey):
-            return self.o.ReadObj()
-        return self.o
+        return self.o.get()
     
     @property
     def name(self):
-        return self.o.GetName()
+        return self.o.name
         
     @property
     def path(self):
-        return self.o.GetName()
+        return self.o.name
         
     @property
     def icon_url(self):

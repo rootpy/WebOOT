@@ -1,3 +1,5 @@
+from weboot import log; log = log.getChild("vfs")
+
 from os import listdir
 from os.path import basename, exists, isfile, isdir, join as pjoin
 
@@ -73,10 +75,11 @@ class VFSTraverser(LocationAware):
             return MultipleTraverser.from_listable(self, key)
         elif not item:
             return None
-        elif item.isdir(path):
+        elif item.isdir():
             return VFSTraverser.from_parent(self, key, path, self.vfs)
-        elif item.isfile() and path.endswith(".markdown"):
-            return MarkdownResource.from_parent(self, key, path)
         elif item.isobject():
-            return build_root_object(self, key, item.get())
+            return build_root_object(self, key, item)
+        elif path.endswith(".markdown"):
+            return MarkdownResource.from_parent(self, key, path)
+
 
