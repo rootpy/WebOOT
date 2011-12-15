@@ -2,7 +2,7 @@ from .. import log; log = log.getChild("vfs")
 
 import os
 import time
-from threading import Lock, Thread
+from threading import RLock, Lock, Thread
 
 import ROOT as R
 
@@ -275,12 +275,12 @@ class NestedObjectRef(object):
         return os.path.basename(self.access_tuple[-1][-1])
 
 class RootCacheFile(object):
-    _open_root_files_lock = Lock()
+    _open_root_files_lock = RLock()
     _open_root_files = set()
 
     def __init__(self, name, realname):
         self._valid, self._exists = True, True
-        self.lock = Lock()
+        self.lock = RLock()
         self.tfile, self.otime, self.atime = None, None, None
         self.vtime = 0
         self.name, self.realname = name, realname
@@ -325,21 +325,26 @@ class RootCacheFile(object):
     @classmethod
     def maintenance(obj):
         with obj._open_root_files_lock:
-            for f in obj._open_root_files:
-                f.close_timeout()
+            open_list = list(obj._open_root_files)
+	for f in open_list:
+            f.close_timeout()
         # This closes the files
         import gc
         gc.collect()
 
     def close_timeout(self):
-        if self.tfile:
-            if self.atime - self.otime > root_file_close_timeout:
-                self.close()
+        with self.lock:
+            if self.tfile:
+                if self.atime - self.otime > root_file_close_timeout:
+                    self.close()
 
     def close(self):
-        self.tfile = self.otime = self.atime = None
-        with self._open_root_files_lock:
-            self._open_root_files.remove(self)
+        with self.lock:
+            with self._open_root_files_lock:
+		tf = self.tfile
+	        self.tfile = self.otime = self.atime = None
+                self._open_root_files.remove(self)
+                #tf.Close()
 
     def validate(self):
         if not self._valid:
