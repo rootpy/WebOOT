@@ -46,6 +46,7 @@ class VFSDirectory(object):
     isdir = lambda self : True
     infile = isvfile = isobject = lambda self : False
 
+    @property
     def valid(self):
         return os.path.exists(self._dir)
 
@@ -70,6 +71,7 @@ class VFSDirectory(object):
 class VFSFile(object):
     isdir = infile = isvfile = isobject = lambda self : False
 
+    @property
     def valid(self):
         return os.path.exists(self._dir)
 
@@ -83,6 +85,7 @@ class VFSRootDirectory(object):
     isdir = infile = lambda self : True
     isobject = lambda self : False
 
+    @property
     def valid(self):
         return self._rcf.valid
 
@@ -117,6 +120,7 @@ class VFSRootObject(object):
     isobject = infile = lambda self : True
     isdir = isvfile = lambda self : False
 
+    @property
     def valid(self):
         return self._rcf.valid
 
@@ -143,7 +147,7 @@ class RootVFS(object):
 
     def __getitem__(self, name):
         rq = self.recent.get(name, None)
-        if rq and rq.valid():
+        if rq and rq.valid:
             return rq
         root_file, subdir = self.rvfs_split(name)
         if not root_file:
@@ -453,17 +457,17 @@ class RootCache(object):
                 cache_file = RootCache.file_cache.get(realname, None)
                 if cache_file is None or not cache_file.valid:
                     log.warning("refreshing rootcache for file %s"%name)
-                    cache_file = RootCacheFile(realname)
-                    cache_file_entry = RootCacheEntry(realname, realname, cache_file)
-                    if not cache_file_entry.root_file:
+                    cache = RootCacheFile(realname)
+                    cache_file = RootCacheEntry(realname, realname, cache)
+                    if not cache_file.root_file:
                         return None
-                    RootCache.file_cache[realname] = cache_file_entry
+                    RootCache.file_cache[realname] = cache_file
 
                 if name == realname:
-                    return cache_file_entry
-                result = RootCacheEntry(name, realname, cache_file)
+                    return cache_file
+                result = RootCacheEntry(name, realname, cache_file.cache_file)
                 RootCache.file_cache[realname] = result
-                dump(RootCache.file_cache, file("/home/sirius/rootcache.pickle", "w"), 2)
+                #dump(RootCache.file_cache, file("/home/sirius/rootcache.pickle", "w"), 2)
         return result
 
 rc = RootCache()

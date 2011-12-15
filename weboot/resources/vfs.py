@@ -69,11 +69,11 @@ class VFSTraverser(LocationAware):
         return iter(self.keys())
             
     def __getitem__(self, key):
-        path = pjoin(self.path, key)
-        item = self.vfs.get(path)
         if "*" in key:
             return MultipleTraverser.from_listable(self, key)
-        elif not item:
+        path = pjoin(self.path, key)
+        item = self.vfs.get(path)
+        if not item:
             return None
         elif item.isdir():
             return VFSTraverser.from_parent(self, key, path, self.vfs)
