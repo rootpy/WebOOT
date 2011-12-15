@@ -151,17 +151,28 @@ class RootVFS(object):
                 raise KeyError("Unknown path: %s" % name)
             res = VFSDirectory(name, self)
         else:
-            rfc = self.cache[root_file]
-            if not rfc:
+            cache_file = self.cache[root_file]
+            if not cache_file:
                 res = VFSFile(root_file)
             else:
-                sdc = rfc.entries_flat.get(subdir, None)
-                if not sdc:
+                element = cache_file.entries
+		assert element
+		try:
+                    for sd in subdir.split("/"):
+                        if not sd:
+                            continue
+                        element = element[sd]
+                except KeyError:
+                    element = None
+                if not element:
+	    	    #log.debug("VFS ELEMENT EMPTY %s" % name)
                     raise KeyError("Unknown path %s in file %s" % (subdir, root_file))
-                if isinstance(sdc, dict):
-                    res = VFSRootDirectory(rfc, subdir, sdc)
+                if isinstance(element, dict):
+                    res = VFSRootDirectory(cache_file, subdir, element)
                 else:
-                    res = VFSRootObject(rfc, sdc)
+                    ref = SimpleObjectRef(subdir)
+                    ref.class_name, ref.info = element
+                    res = VFSRootObject(cache_file, ref)
         self.recent[name] = res
         return res
 
@@ -289,13 +300,18 @@ class RootCacheFile(object):
         except OSError:
             self._exists = self._valid = False
         self.validate()
-        now = time.time()
         self.entries_flat = {}
         if self.root_file:
-            self.entries = self.root_listing()
-        self.entries_flat[""] = self.entries
-        later = time.time()
-        log.warning("Read %i entries in %.4f seconds"  % (len(self.entries_flat), (later-now)))
+            now = time.time()
+            #self.entries = self.root_listing()
+            #self.entries_flat[""] = self.entries
+            self.entries = self.quick_listing(self.root_file)
+            later = time.time()
+            def count_e(dct):
+                if isinstance(dct, dict):
+                    return sum(map(count_e, dct.values()))      
+                return 1
+            log.warning("Read %i entries in %.4f s" % (count_e(self.entries), (later-now)))
 
     @property
     def exists(self):
@@ -365,6 +381,16 @@ class RootCacheFile(object):
             self._exists = self._valid = False
         self.vtime = now
         return self._valid
+
+    def quick_listing(self, dir):
+        entries = {}
+        for key in dir.GetListOfKeys():
+            cls = get_key_class(key)
+            if issubclass(cls, R.TDirectory):
+                entries[key.GetName()] = self.quick_listing(key.ReadObj())
+            else:
+                entries[key.GetName()] = (key.GetClassName(), {})#extract_info(key.ReadObj()))
+        return entries
 
     def root_listing(self, dir_ref=RootObjectRef(), dir_name="", key=None):
         o = None
