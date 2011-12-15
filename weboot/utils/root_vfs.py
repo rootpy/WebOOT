@@ -46,6 +46,7 @@ class VFSDirectory(object):
     isdir = lambda self : True
     infile = isvfile = isobject = lambda self : False
 
+    @property
     def valid(self):
         return os.path.exists(self._dir)
 
@@ -70,6 +71,7 @@ class VFSDirectory(object):
 class VFSFile(object):
     isdir = infile = isvfile = isobject = lambda self : False
 
+    @property
     def valid(self):
         return os.path.exists(self._dir)
 
@@ -83,6 +85,7 @@ class VFSRootDirectory(object):
     isdir = infile = lambda self : True
     isobject = lambda self : False
 
+    @property
     def valid(self):
         return self._rcf.valid
 
@@ -117,6 +120,7 @@ class VFSRootObject(object):
     isobject = infile = lambda self : True
     isdir = isvfile = lambda self : False
 
+    @property
     def valid(self):
         return self._rcf.valid
 
@@ -143,7 +147,7 @@ class RootVFS(object):
 
     def __getitem__(self, name):
         rq = self.recent.get(name, None)
-        if rq and rq.valid():
+        if rq and rq.valid:
             return rq
         root_file, subdir = self.rvfs_split(name)
         if not root_file:
@@ -215,15 +219,15 @@ def extract_info(obj):
     info["title"] = obj.GetTitle()
     if isinstance(obj, R.TH1):
         info["dimension"] = obj.GetDimension()
-        info["entries"] = obj.GetEntries()
-        info["maximum"] = obj.GetMaximum()
-        info["minimum"] = obj.GetMinimum()
-        info["maximum_bin"] = obj.GetMaximumBin()
-        info["minimum_bin"] = obj.GetMinimumBin()
-        info["mean"] = obj.GetMean()
-        info["mean_error"] = obj.GetMeanError()
-        info["rms"] = obj.GetRMS()
-        info["rms_error"] = obj.GetRMSError()
+        #info["entries"] = obj.GetEntries()
+        #info["maximum"] = obj.GetMaximum()
+        #info["minimum"] = obj.GetMinimum()
+        #info["maximum_bin"] = obj.GetMaximumBin()
+        #info["minimum_bin"] = obj.GetMinimumBin()
+        #info["mean"] = obj.GetMean()
+        #info["mean_error"] = obj.GetMeanError()
+        #info["rms"] = obj.GetRMS()
+        #info["rms_error"] = obj.GetRMSError()
         info["x"] = extract_axis_info(obj.GetXaxis())
         if obj.GetDimension() > 1:
             info["y"] = extract_axis_info(obj.GetYaxis())
@@ -285,22 +289,15 @@ class NestedObjectRef(object):
     def name(self):
         return os.path.basename(self.access_tuple[-1][-1])
 
+
 class RootCacheFile(object):
     _open_root_files_lock = RLock()
     _open_root_files = set()
 
-    def __init__(self, name, realname):
-        self._valid, self._exists = True, True
+    def __init__(self, name):
         self.lock = RLock()
         self.tfile, self.otime, self.atime = None, None, None
-        self.vtime = 0
-        self.name, self.realname = name, realname
-        try:
-            self.mtime = os.path.getmtime(realname)
-        except OSError:
-            self._exists = self._valid = False
-        self.validate()
-        self.entries_flat = {}
+        self.name = name
         if self.root_file:
             now = time.time()
             #self.entries = self.root_listing()
@@ -314,22 +311,12 @@ class RootCacheFile(object):
             log.warning("Read %i entries in %.4f s" % (count_e(self.entries), (later-now)))
 
     @property
-    def exists(self):
-        self.validate()
-        return self._exists
-
-    @property
-    def valid(self):
-        self.validate()
-        return self._valid
-
-    @property
     def root_file(self):
         with self.lock:
             if self.tfile:
                 self.atime = time.time()
                 return self.tfile
-            self.tfile = R.TFile.Open(self.realname)
+            self.tfile = R.TFile.Open(self.name)
             if not self.tfile:
                 return
             with self._open_root_files_lock:
@@ -361,26 +348,6 @@ class RootCacheFile(object):
 	        self.tfile = self.otime = self.atime = None
                 self._open_root_files.remove(self)
                 #tf.Close()
-
-    def validate(self):
-        if not self._valid:
-            return False
-        # only validate every second max
-        now = time.time()
-        if now - self.vtime < root_file_validate_timeout:
-            return True
-
-        try:
-            if not os.path.samefile(self.name, self.realname):
-                self._valid = False
-                return False
-            mtime = os.path.getmtime(self.realname)
-            if mtime != mtime:
-                self._valid = False
-        except OSError:
-            self._exists = self._valid = False
-        self.vtime = now
-        return self._valid
 
     def quick_listing(self, dir):
         entries = {}
@@ -428,12 +395,76 @@ class RootCacheFile(object):
             self.entries_flat[dir_name] = dir_ref
             return dir_ref
 
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        d["lock"] = None
+        d["tfile"] = None
+        d["atime"] = None
+        d["otime"] = None
+        return d
+
+    def __setstate__(self, dct):
+        self.__dict__.update(dct)
+        self.lock = Lock()
+
+class RootCacheEntry(object):
+
+    def __init__(self, name, realname, cache_file):
+        self._valid, self._exists = True, True
+        self.vtime = 0
+        self.name, self.realname = name, realname
+        try:
+            self.mtime = os.path.getmtime(realname)
+        except OSError:
+            self._exists = self._valid = False
+        self.validate()
+        self.cache_file = cache_file
+
+    @property
+    def entries(self):
+        return self.cache_file.entries
+
+    @property
+    def exists(self):
+        self.validate()
+        return self._exists
+
+    @property
+    def valid(self):
+        self.validate()
+        return self._valid
+
+    @property
+    def root_file(self):
+        return self.cache_file.root_file
+
+    def validate(self):
+        if not self._valid:
+            return False
+        # only validate every second max
+        now = time.time()
+        if now - self.vtime < root_file_validate_timeout:
+            return True
+
+        try:
+            if not os.path.samefile(self.name, self.realname):
+                self._valid = False
+                return False
+            mtime = os.path.getmtime(self.realname)
+            if mtime != mtime:
+                self._valid = False
+        except OSError:
+            self._exists = self._valid = False
+        self.vtime = now
+        return self._valid
 
 """
 RootCache
 Singleton Threadsafe Cache that provides Root File Contents and TFile objects
 The cache of an inidvidual Root file is flushed on mtime changes
 """
+
+from cPickle import dump
 
 class RootCache(object):
     """
@@ -447,12 +478,20 @@ class RootCache(object):
         with RootCache.lock:
             result = RootCache.file_cache.get(name, None)
             if result is None or not result.valid:
-                log.warning("refreshing rootcache for file %s"%name)
-                result = RootCacheFile(name, realname)
-                if result.root_file:
-                    RootCache.file_cache[name] = result
-                else:
-                    result = None
+                cache_file = RootCache.file_cache.get(realname, None)
+                if cache_file is None or not cache_file.valid:
+                    log.warning("refreshing rootcache for file %s"%name)
+                    cache = RootCacheFile(realname)
+                    cache_file = RootCacheEntry(realname, realname, cache)
+                    if not cache_file.root_file:
+                        return None
+                    RootCache.file_cache[realname] = cache_file
+
+                if name == realname:
+                    return cache_file
+                result = RootCacheEntry(name, realname, cache_file.cache_file)
+                RootCache.file_cache[realname] = result
+                #dump(RootCache.file_cache, file("/home/sirius/rootcache.pickle", "w"), 2)
         return result
 
 rc = RootCache()
