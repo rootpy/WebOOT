@@ -130,11 +130,27 @@ class VFSRootObject(object):
         self.name = _ref.name()
         self.class_name = _ref.class_name
         self.info = _ref.info
+        self.transforms = []
 
     def get(self):
         log.warning("VFS Root get of %s"%self.name)
         rf = self._rcf.root_file
-        return self._ref.get_from(rf)
+        o = self._ref.get_from(rf)
+        if o is None:
+            log.error("Failed to get %s"%self.name)
+            return None
+	for tf in self.transforms:
+            o = tf(o)
+            if o is None:
+               log.error("Failed to transform %s with %s " % (self.name, tf))
+               return None
+        return o
+       
+
+    def transform(self, tf):
+        clone = VFSRootObject(self._rcf, self._ref)
+        clone.transforms = self.transforms + [tf]
+        return clone
 
 class AccessDeniedException(Exception):
     pass

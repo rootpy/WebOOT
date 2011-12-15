@@ -46,7 +46,9 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def obj(self):
-        return self.o.get()
+	o = self.o.get()
+
+        return o
     
     @property
     def name(self):
