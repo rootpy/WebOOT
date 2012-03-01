@@ -124,28 +124,39 @@ class VFSRootObject(object):
     def valid(self):
         return self._rcf.valid
 
+    @property
+    def name(self):
+        return self._ref.name()
+
+    @property
+    def class_name(self):
+        return self._ref.class_name
+
+    @property
+    def info(self):
+        return self._ref.info
+
     def __init__(self, _rcf, _ref):
-        self._rcf = _rcf
-        self._ref = _ref
-        self.name = _ref.name()
-        self.class_name = _ref.class_name
-        self.info = _ref.info
+        self._rcf = _rcf # Root Cache File
+        self._ref = _ref # Object reference
         self.transforms = []
 
     def get(self):
         log.warning("VFS Root get of %s"%self.name)
         rf = self._rcf.root_file
         o = self._ref.get_from(rf)
+
         if o is None:
             log.error("Failed to get %s"%self.name)
             return None
-	for tf in self.transforms:
+
+        for tf in self.transforms:
             o = tf(o)
             if o is None:
                log.error("Failed to transform %s with %s " % (self.name, tf))
                return None
+
         return o
-       
 
     def transform(self, tf):
         clone = VFSRootObject(self._rcf, self._ref)
@@ -345,7 +356,7 @@ class RootCacheFile(object):
     def maintenance(obj):
         with obj._open_root_files_lock:
             open_list = list(obj._open_root_files)
-	for f in open_list:
+        for f in open_list:
             f.close_timeout()
         # This closes the files
         import gc
