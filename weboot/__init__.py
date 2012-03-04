@@ -54,8 +54,7 @@ def main(global_config, **settings):
                     context="weboot:resources.user.NewUserResource")
     
     # Listings of diverse type
-    for ctx in ['weboot:resources.filesystem.FilesystemTraverser',
-                'weboot:resources.root.file.RootFileTraverser',
+    for ctx in ['weboot:resources.vfs.VFSTraverser',
                 'weboot:resources.baskets.BasketBrowser',
                 'weboot:resources.baskets.BasketTraverser',
                 'weboot:resources.root.ttree.DrawTTree',
