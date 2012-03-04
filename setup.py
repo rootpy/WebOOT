@@ -36,16 +36,20 @@ else:
 
 requires = [
     # Basic requirements
-    'pyramid', 'WebError',
+    'pyramid',
+    'pyramid_debugtoolbar',
+    'waitress',
+    
+    'PasteDeploy',
     
     # Database
-    'pymongo', 
+    'pymongo',
     # Used to run mongo and determine when it started
     'pexpect',
     # OpenAuth (currently unused
     # 'velruse', 
     # Used to host HTTPs servers
-    'pyOpenSSL', 
+    # 'pyOpenSSL',
     
     # Markdown format rendering
     'markdown',
