@@ -187,8 +187,8 @@ class RootVFS(object):
                 res = VFSFile(root_file)
             else:
                 element = cache_file.entries
-		assert element
-		try:
+                assert element
+                try:
                     for sd in subdir.split("/"):
                         if not sd:
                             continue
@@ -196,7 +196,7 @@ class RootVFS(object):
                 except KeyError:
                     element = None
                 if not element:
-	    	    #log.debug("VFS ELEMENT EMPTY %s" % name)
+                    #log.debug("VFS ELEMENT EMPTY %s" % name)
                     raise KeyError("Unknown path %s in file %s" % (subdir, root_file))
                 if isinstance(element, dict):
                     res = VFSRootDirectory(cache_file, subdir, element)
@@ -371,8 +371,8 @@ class RootCacheFile(object):
     def close(self):
         with self.lock:
             with self._open_root_files_lock:
-		tf = self.tfile
-	        self.tfile = self.otime = self.atime = None
+                tf = self.tfile
+                self.tfile = self.otime = self.atime = None
                 self._open_root_files.remove(self)
                 #tf.Close()
 
