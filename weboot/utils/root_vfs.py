@@ -210,7 +210,7 @@ class RootVFS(object):
     def get(self, path):
         try:
             res = self[path]
-        except KeyError:
+        except (KeyError, AccessDeniedException):
             return
         return res
 
