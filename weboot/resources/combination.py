@@ -152,7 +152,7 @@ class CombinationStackRenderer(RootRenderer):
         }
         
         for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kBlack, R.kBlack, R.kBlack]):
-            obj.SetTitle(""); obj.SetStats(False)
+            #obj.SetTitle(""); obj.SetStats(False)
             if name in colordict:
                 obj.SetLineColor(colordict[name])
             else:
@@ -168,15 +168,15 @@ class CombinationStackRenderer(RootRenderer):
         max_value = max(o.GetMaximum() for o in objs) * 1.1
         
         
-        obj = objs.pop(0)
+        obj = objs[0] #.pop(0)
         from root.histogram import build_draw_params
-        dp = "hist" #build_draw_params(obj, self.request.params, True)
+        dp = "hist e0x0" #build_draw_params(obj, self.request.params, True)
         
         obj.Draw(dp)
         obj.SetMaximum(max_value)
         #obj.SetMinimum(0)
         
-        for obj in objs:
+        for obj in objs[1:]:
             obj.Draw(dp + " same")
         
         logy = canvas.GetLogy()
@@ -208,6 +208,16 @@ class CombinationStackRenderer(RootRenderer):
                     line(x, canvas_yrange if obj.GetDimension() != 2 else yrange)
         
         
+        
+        
+        if self.request.params.get("legend", None) is not None:
+            log.error("Drawing legend: {0}".format(objs))
+            for n, o in zip(names, objs):
+                o.SetTitle(n)
+            legend = get_legend(mc=objs)
+            legend.Draw()
+            keep_alive(legend)
+            
         return
         
         if "unit_fixup" in params:
@@ -255,8 +265,10 @@ class EbkeCombinationStackRenderer(RootRenderer):
         data = []
         name_of = {}
 
-        def is_data(h):
-            return h.GetTitle().lower().startswith("data")
+        def is_data(h, name):
+            #log.info("Got histogram: {0} - {1}".format(h.GetName(), name))
+            #return h.GetTitle().lower().startswith("data")
+            return "data" in name
 
         def is_signal(h):
             return h.GetTitle().lower().startswith("higgs")
@@ -388,7 +400,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             keep_alive(label)
        
         p = preliminary()
-        p.Draw()
+        p.Draw("hist e0x0")
         keep_alive(p)
 
         return
@@ -403,7 +415,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetTitle("")
         
         # TODO(pwaller): bring back draw options
-        h.Draw()
+        h.Draw("hist e0x0")
         
 class CombinationDualRenderer(RootRenderer):
     def render(self, canvas, keep_alive):
