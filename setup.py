@@ -40,7 +40,11 @@ requires = [
     'pyramid_debugtoolbar',
     'waitress',
     
+    'Paste',
+    'PasteScript',
     'PasteDeploy',
+    'WebError',
+    
     
     # Database
     'pymongo',
