@@ -19,7 +19,7 @@ class HomeResource(LocationAware, dict):
     def __init__(self, request):
         super(HomeResource, self).__init__(request)
         
-        self.add("browse",  FilesystemTraverser)
+        self.add("browse",  VFSTraverser)
         self.add("baskets", BasketBrowser)
         self.add("env",     EnvResource)
         
@@ -41,5 +41,5 @@ class HomeResource(LocationAware, dict):
 
         
 from .baskets import BasketBrowser
-from .filesystem import FilesystemTraverser
+from .vfs import VFSTraverser
 

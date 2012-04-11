@@ -1,15 +1,13 @@
+from .. import log; log = log.getChild(__name__)
 from pyramid.location import lineage
+import time
 
 def basic_traverse(what, elements):
     context = what
     while context and elements:
         name, elements = elements[0], elements[1:]
-        if name == "!compose":
-            # TODO(pwaller): Hack. The problem here is that !compose breaks our 
-            # assumptions about the shape. The way to make this work is to fix
-            # compose's relationship to fill_slot.
-            #return
-            pass
+        if name.startswith("!"):
+            break
         try:
             context = context[name]
         except AssertionError as e:

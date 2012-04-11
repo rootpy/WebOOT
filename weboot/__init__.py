@@ -23,7 +23,7 @@ def setup_root():
     R.gROOT.SetBatch()
     R.TH1.SetDefaultSumw2(False)
     R.TH1.AddDirectory(False)
-    #R.gROOT.SetStyle("Plain")
+    R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
 
 @log_trace(log)
@@ -41,14 +41,20 @@ def main(global_config, **settings):
     config.add_view('weboot.views.home.view_home',
                     context='weboot:resources.home.HomeResource',
                     renderer='weboot:templates/home.pt')
-                    
+
+    # This view is mainly debugging information
     config.add_view('weboot.views.env.view_environ',
                     context='weboot:resources.home.EnvResource',
                     renderer='weboot:templates/env.pt')
-    
 
-    for ctx in ['weboot:resources.filesystem.FilesystemTraverser',
-                'weboot:resources.root.file.RootFileTraverser',
+    config.add_view("weboot.views.user.view_user",
+                    context="weboot:resources.user.UserResource")
+
+    config.add_view("weboot.views.user.view_new_user",
+                    context="weboot:resources.user.NewUserResource")
+    
+    # Listings of diverse type
+    for ctx in ['weboot:resources.vfs.VFSTraverser',
                 'weboot:resources.baskets.BasketBrowser',
                 'weboot:resources.baskets.BasketTraverser',
                 'weboot:resources.root.ttree.DrawTTree',
@@ -57,14 +63,7 @@ def main(global_config, **settings):
                         context=ctx,
                         renderer='weboot:templates/listing.pt')
     
-    config.add_view("weboot.views.multitraverse.view_multitraverse", 
-                    context="weboot:resources.multitraverser.MultipleTraverser",
-                    renderer='weboot:templates/result.pt')
-                    
-    config.add_view("weboot.views.multitraverse.view_multitraverse_render", 
-                    context="weboot:resources.multitraverser.MultipleTraverser",
-                    request_param="render")
-                    
+    # Result view:
     config.add_view("weboot.views.view_root_object",
                     renderer='weboot:templates/result.pt', 
                     context="weboot:resources.root.object.RootObject")
@@ -72,24 +71,22 @@ def main(global_config, **settings):
     config.add_view("weboot.views.view_root_object",
                     renderer='weboot:templates/result.pt', 
                     context="weboot:resources.combination.Combination")
+
+    config.add_view("weboot.views.multitraverse.view_multitraverse", 
+                    context="weboot:resources.multitraverser.MultipleTraverser",
+                    renderer='weboot:templates/result.pt')
+
+                    
+    config.add_view("weboot.views.multitraverse.view_multitraverse_render", 
+                    context="weboot:resources.multitraverser.MultipleTraverser",
+                    request_param="render")
+
                     
     config.add_view("weboot.views.root.object.view_root_object_render",
                     context="weboot:resources.root.object.RootObject",
                     request_param="render")
 
-    """
-    config.add_view("weboot.views.view_root_object",
-                    renderer='weboot:templates/result.pt', 
-                    context="weboot:resources.multitraverser.StackPlot")
-    config.add_view("weboot.views.root.histogram.render_stack",
-                    context="weboot:resources.multitraverser.StackPlot",
-                    request_param="render")
-    """
-                    
-    config.add_view("weboot.views.user.view_user",
-                    context="weboot:resources.user.UserResource")
-    config.add_view("weboot.views.user.view_new_user",
-                    context="weboot:resources.user.NewUserResource")
+
                     
                     
     config.add_view("weboot.resources.renderable.renderer_view",

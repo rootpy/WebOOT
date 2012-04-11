@@ -77,7 +77,8 @@ def start_mongo(bin, settings):
         if item.startswith("mongo.args."):
             args.extend(["--" + item[len("mongo.args."):], value])
     
-    dbpath = settings.get("mongo.args.dbpath", None)
+    dbpath = settings.get("mongo.dbpath", None)
+    #args.extend(("--dbpath", "\"%s\"" % dbpath))
     if dbpath and not exists(dbpath):
         makedirs(dbpath)
     

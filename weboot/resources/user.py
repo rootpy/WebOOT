@@ -3,7 +3,7 @@ from os.path import exists
 
 from pyramid.security import authenticated_userid
 
-from .filesystem import FilesystemTraverser
+from .vfs import VFSTraverser
 from .locationaware import LocationAware
 
 
@@ -56,7 +56,7 @@ class UserResource(LocationAware):
     
     def __getitem__(self, fragment):
         if fragment == "browse":
-            return FilesystemTraverser.from_parent(self, fragment, self.path)
+            return VFSTraverser.from_parent(self, fragment, self.path)
     
         
 class UnknownUserResource(UserResource):

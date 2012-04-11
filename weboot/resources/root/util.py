@@ -9,3 +9,10 @@ def get_key_class(key):
         return class_object
     except AttributeError:
         return None
+
+def get_root_class(class_name):
+    try:
+        class_object = getattr(R, class_name)
+        return class_object
+    except AttributeError:
+        return None

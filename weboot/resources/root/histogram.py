@@ -18,14 +18,15 @@ class HistogramTable(RootObject):
     @property
     def content(self):
         if "cut" not in self.name:
-            raise HTTPMethodNotAllowed("Table only works on cutflow histograms")
+            #raise HTTPMethodNotAllowed("Table only works on cutflow histograms")
+            return
     
         h = self.obj    
         xa = h.GetXaxis()
         content = []
         content.append('<table style="float:left"><thead><tr><th>Bin</th><th>Content</th><th width="200px">% prev</th></tr></thead>')
         prev = h[1]
-        for i in xrange(1, xa.GetNbins()):
+        for i in xrange(1, xa.GetNbins()+1):
             count = split_thousands("{0:.2f}".format(h[i]))
             a = xa.GetBinLabel(i), count, h[i] / prev if prev else 0
             prev = h[i]
@@ -104,14 +105,17 @@ class Histogram(Renderable, RootObject):
         Apply a range to an axis for projection purposes
         """
         if axis.lower() not in "xyz":
-            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            return
         
         first = make_float(first)
         last = make_float(last)
         
-        hist = self.obj.Clone()
-        get_haxis(hist, axis).SetRangeUser(first, last)
-        return Histogram.from_parent(parent, key, hist)
+        def tf(hist):
+            #hist = h.Clone()
+            get_haxis(hist, axis).SetRangeUser(first, last)
+            return hist
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
 
     @action
     def binrange(self, parent, key, axis, first, last):
@@ -124,10 +128,12 @@ class Histogram(Renderable, RootObject):
         
         first = make_int(first)
         last = make_int(last)
-        
-        hist = self.obj.Clone()
-        get_haxis(hist, axis).SetRange(int(first), int(last))
-        return Histogram.from_parent(parent, key, hist)
+
+        def tf(h):
+            hist = h.Clone()
+            get_haxis(hist, axis).SetRange(int(first), int(last))
+            return hist
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
     
     @action
     def rebin(self, parent, key, n):
@@ -136,13 +142,14 @@ class Histogram(Renderable, RootObject):
         Rebin a 1D histogram
         """
         n = make_int(n)
-        
-        new_hist = self.obj.Clone()
-        new_hist = new_hist.Rebin(n)
-        new_hist.GetXaxis().SetRange(self.obj.GetXaxis().GetFirst(), self.obj.GetXaxis().GetLast())
-        new_hist.GetYaxis().SetRange(self.obj.GetYaxis().GetFirst(), self.obj.GetYaxis().GetLast())
-        new_hist.GetZaxis().SetRange(self.obj.GetZaxis().GetFirst(), self.obj.GetZaxis().GetLast())
-        return Histogram.from_parent(parent, key, new_hist)
+        def rebin(h): 
+	    new_hist = h.Clone()
+	    new_hist.Rebin(n)
+       	    new_hist.GetXaxis().SetRange(self.obj.GetXaxis().GetFirst(), self.obj.GetXaxis().GetLast())
+            new_hist.GetYaxis().SetRange(self.obj.GetYaxis().GetFirst(), self.obj.GetYaxis().GetLast())
+            new_hist.GetZaxis().SetRange(self.obj.GetZaxis().GetFirst(), self.obj.GetZaxis().GetLast())
+            return new_hist
+        return Histogram.from_parent(parent, key, self.o.transform(rebin))
     
     @staticmethod
     def multiproject_slot_filler(multitraverser, key):
@@ -164,27 +171,31 @@ class Histogram(Renderable, RootObject):
                 slot_filler=self.multiproject_slot_filler)
         
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
-            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            return
         
         if self.obj.GetDimension() == 1:
             if axes == "x":
                 # Only x projection is valid for 1D histogram
-                return Histogram.from_parent(parent, key, self.obj)
+                return Histogram.from_parent(parent, key, self.o)
             return
             
         if self.obj.GetDimension() == 2 and len(axes) == 1:
-            projected_hist = get_xyz_func(self.obj, "Projection{ax}", axes)()
-            return Histogram.from_parent(parent, key, projected_hist)
+            def project(hist):
+                return get_xyz_func(hist, "Projection{ax}", axes)()
+            return Histogram.from_parent(parent, key, self.o.transform(project))
+       
+	def project(hist): 
+            # Thread safety, histograms are named by anything which remains in the 
+            # option string, and they clobber each other, yay ROOT!
+            from random import randint
+            random_name = str(randint(0, 2**32-1))
+            optstring = "{0}{1}".format(axes, random_name)
+            h = hist.Project3D(optstring)
+            h.SetName(h.GetName()[:-len(random_name)])
+            return h
         
-        # Thread safety, histograms are named by anything which remains in the 
-        # option string, and they clobber each other, yay ROOT!
-        from random import randint
-        random_name = str(randint(0, 2**32-1))
-        optstring = "{0}{1}".format(axes, random_name)
-        h = self.obj.Project3D(optstring)
-        h.SetName(h.GetName()[:-len(random_name)])
-        
-        return Histogram.from_parent(parent, key, h)
+        return Histogram.from_parent(parent, key, self.o.transform(project))
     
     @action
     def profile(self, parent, key, axes):
@@ -194,7 +205,8 @@ class Histogram(Renderable, RootObject):
         """
     
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
-            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
+            return
             
         if self.obj.GetDimension() == 2 and len(axes) == 1:
             other_axis = "x"
@@ -268,7 +280,8 @@ class Histogram(Renderable, RootObject):
         Normalize 2D histogram in bins of an axis
         """
         if "".join(sorted(axes)) not in ("x", "y"):
-            raise HTTPMethodNotAllowed("Bad parameter '{0}', expected x or y axis".format(axes))
+            #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected x or y axis".format(axes))
+            return
             
         h = normalize_by_axis(self.obj, axes == "x")
         return Histogram.from_parent(parent, key, h)

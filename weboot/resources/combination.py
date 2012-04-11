@@ -95,6 +95,12 @@ def create_mc_sum(mc_list):
             if not (0 < h.GetBinError(b)):
                 h.SetBinError(b, 0.0)
         mc_sum.Add(h)
+    for b in xrange(1, mc_sum.GetXaxis().GetNbins()+1):
+        # Sometimes negative Errors occur - they play havoc with the
+        # Display of error bands...
+        if not (0 < mc_sum.GetBinError(b)):
+            h.SetBinError(b, 0.0)
+
     mc_sum.SetMarkerSize(0)
     mc_sum.SetLineColor(R.kRed)
     mc_sum_line = mc_sum.Clone("mc_sum_line")
@@ -146,7 +152,7 @@ class CombinationStackRenderer(RootRenderer):
         }
         
         for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kBlack, R.kBlack, R.kBlack]):
-            obj.SetTitle(""); obj.SetStats(False)
+            #obj.SetTitle(""); obj.SetStats(False)
             if name in colordict:
                 obj.SetLineColor(colordict[name])
             else:
@@ -162,15 +168,15 @@ class CombinationStackRenderer(RootRenderer):
         max_value = max(o.GetMaximum() for o in objs) * 1.1
         
         
-        obj = objs.pop(0)
+        obj = objs[0] #.pop(0)
         from root.histogram import build_draw_params
-        dp = "hist" #build_draw_params(obj, self.request.params, True)
+        dp = "hist e0x0" #build_draw_params(obj, self.request.params, True)
         
         obj.Draw(dp)
         obj.SetMaximum(max_value)
         #obj.SetMinimum(0)
         
-        for obj in objs:
+        for obj in objs[1:]:
             obj.Draw(dp + " same")
         
         logy = canvas.GetLogy()
@@ -202,6 +208,16 @@ class CombinationStackRenderer(RootRenderer):
                     line(x, canvas_yrange if obj.GetDimension() != 2 else yrange)
         
         
+        
+        
+        if self.request.params.get("legend", None) is not None:
+            log.error("Drawing legend: {0}".format(objs))
+            for n, o in zip(names, objs):
+                o.SetTitle(n)
+            legend = get_legend(mc=objs)
+            legend.Draw()
+            keep_alive(legend)
+            
         return
         
         if "unit_fixup" in params:
@@ -242,15 +258,20 @@ class EbkeCombinationStackRenderer(RootRenderer):
         }
         
         from ROOT import kAzure, kBlue, kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring
-        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray]
+        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray, kRed, kAzure]
 
         mc = []
         signals = []
         data = []
         name_of = {}
 
-        def is_data(h):
-            return h.GetTitle().lower().startswith("data")
+        def is_data(h, name):
+            #log.info("Got histogram: {0} - {1}".format(h.GetName(), name))
+            #return h.GetTitle().lower().startswith("data")
+            return "data" in name
+
+        def is_signal(h):
+            return h.GetTitle().lower().startswith("higgs")
 
         for name, obj in zip(names, objs):
             name_of[obj] = name
@@ -259,6 +280,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
                 obj.SetTitle(name.replace(".root",""))
             if is_data(obj):
                 data.append(obj)
+            elif is_signal(obj):
+                signals.append(obj)
             else:
                 mc.append(obj)
 
@@ -278,7 +301,12 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetLineColor(R.kBlack)
             h.SetLineWidth(2)
             h.SetFillColor(col)
-            h.SetFillStyle(2001)
+            h.SetFillStyle(1001)
+
+        for h, col in zip(reversed(signals), (R.kRed, R.kBlue, R.kGreen)):
+            h.SetLineColor(col)
+            h.SetLineWidth(2)
+            h.SetLineStyle(2)
         
         # get min/max
         ymax = sum(h.GetMaximum() for h in mc)
@@ -287,8 +315,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
             ymax = max(ymax, max(h.GetMaximum() for h in data+signals))
             ymin = min(ymin, min(h.GetMinimum() for h in data+signals))
         ymax += 1
-        ymax *= (1.5 if not canvas.GetLogy() else 100)
-        ymin = max(1e-1, ymin)
+        ymax *= (1.5 if not canvas.GetLogy() else 120)
+        ymin = max(5e-1, ymin)
 
         # Create Stack of MC
         mcstack = R.THStack()
@@ -297,22 +325,26 @@ class EbkeCombinationStackRenderer(RootRenderer):
         keep_alive(mcstack)
 
         axis = None
-        mc_sum_error = None
+        mc_sum_line, mc_sum_error = None, None
         if mc:
             axis = mcstack
             mcstack.Draw("Hist")
             mc_sum_line, mc_sum_error = create_mc_sum(mc)
             keep_alive(mc_sum_line)
             keep_alive(mc_sum_error)
-            mc_sum_error.Draw("e2same")
-            mc_sum_line.Draw("hist same")
 
         for signal in signals:
+            if mc:
+                signal.Add(mc_sum_line)
             if not axis:
                 axis = signal
                 signal.Draw("hist")
             else:
                 signal.Draw("hist same")
+
+        if mc:
+            mc_sum_error.Draw("e2same")
+            mc_sum_line.Draw("hist same")
 
         for d in data:
             if not axis:
@@ -324,6 +356,11 @@ class EbkeCombinationStackRenderer(RootRenderer):
         axis.SetMaximum(ymax)
         axis.SetMinimum(ymin)
         axis.GetXaxis().SetRange(objs[0].GetXaxis().GetFirst(), objs[0].GetXaxis().GetLast())
+        axis.GetXaxis().SetTitle(objs[0].GetXaxis().GetTitle())
+        if not self.request.params.get("xlabel", None) is None:
+            axis.GetXaxis().SetTitle(self.request.params["xlabel"])
+        if not self.request.params.get("ylabel", None) is None:
+            axis.GetYaxis().SetTitle(self.request.params["ylabel"])
 
         logy = canvas.GetLogy()
         canvas.SetLogy(False)
@@ -363,7 +400,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             keep_alive(label)
        
         p = preliminary()
-        p.Draw()
+        p.Draw("hist e0x0")
         keep_alive(p)
 
         return
@@ -378,7 +415,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             h.SetTitle("")
         
         # TODO(pwaller): bring back draw options
-        h.Draw()
+        h.Draw("hist e0x0")
         
 class CombinationDualRenderer(RootRenderer):
     def render(self, canvas, keep_alive):
@@ -406,6 +443,39 @@ class CombinationDualRenderer(RootRenderer):
         p2.cd()
         h2.SetLineColor(R.kRed)
         h2.Draw("Y+")
+        
+class CombinationEffRenderer(RootRenderer):
+    def render(self, canvas, keep_alive):
+                
+        params = self.request.params
+        names, histograms = zip(*self.resource_to_render.stack)
+        assert len(names) == 2
+        
+        h1, h2 = sorted([h.obj for h in histograms], key=lambda x: x.GetEntries())
+        
+        eff = R.TEfficiency(h1, h2)
+        keep_alive(eff)
+        
+        eff.SetFillColor(R.kRed)
+        eff.Draw("AP")
+        
+class CombinationDiffRenderer(RootRenderer):
+    def render(self, canvas, keep_alive):
+                
+        params = self.request.params
+        names, histograms = zip(*self.resource_to_render.stack)
+        assert len(names) == 2
+        
+        h1, h2 = [h.obj for h in histograms]
+        
+        h = h2.Clone()
+        keep_alive(h)
+        
+        h.Add(h1, -1)
+        h.Draw()
+        
+        
+        
 
 class UnknownCombinationRenderer(Renderer):
     """
@@ -441,6 +511,12 @@ class Combination(Renderable, LocationAware):
 
         if self.composition_type == "ebke":
             self.renderer = EbkeCombinationStackRenderer
+
+        if self.composition_type == "eff":
+            self.renderer = CombinationEffRenderer
+            
+        if self.composition_type == "diff":
+            self.renderer = CombinationDiffRenderer
             
         print "Using renderer:", self.renderer
     
@@ -460,10 +536,34 @@ class Combination(Renderable, LocationAware):
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
         return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
-        
+    
+    
+    def keys(self):
+        log.error("{0}".format(self.object_types))
+        if any(hasattr(t, "keys") for t in self.object_types):
+            keys = [set(x.keys()) for n, x in self.stack if hasattr(x, "keys")]
+            result = reduce(set.union, keys, set())
+            log.error("--- {0}".format(result))
+            return result
+        return []
+        #if all(hasattr(
+        #return sorted(name for name, context in self.stack)
+    
+    def __iter__(self):
+        return iter(self.keys())
+    
     def __getitem__(self, key):
         res = self.try_action(key)
         if res: return res
         
-        stack = [(n, c) for n, c in [(n, c[key]) for n, c in self.stack] if c]
+        if not isinstance(key, basestring):
+            key = str(key)
+        
+        if "*" in key:
+            from .multitraverser import MultipleTraverser
+            return MultipleTraverser.from_listable(self, key)
+        
+        stack = [(n, c) for n, c in [(n, c[key]) for n, c in self.stack if c] if c]
         return self.from_parent(self, key, stack, self.composition_type)
+
+
