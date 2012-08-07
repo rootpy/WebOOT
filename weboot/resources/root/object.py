@@ -1,4 +1,4 @@
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.traversal import resource_path
 from pyramid.url import static_url
 
@@ -74,10 +74,13 @@ class RootObject(LocationAware, ListingItem):
             return HistogramTable.from_parent(self, "!table", self.o)
 
         elif key == "!basket":
-            self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
-            print "adding %s to basket" % self.url
-            return HTTPFound(location=self.url)
-        
+            if not self.request.db:
+                raise HTTPMethodNotAllowed("baskets not available - no connect to database")
+            else:
+                self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
+                print "adding %s to basket" % self.url
+                return HTTPFound(location=self.url)
+
         elif key == "!freqhist":
             return FreqHist.from_parent(self, "!freqhist", self.o)
             

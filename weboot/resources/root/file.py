@@ -63,10 +63,13 @@ class RootFileTraverser(LocationAware):
         log.debug("Traversing root object at '{0}'".format(key))
 
         if key == "!basket":
-            self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
-            log.debug("adding {0} to basket".format(self.url))
-            return HTTPFound(location=self.url)
-        
+            if not self.request.db:
+                raise HTTPMethodNotAllowed("baskets not available - no connect to database")
+            else:
+                self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
+                log.debug("adding {0} to basket".format(self.url))
+                return HTTPFound(location=self.url)
+
         if key == "!selectclass":
             return SelectClass.from_parent(self, key, self.rootfile)
         

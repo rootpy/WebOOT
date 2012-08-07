@@ -20,9 +20,12 @@ class HomeResource(LocationAware, dict):
         super(HomeResource, self).__init__(request)
         
         self.add("browse",  VFSTraverser)
-        self.add("baskets", BasketBrowser)
         self.add("env",     EnvResource)
         
+
+        if self.request.db:
+            self.add("baskets", BasketBrowser)
+
     def add(self, name, cls, *args, **kwargs):
         self[name] = cls.from_parent(self, name, *args, **kwargs)
         
