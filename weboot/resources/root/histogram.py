@@ -289,7 +289,7 @@ class Histogram(Renderable, RootObject):
     @action
     def normalize(self, parent, key, target_integral):
         """
-        TH{1,2,3}/!normalize
+        TH{1,2,3}/!normalize/[float target_integral]/
         Normalize histogram to `target_integral`
         """
 
