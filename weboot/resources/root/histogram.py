@@ -287,8 +287,12 @@ class Histogram(Renderable, RootObject):
             #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected x or y axis".format(axes))
             return
             
-        h = normalize_by_axis(self.obj, axes == "x")
-        return Histogram.from_parent(parent, key, h)
+        def tf(h):
+
+            h = normalize_by_axis(self.obj, axes == "x")
+            return h
+
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
 
     @action
     def normalize(self, parent, key, target_integral):
