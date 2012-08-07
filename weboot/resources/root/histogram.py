@@ -303,7 +303,7 @@ class Histogram(Renderable, RootObject):
 
         def tf(h):
             h = self.obj.Clone()
-            h.Scale(float(target_integral)/h.Integral())
+            h.Scale(make_float(target_integral)/h.Integral())
             return h
 
         return Histogram.from_parent(parent, key, self.o.transform(tf))
