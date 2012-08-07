@@ -285,6 +285,20 @@ class Histogram(Renderable, RootObject):
             
         h = normalize_by_axis(self.obj, axes == "x")
         return Histogram.from_parent(parent, key, h)
+
+    @action
+    def normalize(self, parent, key, target_integral):
+        """
+        TH{1,2,3}/!normalize
+        Normalize histogram to `target_integral`
+        """
+
+        def tf(h):
+            h = self.obj.Clone()
+            h.Scale(float(target_integral)/h.Integral())
+            return h
+
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
     
     @property
     def content(self):
