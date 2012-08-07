@@ -17,7 +17,7 @@ Installation:
 Using virtualenv you can install all dependencies
 in the current directory:
 
-    ./virtualenv.py --distribute env
+    ./virtualenv.py --no-site-packages env
     env/bin/pip install -e .
     mkdir results/
     # Copy some histograms to your results/ directory, then run..
