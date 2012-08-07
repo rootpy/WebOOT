@@ -218,6 +218,9 @@ class MultipleTraverser(LocationAware):
         """
         Build a MultipleTraverser by matching `key` against iter(parent)
         """
+
+        log.debug("Building MultipleTraverser from key: {0}".format(key))
+
         if "," in key:
             # Assume list is provided
             lst = key.split(",")
