@@ -473,6 +473,24 @@ class CombinationDiffRenderer(RootRenderer):
         
         h.Add(h1, -1)
         h.Draw()
+
+class CombinationDivRenderer(RootRenderer):
+    def render(self, canvas, keep_alive):
+                
+        params = self.request.params
+
+        print params
+
+        names, histograms = zip(*self.resource_to_render.stack)
+        assert len(names) == 2
+        
+        h1, h2 = [h.obj for h in histograms]
+        
+        h = h2.Clone()
+        keep_alive(h)
+        
+        h.Divide(h,h1,1,1)
+        h.Draw()
         
         
         
@@ -517,6 +535,9 @@ class Combination(Renderable, LocationAware):
             
         if self.composition_type == "diff":
             self.renderer = CombinationDiffRenderer
+
+        if self.composition_type == "div":
+            self.renderer = CombinationDivRenderer
             
         print "Using renderer:", self.renderer
     
