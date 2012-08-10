@@ -143,7 +143,21 @@ class CombinationStackRenderer(RootRenderer):
         names, histograms = zip(*self.resource_to_render.stack)
         #print "Rendering stack with {0} histograms".format(len(histograms))
         
+        names = [n for n in names]
+        histograms = [h for h in histograms]
         objs = [h.obj for h in histograms]
+
+        if "sum" in params:
+
+            hsum = objs[0].Clone("sum")
+            keep_alive(hsum)
+            hsum.SetTitle("sum")
+
+            for h in objs[1:]:
+                hsum.Add(h)
+
+            names.append("sum")
+            objs.append(hsum)
         
         colordict = {
             "all"   :R.kBlue,
