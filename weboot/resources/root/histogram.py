@@ -207,27 +207,31 @@ class Histogram(Renderable, RootObject):
         if "".join(sorted(axes)) not in ("x", "y", "z", "xy", "xz", "yz"):
             #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected axes".format(axes))
             return
+
+        def tf(h):
             
-        if self.obj.GetDimension() == 2 and len(axes) == 1:
-            other_axis = "x"
-            if axes == "x": 
-                other_axis = "y"
-            ya = get_xyz_func(self.obj, "Get{ax}axis", other_axis)()
-            new_hist = get_xyz_func(self.obj, "Profile{ax}", axes)()
-            new_hist.GetYaxis().SetTitle(ya.GetTitle())
-            new_hist.SetTitle(self.obj.GetTitle())
-            return Histogram.from_parent(parent, key, new_hist)
-            
-        if len(axes) == 2:
-            new_hist = self.obj.Project3DProfile(axes)
-            xa = get_xyz_func(self.obj, "Get{ax}axis", axes[0])()
-            ya = get_xyz_func(self.obj, "Get{ax}axis", axes[1])()
-            new_hist.GetXaxis().SetTitle(xa.GetTitle())
-            new_hist.GetYaxis().SetTitle(ya.GetTitle())
-            return Histogram.from_parent(parent, key, new_hist)
-            
-        return Histogram.from_parent(parent, key, self.obj.Project3DProfile(axes))
+            if self.obj.GetDimension() == 2 and len(axes) == 1:
+                other_axis = "x"
+                if axes == "x": 
+                    other_axis = "y"
+                ya = get_xyz_func(self.obj, "Get{ax}axis", other_axis)()
+                new_hist = get_xyz_func(self.obj, "Profile{ax}", axes)()
+                new_hist.GetYaxis().SetTitle(ya.GetTitle())
+                new_hist.SetTitle(self.obj.GetTitle())
+                return new_hist
+
+            if len(axes) == 2:
+                new_hist = self.obj.Project3DProfile(axes)
+                xa = get_xyz_func(self.obj, "Get{ax}axis", axes[0])()
+                ya = get_xyz_func(self.obj, "Get{ax}axis", axes[1])()
+                new_hist.GetXaxis().SetTitle(xa.GetTitle())
+                new_hist.GetYaxis().SetTitle(ya.GetTitle())
+                return new_hist
+
+            return self.obj.Project3DProfile(axes)
     
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
+
     @staticmethod
     def explode_slot_filler(multipletraverser, key):
         axis, bin = key.axis, key.bin
@@ -283,8 +287,26 @@ class Histogram(Renderable, RootObject):
             #raise HTTPMethodNotAllowed("Bad parameter '{0}', expected x or y axis".format(axes))
             return
             
-        h = normalize_by_axis(self.obj, axes == "x")
-        return Histogram.from_parent(parent, key, h)
+        def tf(h):
+
+            h = normalize_by_axis(self.obj, axes == "x")
+            return h
+
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
+
+    @action
+    def normalize(self, parent, key, target_integral):
+        """
+        TH{1,2,3}/!normalize/[float target_integral]/
+        Normalize histogram to `target_integral`
+        """
+
+        def tf(h):
+            scale = make_float(target_integral)/h.Integral()
+            h.Scale(scale)
+            return h
+
+        return Histogram.from_parent(parent, key, self.o.transform(tf))
     
     @property
     def content(self):
