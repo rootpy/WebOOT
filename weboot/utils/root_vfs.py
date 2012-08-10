@@ -478,7 +478,9 @@ class RootCacheEntry(object):
                 self._valid = False
                 return False
             mtime = os.path.getmtime(self.realname)
-            if mtime != mtime:
+            log.debug("validate file %s", self.realname)
+            log.debug("RootCacheEntry's mtime, file mtime: %s %s", self.mtime, mtime)
+            if self.mtime != mtime:
                 self._valid = False
         except OSError:
             self._exists = self._valid = False
