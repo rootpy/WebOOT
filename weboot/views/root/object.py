@@ -2,6 +2,7 @@ from .. import log; log = log.getChild(__name__)
 
 import ROOT as R
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 
 from ...utils.timer import timer

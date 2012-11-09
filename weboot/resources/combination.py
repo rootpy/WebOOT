@@ -292,7 +292,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             obj.SetStats(False)
             if not obj.GetTitle():
                 obj.SetTitle(name.replace(".root",""))
-            if is_data(obj):
+            if is_data(obj, name):
                 data.append(obj)
             elif is_signal(obj):
                 signals.append(obj)
