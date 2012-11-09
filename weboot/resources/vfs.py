@@ -15,6 +15,7 @@ import ROOT as R
 from .locationaware import LocationAware
 from .multitraverser import MultipleTraverser
 from ._markdown import MarkdownResource
+from .static import StaticImageResource
 from ..utils.root_vfs import RootVFS
 from .root.builder import build_root_object
 
@@ -81,5 +82,7 @@ class VFSTraverser(LocationAware):
             return build_root_object(self, key, item)
         elif path.endswith(".markdown"):
             return MarkdownResource.from_parent(self, key, path)
+        elif path.endswith(".png"):
+            return StaticImageResource.from_parent(self, key, path)
 
 
