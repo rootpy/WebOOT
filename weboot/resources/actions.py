@@ -1,3 +1,57 @@
+"""
+An action is something which can be applied to a resource. For example, let's say
+you have a `weboot.resources.Histogram` object which represents a 2D histogram.
+In order to project that histogram, an "project" action can be defined. This
+is done as a function, `project(self, parent, key, axis)`, which is wrapped with
+the @action decorator.
+
+Note that in order for the @action decorator to function correctly, it is
+necessary for the resource class to inherit from `HasActions`, and in addition
+that the `__getitem__` of the resource must first call `HasActions.try_action`
+with the `key`, and return the resulting object if it is not None.
+
+The `self` in this context is the Histogram resource. `parent` and `key` are
+necessary to construct the correct heirarchy of objects required for traversal.
+Actions support an arbitrary number of arguments, which are then subsequent url
+fragments, i.e. given the action defined as:
+
+    class Histogram(HasActions, ...):    
+        @action
+        def my_action(self, parent, key, a, b, c):
+            return NewResource(...)
+
+The url:
+
+    /path/to/histogram/!my_action/1/2/3/
+    
+will result in a `my_action` call with:
+
+    self == the histogram resource
+    parent == the resource representing `/!my_action/`
+    key == the text `/!my_action/`
+    a, b, c = "1", "2", "3"
+    
+Actions are inherited by subclasses as normal. i.e, actions defined on a
+`RootObject` are also available on a `Histogram` due to inheritence.
+
+The `HasActions` class provides a couple of actions which are inherited by all
+classes using actions, including `!list_actions` which allows the user to see
+the actions supported by a given resource.
+
+Implementation details
+======================
+
+The `HasActions` class uses the `HasActionsMeta` metaclass, which enumerates
+all of the methods decorated with @action and puts them into a dictionary so
+that they can be rapidly discovered by the `try_action` function.
+
+The resource representing the `/!my_action/` URL fragment is an
+`ArgumentCollector`. Its children are also ArgumentCollectors until the number
+of children is equal to the number of arguments that the `@action`-decorated
+function accepts, at which point the child is the return value of that
+`@action`-decorated function.
+"""
+
 from inspect import getsourcelines
 
 from pyramid.response import Response
@@ -5,8 +59,8 @@ from pyramid.response import Response
 from weboot.utils.func import wraps, unwrap
 
 # imported below to avoid circular imports:
-# .locationaware.LocationAware is 
-# .renderable.Renderable is imported bel
+# .locationaware.LocationAware 
+# .renderable.Renderable
 
 def action(function):
     """
