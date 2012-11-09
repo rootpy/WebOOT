@@ -43,13 +43,6 @@ class VFSTraverser(LocationAware):
         elif p.isobject():
             raise RuntimeError("Should not be a VFSTraverser!")
         return static_url('weboot:static/close_32.png', self.request)
-        
-    @property
-    def content(self):
-        def link(p):
-            url = self.request.resource_url(self, p)
-            return '<p><a href="{0}">{1}</a></p>'.format(url, p)
-        return "".join(link(p) for p in self.ls)
     
     @property
     def items(self):
