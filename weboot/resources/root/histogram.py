@@ -310,7 +310,9 @@ class Histogram(Renderable, RootObject):
     
     @property
     def content(self):
-        return ['<p><img class="plot" src="{0}" /></p>'.format(self.sub_url(query={"render":None, "resolution":70}))]
+        rendered = self["!render"]["png"]["!resolution"]["100"]
+        return ['<p><img class="plot" src="{0}" /></p>'.format(rendered.sub_url(query={"todo-removeme": 1}))]
+        #self.sub_url(query={"render":None, "resolution":70}))]
         
 class FreqHist(Histogram):
     def __init__(self, request, root_object):

@@ -11,10 +11,9 @@ from .renderable import Renderer, Renderable
 class MarkdownRenderer(Renderer):
     @property
     def content(self):
-        with open(self.resource_to_render.path) as fd:
-            markdown_source = fd.read()
+        markdown_source = self.resource_to_render.source
     
-        if self.format == "source":
+        if self.format in ("source", "plain"):
             return Response(markdown_source, content_type="text/plain")
     
         if self.format == "markdown":
@@ -24,7 +23,7 @@ class MarkdownRenderer(Renderer):
         raise RuntimeError("bad format")
     
         
-class MarkdownResource(Renderable, LocationAware):
+class MarkdownResource(Renderer, Renderable, LocationAware):
     
     renderer = MarkdownRenderer
     
@@ -35,6 +34,15 @@ class MarkdownResource(Renderable, LocationAware):
         self.path = path
     
     @property
+    def source(self):
+        with open(self.path) as fd:
+            return fd.read()
+    
+    @property
+    def content(self):
+        return self["!render"]["markdown"].content
+    
+    @property
     def name(self):
         return basename(self.path[:-len(".markdown")])
         
@@ -43,6 +51,5 @@ class MarkdownResource(Renderable, LocationAware):
         """
         Return unrendered markdown
         """
-        #return Response("
-        pass
+        return Response(self.source, content_type="text/plain")
     

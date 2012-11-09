@@ -6,7 +6,7 @@
 
   <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/jquery-ui-1.8.15.custom.css')}" type="text/css" media="screen" charset="utf-8" />
   <link rel="stylesheet" href="${request.static_url('weboot:static/smoothness/overcast.css')}" type="text/css" media="screen" charset="utf-8" />
-  <script type="text/javascript" src="${request.static_url('weboot:static/js/lazyload.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('weboot:static/js/jquery.lazyload.js')}"></script>
   <script type="text/javascript">
     function update_plots() {
         var p = $(".plot");

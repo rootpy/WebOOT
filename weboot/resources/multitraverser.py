@@ -214,10 +214,13 @@ class MultipleTraverser(LocationAware):
         return multipletraverser.__parent__[key]
 
     @classmethod
-    def from_listable(cls, parent, key):
+    def from_listable(cls, parent, key, listable=None):
         """
         Build a MultipleTraverser by matching `key` against iter(parent)
         """
+        
+        if listable is None:
+            listable = parent
 
         log.debug("Building MultipleTraverser from key: {0}".format(key))
 
@@ -230,7 +233,7 @@ class MultipleTraverser(LocationAware):
             
         pattern = re.compile(fnmatch.translate(key))
         match = pattern.match
-        indexed_contexts = [((f,), parent[f]) for f in parent if match(f)]
+        indexed_contexts = [((f,), parent[f]) for f in listable if match(f)]
         slot_filler = getattr(parent, "slot_filler", cls.default_slot_filler)
         return cls.from_parent(parent, key, indexed_contexts, slot_filler=slot_filler)
     
