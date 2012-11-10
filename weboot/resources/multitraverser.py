@@ -419,9 +419,7 @@ class MultipleTraverser(LocationAware):
         return []
     
     def __getitem__(self, key):
-        res = self.try_action(key)
-        if res: return res
-        
+            
         # Traverse inside each of the contained contexts
         new_contexts = []
         for index_tuple, context in self.indexed_contexts:

@@ -6,9 +6,9 @@ is done as a function, `project(self, parent, key, axis)`, which is wrapped with
 the @action decorator.
 
 Note that in order for the @action decorator to function correctly, it is
-necessary for the resource class to inherit from `HasActions`, and in addition
-that the `__getitem__` of the resource must first call `HasActions.try_action`
-with the `key`, and return the resulting object if it is not None.
+necessary for the resource class to inherit from `HasActions`. This has the
+effect of using the `HasActionsMeta` metaclass, which means that it is not
+possible to use HasActions with other metaclasses without additional effort.
 
 The `self` in this context is the Histogram resource. `parent` and `key` are
 necessary to construct the correct heirarchy of objects required for traversal.
@@ -43,7 +43,9 @@ Implementation details
 
 The `HasActions` class uses the `HasActionsMeta` metaclass, which enumerates
 all of the methods decorated with @action and puts them into a dictionary so
-that they can be rapidly discovered by the `try_action` function.
+that they can be rapidly discovered by the `try_action` function. It also wraps
+the `__getitem__` function for any child classes of `HasActions` with a function
+which first tries to check for an @action method.
 
 The resource representing the `/!my_action/` URL fragment is an
 `ArgumentCollector`. Its children are also ArgumentCollectors until the number
@@ -83,15 +85,30 @@ def action(function):
     
 class HasActionsMeta(type):
     """
-    Builds a dictionary of actions for the class type
+    metaclass for HasActions. Builds a dictionary of available actions for the
+    class, and wraps the __getitem__ function to ensure that the actions
+    dictionary is checked first.
     """
     def __init__(self, name, bases, dct):
         self.actions = {}
         for cls in reversed(self.__mro__):
             for key, value in cls.__dict__.iteritems():
                 if getattr(value, "is_action", None):
-                    # TODO(pwaller): Assert that value's 
                     self.actions["!" + key] = value
+        
+        # This is false if we're in the call for HasActions itself
+        is_hasactions = name == "HasActions"
+        
+        # If __getitem__ has been overridden by a super class, wrap the super
+        # classes' __getitem__ with a thunk which first tries the HasActions
+        # call.
+        if hasattr(self, "__getitem__") and not is_hasactions:
+            __ha_orig_getitem__ = self.__getitem__
+            def __getitem__(self, key):
+                res = HasActions.__getitem__(self, key)
+                if res is not None: return res
+                return __ha_orig_getitem__(self, key)
+            self.__getitem__ = __getitem__
 
 class HasActions(object):
     """
@@ -105,8 +122,8 @@ class HasActions(object):
     
     @action
     def definition(self, parent, key, name):
-        if name in self.actions:
-            return CodeDefinition.from_parent(parent, key, self.actions[name])
+        if "!"+name in self.actions:
+            return CodeDefinition.from_parent(parent, key, self.actions["!"+name])
     
     @action
     def list_actions(self, key):
@@ -120,14 +137,27 @@ class HasActions(object):
         self.request.params[param] = value
         return self.from_parent(parent, key)
     
+    @action
+    def lineage(self, key):
+        """
+        Shows the parents of this object
+        """
+        contents = []
+        from pyramid.location import lineage
+        for element in lineage(self):
+            contents.append(str(element))
+        return ResponseContext.from_parent(self, key, "\n".join(contents), content_type="text/plain")
+    
     def try_action(self, key):
+        """
+        If `key` is present in `self.actions`, call it and return the resource.
+        """
         if key in self.actions:
             return self.actions[key]._action_thunk(self, key)
     
     def __getitem__(self, key):
         """
-        This code needs to be called from subclasses, either through copy-pasting
-        or super().
+        Gives the resource returned by an action if one is defined, otherwise None.
         """
         ret = self.try_action(key)
         if ret: return ret
@@ -160,10 +190,20 @@ class ArgumentCollector(LocationAware):
             # We've collected enough arguments to execute the wrapped action
             return self.function(self.resource, self, key, *args)
         # Collect this argument
-        return ArgumentCollector.from_parent(self, key, self.function, self.parameters, self.resource, args)
+        return ArgumentCollector.from_parent(self, key, self.function,
+            self.parameters, self.resource, args)
 
 # Needs to go here to avoid circular imports
 from .renderable import Renderer
+
+class ResponseContext(Renderer):
+    def __init__(self, request, body, **kwargs):
+        self.request = request
+        self.response = Response(body, **kwargs)
+        
+    @property
+    def content(self):
+        return self.response
 
 class CodeDefinition(Renderer):
     """
@@ -206,7 +246,7 @@ class ActionList(Renderer):
         for key, action in sorted(self.actions.iteritems()):
             c.append("<h1>{0}</h1>".format(key))
             c.append("<pre>")
-            c.append(html_escape(self.__parent__["!definition"][key].content.body))
+            c.append(html_escape(self.__parent__["!definition"][key[1:]].content.body))
             c.append("</pre>")
         
         return Response("\n\n".join(c), content_type="text/html")

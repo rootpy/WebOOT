@@ -588,8 +588,6 @@ class Combination(Renderable, LocationAware):
         return iter(self.keys())
     
     def __getitem__(self, key):
-        res = self.try_action(key)
-        if res: return res
         
         if not isinstance(key, basestring):
             key = str(key)

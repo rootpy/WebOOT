@@ -63,8 +63,6 @@ class RootObject(LocationAware, ListingItem):
         return static_url('weboot:static/close_32.png', self.request)
     
     def __getitem__(self, key):
-        res = self.try_action(key)
-        if res: return res
         
         # TODO(pwaller): fix this mess
         from .histogram import FreqHist, HistogramTable

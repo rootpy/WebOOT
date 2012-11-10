@@ -163,14 +163,7 @@ class RootRenderer(Renderer):
         if self.format == "raise":
             class UserThrow(RuntimeError): pass
             raise UserThrow("Stopping because you asked me to.")
-            
-        if self.format == "parentage":
-            contents = []
-            from pyramid.location import lineage
-            for element in lineage(self):
-                contents.append(str(element))
-            return Response("\n".join(contents), content_type="text/plain")
-    
+                
         print "Rendering..", self.format, self
         params = self.params
         params.update(self.request.params)
