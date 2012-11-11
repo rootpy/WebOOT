@@ -62,28 +62,13 @@ class RootObject(LocationAware, ListingItem):
     def icon_url(self):
         return static_url('weboot:static/close_32.png', self.request)
     
-    def __getitem__(self, key):
-        
-        # TODO(pwaller): fix this mess
-        from .histogram import FreqHist, HistogramTable
-        from .ttree import DrawTTree
-            
-        if key == "!table":
-            return HistogramTable.from_parent(self, "!table", self.o)
-
-        elif key == "!basket":
-            if not self.request.db:
-                raise HTTPMethodNotAllowed("baskets not available - no connect to database")
-            else:
-                self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
-                print "adding %s to basket" % self.url
-                return HTTPFound(location=self.url)
-
-        elif key == "!freqhist":
-            return FreqHist.from_parent(self, "!freqhist", self.o)
-            
-        elif key == "!tohist":
-            return DrawTTree.from_parent(self, "!tohist", self.o)
-
-
+    @action
+    def basket(self, parent, key):
+        if not self.request.db:
+            raise HTTPMethodNotAllowed("baskets not available - no connect to database")
+        else:
+            self.request.db.baskets.insert({"basket":"my_basket",
+                "path": resource_path(self), "name": self.name})
+            log.debug("adding {0} to basket".format(self.url))
+            return HTTPFound(location=self.url)
 
