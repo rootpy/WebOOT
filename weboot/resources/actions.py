@@ -132,10 +132,16 @@ class HasActions(object):
     @action
     def p(self, parent, key, param, value):
         """
-        Collect a parameter
+        Store a parameter
+        
+        (BUG)
+        Note: This does not cause the action to enter the traversal hierarchy
+        because `from_parent` isn't used. What is needed is a way to create
+        a copy of `self` which can be placed correctly into the hierarchy.
+        (pwaller) doesn't currently know how to achieve this reliably.
         """
-        self.request.params[param] = value
-        return self.from_parent(parent, key)
+        self.request.params.multi.dicts += ({param:value},)
+        return self
     
     @action
     def lineage(self, key):
