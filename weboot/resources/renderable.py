@@ -70,7 +70,7 @@ class Renderable(HasActions):
         return self.rendered("png")["!resolution"][icon_resolution]
         
     def rendered(self, format):
-        if not context_renderable_as(self, "png"):
+        if not context_renderable_as(self, format):
             raise RuntimeError("Error rendering {0}: "
                                   "not renderable as {1}".format(self, format))
         return self["!render"][format]
