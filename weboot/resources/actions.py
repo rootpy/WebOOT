@@ -168,10 +168,12 @@ class HasActions(object):
         ret = self.try_action(key)
         if ret: return ret
 
+# Needs to go here to avoid circular imports
 # LocationAware inherits from HasActions.
 from weboot.resources.locationaware import LocationAware
-            
-class ArgumentCollector(LocationAware):
+from .renderable import Renderer
+
+class ArgumentCollector(Renderer):
     """
     An intermediate class which collects arguments and passes them all in one 
     go to the desired function
@@ -180,6 +182,12 @@ class ArgumentCollector(LocationAware):
         self.request = request
         self.function, self.parameters, self.resource = function, parameters, resource
         self.args = args
+    
+    @property
+    def content(self):
+        msg = ("Expected more arguments for action '{0}', got {1}, expected {2}"
+                .format(self.target, self.args, self.parameters))
+        return Response(msg, content_type="text/html")
     
     @property
     def target(self):
@@ -198,9 +206,6 @@ class ArgumentCollector(LocationAware):
         # Collect this argument
         return ArgumentCollector.from_parent(self, key, self.function,
             self.parameters, self.resource, args)
-
-# Needs to go here to avoid circular imports
-from .renderable import Renderer
 
 class ResponseContext(Renderer):
     def __init__(self, request, body, **kwargs):
