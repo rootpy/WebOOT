@@ -288,8 +288,12 @@ class Histogram(Renderable, RootObject):
             return
             
         def tf(h):
-
-            h = normalize_by_axis(self.obj, axes == "x")
+            h = normalize_by_axis(h, axes == "x")
+            #h = h.Clone("Test")
+            # BUG TODO(pwaller): Not leak memory
+            #                    For some reason this is necessary at the moment
+            #                    (It results in a blank canvas being drawn otherwise)
+            R.SetOwnership(h, False)
             return h
 
         return Histogram.from_parent(parent, key, self.o.transform(tf))
