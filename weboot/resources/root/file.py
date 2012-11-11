@@ -59,19 +59,22 @@ class RootFileTraverser(LocationAware):
         keys.sort(key=lambda k: k.name)
         return keys
     
+    @action
+    def basket(self, parent, key):
+        if not self.request.db:
+            raise HTTPMethodNotAllowed("baskets not available - no connect to database")
+        else:
+            self.request.db.baskets.insert({"basket":"my_basket",
+                "path": resource_path(self), "name": self.name})
+            log.debug("adding {0} to basket".format(self.url))
+            return HTTPFound(location=self.url)
+        
+    @action
+    def selectclass(self, parent, key, cls):
+        raise NotImplementedError("This should be re-implemented if it is needed")
+    
     def __getitem__(self, key):
         log.debug("Traversing root object at '{0}'".format(key))
-
-        if key == "!basket":
-            if not self.request.db:
-                raise HTTPMethodNotAllowed("baskets not available - no connect to database")
-            else:
-                self.request.db.baskets.insert({"basket":"my_basket", "path": resource_path(self), "name": self.name})
-                log.debug("adding {0} to basket".format(self.url))
-                return HTTPFound(location=self.url)
-
-        if key == "!selectclass":
-            return SelectClass.from_parent(self, key, self.rootfile)
         
         if MultipleTraverser.should_multitraverse(key):
             return MultipleTraverser.from_listable(self, key)
@@ -95,40 +98,4 @@ class RootFileTraverser(LocationAware):
             return TObjArrayTraverser.from_parent(self, key, leaf)
         
         return build_root_object(self, key, leaf)
-        #return RootObject.from_parent(self, key, leaf)
-        
-class SelectClass(RootFileTraverser):
-    def __init__(self, request, rootfile, selection=None):
-        super(SelectClass, self).__init__(request, rootfile)
-        self.keys = rootfile.GetListOfKeys()
-        self.selection = selection
-    
-    @property
-    def items(self):
-        if not self.selection:
-            return []
-        keys = [self[k.GetName()] for k in self.keys if k.GetClassName() == self.selection]
-        keys.sort(key=lambda k: k.name)
-        return keys
-        
-    
-    def __getitem__(self, key):
-        if self.selection:
-            if "*" in key:
-                keys = sorted([k.GetName() for k in self.rootfile.GetListOfKeys() 
-                               if k.GetClassName() == self.selection])
-                pattern = re.compile(fnmatch.translate(key))
-                contexts = [(f, traverse(self, f)["context"])
-                            for f in keys if pattern.match(f)]
-                return MultipleTraverser.from_parent(self, key, contexts)
-            try:
-                (k for k in self.keys 
-                 if k.GetName() == key and 
-                   k.GetClassName() == self.selection
-                ).next()
-            except StopIteration:
-                return
-            else:
-                return super(SelectClass, self).__getitem__(key)
-        else:
-            return self.from_parent(self, key, self.rootfile, key)
+
