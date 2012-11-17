@@ -380,7 +380,7 @@ class RootCacheFile(object):
         entries = {}
         for key in dir.GetListOfKeys():
             cls = get_key_class(key)
-            if issubclass(cls, R.TDirectory):
+            if cls and issubclass(cls, R.TDirectory):
                 entries[key.GetName()] = self.quick_listing(key.ReadObj())
             else:
                 entries[key.GetName()] = (key.GetClassName(), {})#extract_info(key.ReadObj()))

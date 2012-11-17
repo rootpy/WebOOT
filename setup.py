@@ -87,6 +87,5 @@ setup(
         [paste.app_factory]
         main = weboot:main
     """,
-    paster_plugins=['pyramid'],
     )
 

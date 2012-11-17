@@ -29,6 +29,8 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def section(self):
+        if not self.cls:
+            return
         if issubclass(self.cls, R.TH1):
             return "hist"
         if "TParameter" in self.cls.__name__:
@@ -36,7 +38,7 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def content(self):
-        if issubclass(self.cls, R.TObjString):
+        if self.cls and issubclass(self.cls, R.TObjString):
             from cPickle import loads
             from pprint import pformat
             content = pformat(dict(loads(self.obj.GetString().Data())))
@@ -46,8 +48,7 @@ class RootObject(LocationAware, ListingItem):
     
     @property
     def obj(self):
-	o = self.o.get()
-
+        o = self.o.get()
         return o
     
     @property
