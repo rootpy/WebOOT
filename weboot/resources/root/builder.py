@@ -1,3 +1,7 @@
+"""
+Code to "build" a WebOOT Resource of the correct tyep based on a root object
+"""
+
 import ROOT as R
 
 from .util import get_root_class
@@ -27,10 +31,10 @@ def build_root_object(parent, key, obj):
     for root_type, resource_type in RESOURCE_MAPPING:
         if isinstance(root_type, basestring):
             # Deal with templated types by matching them against the string
-            if cls.__name__.startswith(root_type):
+            if cls and cls.__name__.startswith(root_type):
                 break
             continue
-        if issubclass(cls, root_type):
+        if cls and issubclass(cls, root_type):
             break
     else:
         # Wow, a use for the for-else construct?
