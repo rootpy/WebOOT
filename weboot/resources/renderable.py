@@ -70,7 +70,7 @@ class Renderable(HasActions):
         return self.rendered("png")["!resolution"][icon_resolution]
         
     def rendered(self, format):
-        if not context_renderable_as(self, "png"):
+        if not context_renderable_as(self, format):
             raise RuntimeError("Error rendering {0}: "
                                   "not renderable as {1}".format(self, format))
         return self["!render"][format]
@@ -163,14 +163,7 @@ class RootRenderer(Renderer):
         if self.format == "raise":
             class UserThrow(RuntimeError): pass
             raise UserThrow("Stopping because you asked me to.")
-            
-        if self.format == "parentage":
-            contents = []
-            from pyramid.location import lineage
-            for element in lineage(self):
-                contents.append(str(element))
-            return Response("\n".join(contents), content_type="text/plain")
-    
+                
         print "Rendering..", self.format, self
         params = self.params
         params.update(self.request.params)

@@ -288,8 +288,12 @@ class Histogram(Renderable, RootObject):
             return
             
         def tf(h):
-
-            h = normalize_by_axis(self.obj, axes == "x")
+            h = normalize_by_axis(h, axes == "x")
+            #h = h.Clone("Test")
+            # BUG TODO(pwaller): Not leak memory
+            #                    For some reason this is necessary at the moment
+            #                    (It results in a blank canvas being drawn otherwise)
+            R.SetOwnership(h, False)
             return h
 
         return Histogram.from_parent(parent, key, self.o.transform(tf))
@@ -313,6 +317,14 @@ class Histogram(Renderable, RootObject):
         rendered = self["!render"]["png"]["!resolution"]["100"]
         return ['<p><img class="plot" src="{0}" /></p>'.format(rendered.sub_url(query={"todo-removeme": 1}))]
         #self.sub_url(query={"render":None, "resolution":70}))]
+        
+    @action
+    def freqhist(self, parent, key):
+        return FreqHist.from_parent(parent, key, self.o)
+        
+    @action
+    def table(self, parent, key):
+        return HistogramTable.from_parent(parent, key, self.o)
         
 class FreqHist(Histogram):
     def __init__(self, request, root_object):

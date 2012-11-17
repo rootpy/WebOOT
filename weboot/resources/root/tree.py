@@ -37,13 +37,14 @@ class Tree(RootObject):
         def draw(t):
         
             if self.binning:
-                # TODO: gDirectory needs to be thread-unique. Otherwise:
+                # TODO(pwaller): gDirectory needs to be thread-unique. Otherwise:
                 #       bad bad, sad sad.
-                # TODO: Parse self.binning, call appropriate h.
+                # TODO(pwaller): Parse self.binning, call appropriate h.
                 n, low, hi = self.binning.split(",")
                 n, low, hi = int(n), float(low), float(hi)
                 h = R.TH1D("htemp", arg, n, low, hi)
                 h.SetDirectory(R.gDirectory)
+                # BUG: TODO(pwaller): Memory leak
                 R.SetOwnership(h, False)
         
             drawn = t.Draw(arg + ">>htemp", self.selection, "goff")

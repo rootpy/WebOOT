@@ -94,8 +94,6 @@ class BasketTraverser(LocationAware):
         return MultipleTraverser.from_parent(self, key, indexed_contexts, slot_filler=i_dont_know)
     
     def __getitem__(self, key):
-        res = self.try_action(key)
-        if res: return res
     
         if not isinstance(key, int) and not key.isdigit():
             return
