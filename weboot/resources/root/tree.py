@@ -8,7 +8,7 @@ from .histogram import Histogram
 from .object import RootObject
 
 class Tree(RootObject):
-    def __init__(self, request, root_object, selection="", binning=""):
+    def __init__(self, request, root_object, selection=(), binning=""):
         self.selection = selection
         self.binning = binning
         super(Tree, self).__init__(request, root_object)
@@ -23,11 +23,20 @@ class Tree(RootObject):
     def select(self, parent, key, arg):
         if MultipleTraverser.should_multitraverse(arg):
             return MultipleTraverser.from_listable(parent, arg, self)
-        return Tree.from_parent(parent, key, self.o, arg, self.binning)
+        newsel = self.selection + (arg,)
+        return Tree.from_parent(parent, key, self.o, newsel, self.binning)
     
     @action
     def binning(self, parent, key, arg):
         return Tree.from_parent(parent, key, self.o, self.selection, arg)
+        
+    @property
+    def select_value(self):
+        """
+        Take the values in self.selection and make them into a form suitable to
+        pass to TTree::Draw by multiplying each of the components together.
+        """
+        return " * ".join(map(lambda x: "({0})".format(x), self.selection))
         
     @action
     def draw(self, parent, key, arg):
@@ -47,7 +56,7 @@ class Tree(RootObject):
                 # BUG: TODO(pwaller): Memory leak
                 R.SetOwnership(h, False)
         
-            drawn = t.Draw(arg + ">>htemp", self.selection, "goff")
+            drawn = t.Draw(arg + ">>htemp", self.select_value, "goff")
             
             if self.binning:
                 h.SetDirectory(None)
@@ -55,7 +64,7 @@ class Tree(RootObject):
                 h = t.GetHistogram()
             if not h:
                 raise RuntimeError("Bad draw: '%s' selection='%s'",
-                                      arg, self.selection)
+                                      arg, self.select_value)
             return h
                     
         arg = arg.replace(".", "*")

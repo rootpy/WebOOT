@@ -1,3 +1,7 @@
+"""
+Code to "build" a WebOOT Resource of the correct tyep based on a root object
+"""
+
 import ROOT as R
 
 from .util import get_root_class
