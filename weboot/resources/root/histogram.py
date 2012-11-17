@@ -1,5 +1,6 @@
-import ROOT as R
+from .. import log; log = log.getChild(__name__)
 
+import ROOT as R
 
 from weboot.utils.thousands import split_thousands
 from weboot.utils.histogram import normalize_by_axis

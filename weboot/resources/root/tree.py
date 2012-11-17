@@ -1,7 +1,9 @@
+
+from tempfile import NamedTemporaryFile
+
 import ROOT as R
 
-from weboot.resources.actions import action
-
+from ..actions import action, ResponseContext
 from ..multitraverser import MultipleTraverser
 
 from .histogram import Histogram
@@ -56,9 +58,17 @@ class Tree(RootObject):
                 # BUG: TODO(pwaller): Memory leak
                 R.SetOwnership(h, False)
         
-            drawn = t.Draw(arg + ">>htemp", self.select_value, "goff")
+            nvar = len(arg.split(":"))
+
+            opts = "goff "
+            if nvar > 4:
+                opts += "para "
+
+            drawn = t.Draw(arg + ">>htemp", self.select_value, opts)
             
-            if self.binning:
+            if nvar > 4:
+                h = t.GetPlayer().GetSelector().GetObject()
+            elif self.binning:
                 h.SetDirectory(None)
             else:
                 h = t.GetHistogram()
@@ -70,6 +80,25 @@ class Tree(RootObject):
         arg = arg.replace(".", "*")
         return Histogram.from_parent(parent, key, self.o.transform(draw))
     
+    @action
+    def scan(self, parent, key, arg):
+        def scan(t):
+
+            nmax = int(self.request.params.get("n", 100))
+            with NamedTemporaryFile(suffix=".scan") as tmpfile:
+                t.SetScanField(0)
+                t.GetPlayer().SetScanFileName(tmpfile.name)
+                t.GetPlayer().SetScanRedirect(True)
+                n = t.Scan(arg, self.selection, "colsize=30", nmax)
+                status = t.GetPlayer().GetSelector().GetStatus()
+                if status < 0:
+                    return "Unable to compile expression. (TODO: Show reason)\n  value: {0}\n  selection: {1}".format(
+                        arg, self.selection)
+
+                tree_data = tmpfile.read()
+            return "Scanning {0} entries (status {2}):\n\n{1}".format(n, tree_data, status)
+        return ResponseContext.from_parent(parent, key, scan(self.obj), content_type="text/plain")
+
     @property
     def items(self):
         items = [self[i] for i in self]
