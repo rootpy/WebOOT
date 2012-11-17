@@ -58,9 +58,17 @@ class Tree(RootObject):
                 # BUG: TODO(pwaller): Memory leak
                 R.SetOwnership(h, False)
         
-            drawn = t.Draw(arg + ">>htemp", self.select_value, "goff")
+            nvar = len(arg.split(":"))
+
+            opts = "goff "
+            if nvar > 4:
+                opts += "para "
+
+            drawn = t.Draw(arg + ">>htemp", self.select_value, opts)
             
-            if self.binning:
+            if nvar > 4:
+                h = t.GetPlayer().GetSelector().GetObject()
+            elif self.binning:
                 h.SetDirectory(None)
             else:
                 h = t.GetHistogram()
