@@ -1,6 +1,7 @@
 import ROOT as R
 R.gROOT.SetBatch()
 import rootpy
+rootpy.logger.magic.DANGER.enabled = True
 
 #from .logger import log_manager, log_trace; log = log_manager.getLogger("weboot")
 log = rootpy.log["/weboot"]
