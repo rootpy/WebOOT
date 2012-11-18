@@ -473,6 +473,7 @@ class RootCacheEntry(object):
     def validate(self):
         if not self._valid:
             return False
+
         # only validate every second max
         now = time.time()
         if now - self.vtime < root_file_validate_timeout:
@@ -483,12 +484,12 @@ class RootCacheEntry(object):
                 self._valid = False
                 return False
             mtime = os.path.getmtime(self.realname)
-            log.debug("validate file %s", self.realname)
-            log.debug("RootCacheEntry's mtime, file mtime: %s %s", self.mtime, mtime)
             if self.mtime != mtime:
+                log.debug("-- mtime-delta: {0:.1f} s".format(self.mtime - mtime))
                 self._valid = False
         except OSError:
             self._exists = self._valid = False
+
         self.vtime = now
         return self._valid
 
