@@ -1,4 +1,4 @@
-from .. import log; log = log.getChild("vfs")
+from .. import log; log = log[__name__]
 
 import os
 import time

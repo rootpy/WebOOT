@@ -1,5 +1,9 @@
-# Must be first import
-from .logger import log_manager, log_trace; log = log_manager.getLogger("weboot")
+import ROOT as R
+R.gROOT.SetBatch()
+import rootpy
+
+#from .logger import log_manager, log_trace; log = log_manager.getLogger("weboot")
+log = rootpy.log["/weboot"]
 
 from pkg_resources import resource_string
 __version__ = resource_string(__name__, "version.txt")
@@ -12,9 +16,6 @@ from pyramid.events import subscriber, NewRequest
 # Database
 from auto_mongo import MongoStartFailure, configure_mongo
 
-import ROOT as R
-# Prevent ROOT from intercepting commandline args
-R.PyConfig.IgnoreCommandLineOptions = True
 
 from weboot.resources.home import HomeResource
 
@@ -26,7 +27,7 @@ def setup_root():
     R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
 
-@log_trace(log)
+@log.log_trace()
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """

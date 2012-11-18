@@ -1,4 +1,4 @@
-from .. import log; log = log.getChild(__name__)
+from .. import log; log = log[__name__]
 from pyramid.location import lineage
 import time
 
