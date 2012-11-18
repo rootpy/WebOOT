@@ -27,7 +27,7 @@ def setup_root():
     R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
 
-@log.log_trace()
+@log.trace()
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """

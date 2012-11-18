@@ -19,7 +19,7 @@ from .locationaware import LocationAware
 
 
 def renderer_view(context, request):
-    print "Rendering", context
+    log.debug("renderer_view {0}".format(context))
     return context.content
 
 def context_renderable_as(context, format):
@@ -99,7 +99,7 @@ class Renderer(LocationAware):
     
     def __init__(self, request, resource_to_render, format, params=None):
         super(Renderer, self).__init__(request)
-        print "Renderer", format, resource_to_render
+        log.debug("New {0} renderer {1}".format(format, resource_to_render))
         self.resource_to_render = resource_to_render
         self.format = format
         self.params = params or {}
@@ -164,7 +164,7 @@ class RootRenderer(Renderer):
             class UserThrow(RuntimeError): pass
             raise UserThrow("Stopping because you asked me to.")
                 
-        print "Rendering..", self.format, self
+        log.debug("Rendering {0} from {1}".format(self.format, self))
         params = self.params
         params.update(self.request.params)
         
@@ -186,7 +186,7 @@ class RootRenderer(Renderer):
                     raise NotImplementedError()
                 
                 canvas.Update()
-                print "Saving to", tmpfile.name
+                log.debug("Saving to {0}".format(tmpfile.name))
                 canvas.SaveAs(tmpfile.name)
                 
             # TODO(pwaller): figure out why these two lines are preventing

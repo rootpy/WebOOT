@@ -210,7 +210,10 @@ class RootVFS(object):
     def get(self, path):
         try:
             res = self[path]
-        except (KeyError, AccessDeniedException):
+        except KeyError:
+            return
+        except AccessDeniedException:
+            log.debug("Bad path : {0}".format(path))
             return
         return res
 
@@ -335,7 +338,8 @@ class RootCacheFile(object):
                 if isinstance(dct, dict):
                     return sum(map(count_e, dct.values()))      
                 return 1
-            log.warning("Read %i entries in %.4f s" % (count_e(self.entries), (later-now)))
+            log.debug("-- Read {0} entries in {1:.4f} s".format(
+                count_e(self.entries), (later-now)))
 
     @property
     def root_file(self):
@@ -343,6 +347,7 @@ class RootCacheFile(object):
             if self.tfile:
                 self.atime = time.time()
                 return self.tfile
+            log.debug("Opening ROOT file {0}".format(self.name))
             self.tfile = R.TFile.Open(self.name)
             if not self.tfile:
                 return
@@ -509,7 +514,7 @@ class RootCache(object):
             if result is None or not result.valid:
                 cache_file = RootCache.file_cache.get(realname, None)
                 if cache_file is None or not cache_file.valid:
-                    log.warning("refreshing rootcache for file %s"%name)
+                    log.debug("cache refresh: {0}".format(name))
                     cache = RootCacheFile(realname)
                     cache_file = RootCacheEntry(realname, realname, cache)
                     if not cache_file.root_file:
@@ -520,11 +525,9 @@ class RootCache(object):
                     return cache_file
                 result = RootCacheEntry(name, realname, cache_file.cache_file)
                 RootCache.file_cache[realname] = result
-                #dump(RootCache.file_cache, file("/home/sirius/rootcache.pickle", "w"), 2)
         return result
 
 rc = RootCache()
-#f = rc["data.root"]
 
 def maintenance_main():
     while True:

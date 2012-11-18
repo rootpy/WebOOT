@@ -15,6 +15,7 @@ def basic_traverse(what, elements):
             return
     return context
 
+@log.trace()
 def build_breadcrumbs(context):
     #return ""
     backwards_lineage = list(lineage(context))

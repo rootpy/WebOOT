@@ -50,8 +50,7 @@ class UserResource(LocationAware):
                 resource_type = OwnUserResource
         else:
             resource_type = UnknownUserResource
-            
-        print "Creating resource", request_user, view_user, resource_type
+        
         return resource_type.from_parent(parent, fragment, view_user)
     
     def __getitem__(self, fragment):
