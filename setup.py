@@ -22,7 +22,10 @@ else:
     branch = sha = refs.read_ref("HEAD")
     
     if branch.startswith("ref:"):
-        sha = refs.as_dict()["HEAD"]
+        try:
+            sha = refs.as_dict()["HEAD"]
+        except StopIteration:
+            sha = "unk"
         _, _, branch = branch.rpartition("/")
     else:
         branch = "_unk"

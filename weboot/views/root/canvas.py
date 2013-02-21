@@ -11,7 +11,7 @@ import ROOT as R
 
 from pyramid.response import Response
 
-from ... import log; log = log.getChild("views.root.canvas")
+from .. import log; log = log[__name__]
 from ...utils.timer import timer
 
 @log.trace()

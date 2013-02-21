@@ -1,6 +1,6 @@
 import ROOT as R
 
-from ... import log; log = log.getChild("views.root.histogram")
+from .. import log; log = log[__name__]
 from ...utils import fixup_hist_units
 
 from .canvas import render_canvas

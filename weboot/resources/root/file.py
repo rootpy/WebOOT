@@ -1,4 +1,4 @@
-from .. import log; log = log.getChild(__name__)
+from .. import log; log = log[__name__]
 
 from os.path import basename, exists, isfile, isdir, join as pjoin
 

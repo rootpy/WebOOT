@@ -1,4 +1,4 @@
-from .. import log; log = log.getChild(__name__)
+from .. import log; log = log[__name__]
 from pyramid.location import lineage
 import time
 
@@ -15,6 +15,7 @@ def basic_traverse(what, elements):
             return
     return context
 
+@log.trace()
 def build_breadcrumbs(context):
     #return ""
     backwards_lineage = list(lineage(context))
