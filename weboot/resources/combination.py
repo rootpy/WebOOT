@@ -564,7 +564,7 @@ class Combination(Renderable, LocationAware):
         if self.composition_type == "div":
             self.renderer = CombinationDivRenderer
             
-        print "Using renderer:", self.renderer
+        log.debug("Using renderer: {0}".format(self.renderer))
     
     @property
     def object_types(self):
