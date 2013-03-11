@@ -52,14 +52,10 @@ requires = [
     'filemagic',
     
     # Database
-    'pymongo',
+    # 'pymongo',
     # Used to run mongo and determine when it started
-    'pexpect',
-    # OpenAuth (currently unused
-    # 'velruse', 
-    # Used to host HTTPs servers
-    # 'pyOpenSSL',
-    
+    # 'pexpect',
+
     #Markdown format rendering
     'markdown',
 ]
