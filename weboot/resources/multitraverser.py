@@ -337,7 +337,7 @@ class MultipleTraverser(LocationAware):
         raise NotImplementedError()
     
     @action
-    def select(self, parent, key, selection):
+    def select_(self, parent, key, selection):
         selection_set = set(selection.split(","))
         indexed_contexts = [(index_tuple, context)
                             for index_tuple, context in self.indexed_contexts
