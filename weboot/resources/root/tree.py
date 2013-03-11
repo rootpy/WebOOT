@@ -105,7 +105,8 @@ class Tree(RootObject):
                 t.SetScanField(0)
                 t.GetPlayer().SetScanFileName(tmpfile.name)
                 t.GetPlayer().SetScanRedirect(True)
-                n = t.Scan(arg, self.selection, "colsize=30", nmax)
+                real_arg = arg
+                n = t.Scan(real_arg, self.select_value, "colsize=30", nmax)
                 status = t.GetPlayer().GetSelector().GetStatus()
                 if status < 0:
                     return "Unable to compile expression. (TODO: Show reason)\n  value: {0}\n  selection: {1}".format(
