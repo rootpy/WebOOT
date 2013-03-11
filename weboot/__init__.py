@@ -1,9 +1,7 @@
 import ROOT as R
 R.gROOT.SetBatch()
-import rootpy
-rootpy.logger.magic.DANGER.enabled = True
 
-#from .logger import log_manager, log_trace; log = log_manager.getLogger("weboot")
+import rootpy
 log = rootpy.log["/weboot"]
 
 from pkg_resources import resource_string
@@ -20,15 +18,19 @@ from auto_mongo import MongoStartFailure, configure_mongo
 
 from weboot.resources.home import HomeResource
 
-
 def setup_root():
     R.gROOT.SetBatch()
-    R.TH1.SetDefaultSumw2(False)
+    R.TH1.SetDefaultSumw2(True)
     R.TH1.AddDirectory(False)
     R.gROOT.SetStyle("Plain")
     R.gStyle.SetPalette(1)
 
-@log.trace()
+    # R.TTree.Draw._threaded = True
+
+    # Disable stack traces by default
+    # R.gEnv.SetValue("Root.Stacktrace", "no")
+
+#@log.trace()
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
