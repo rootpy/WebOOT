@@ -47,7 +47,9 @@ requires = [
     'PasteScript',
     'PasteDeploy',
     'WebError',
-    
+
+    # File mimetype detection
+    'filemagic',
     
     # Database
     'pymongo',
