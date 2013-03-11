@@ -181,7 +181,17 @@ class CombinationStackRenderer(RootRenderer):
                     obj.Scale(1. / obj.Integral())
         
         max_value = max(o.GetMaximum() for o in objs) * 1.1
-        
+        min_value = min(o.GetMinimum() for o in objs)
+       
+        if min_value != objs[0].GetMinimum():
+            old_minvalue = min_value
+            # Apply a correction to include a bit more than just the lower bound
+            min_value = min_value - (max_value - min_value)*0.1
+            # If this takes us below zero but the old minimum value was close
+            # to zero, just use zero.
+            if min_value < 0 and abs(old_minvalue) < 1e-8:
+                min_value = 0
+            
         
         obj = objs[0] #.pop(0)
         from root.histogram import build_draw_params
