@@ -165,7 +165,8 @@ class CombinationStackRenderer(RootRenderer):
             "fake"  :R.kRed,
         }
         
-        for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kBlack, R.kBlack, R.kBlack]):
+        for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kViolet, R.kAzure+6, R.kOrange]):
+            col = col + 1
             #obj.SetTitle(""); obj.SetStats(False)
             if name in colordict:
                 obj.SetLineColor(colordict[name])
