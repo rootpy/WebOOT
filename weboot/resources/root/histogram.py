@@ -237,7 +237,7 @@ class Histogram(Renderable, RootObject):
     def explode_slot_filler(multipletraverser, key):
         axis, bin = key.axis, key.bin
         #raise RuntimeError
-        return multipletraverser.__parent__.__parent__["!range"][axis][bin][bin]
+        return multipletraverser.__parent__.__parent__["!binrange"][axis][bin][bin]
         
     class ExplodeSlotKey(object):
         """
@@ -266,7 +266,7 @@ class Histogram(Renderable, RootObject):
         axis = get_haxis(self.obj, ax)
 
         def build_bin(i):
-            r = self["!range"][ax][i][i]
+            r = self["!binrange"][ax][i][i]
             s = "bin {0:03d}: [{1}, {2}) {3}"
             lo = axis.GetBinLowEdge(i) if i else "-inf"
             up = axis.GetBinUpEdge(i) if i != axis.GetNbins()+1 else "+inf"
