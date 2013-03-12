@@ -9,7 +9,6 @@ from pyramid.location import lineage
 from pyramid.response import Response
 
 from weboot.resources.multitraverser import MultipleTraverser
-from .root.canvas import render_canvas
 
 from .breadcrumb import build_breadcrumbs
 

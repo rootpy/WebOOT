@@ -2,8 +2,11 @@ from .. import log; log = log[__name__]
 
 import ROOT as R
 
+from rootpy.memory.keepalive import keepalive
+
 from weboot.utils.thousands import split_thousands
-from weboot.utils.histogram import normalize_by_axis
+from weboot.utils.histogram import normalize_by_axis, fixup_hist_units
+
 
 from weboot.resources.actions import action
 from weboot.resources.renderable import Renderable, RootRenderer
@@ -77,7 +80,7 @@ def build_draw_params(h, params, box2d=False):
     return opts
 
 class HistogramRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
         params = self.request.params
         h = self.resource_to_render.obj
         
@@ -92,6 +95,7 @@ class HistogramRenderer(RootRenderer):
         
         # TODO(pwaller): bring back draw options
         h.Draw(build_draw_params(h, params))
+        keepalive(canvas, h)
 
 class Histogram(Renderable, RootObject):
     renderer = HistogramRenderer
