@@ -109,6 +109,8 @@ def main(global_config, **settings):
     
     config.add_static_view('static', 'weboot:static')
     
+    # For now, disable mongodb.
+    """
     try:
         db = configure_mongo(config, settings)
         def request_setup_db(event):
@@ -119,6 +121,11 @@ def main(global_config, **settings):
         def no_mongo_db(event):
             event.request.db = None
         config.add_subscriber(no_mongo_db, NewRequest)
+    """
+    
+    def no_mongo_db(event):
+        event.request.db = None
+    config.add_subscriber(no_mongo_db, NewRequest)
     
     config.scan("weboot.views")
     
