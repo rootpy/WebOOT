@@ -1,5 +1,7 @@
 import os
 
+__version__ = "0.1"
+
 from commands import getstatusoutput
 from os.path import abspath, dirname, exists, join as pjoin
 from setuptools import setup, find_packages
@@ -7,35 +9,6 @@ from setuptools import setup, find_packages
 here = abspath(dirname(__file__))
 README = open(pjoin(here, 'README.txt')).read()
 CHANGES = open(pjoin(here, 'CHANGES.txt')).read()
-version_path = pjoin(here, "weboot", "version.txt")
-
-try:
-    import dulwich
-except ImportError:
-    if exists(version_path):
-        __version__ = open(version_path).read().strip()
-    else:
-        __version__ = "__UNKNOWN__"
-else:
-    repo = dulwich.repo.Repo(here)
-    refs = repo.refs
-    branch = sha = refs.read_ref("HEAD")
-    
-    if branch.startswith("ref:"):
-        try:
-            sha = refs.as_dict()["HEAD"]
-        except StopIteration:
-            sha = "unk"
-        _, _, branch = branch.rpartition("/")
-    else:
-        branch = "_unk"
-    
-    __version__ = "{0}-{1}".format(branch, sha[:6])
-    
-    # No `with` to be <2.5 safe
-    fd = open(version_path, "w")
-    fd.write(__version__)
-    fd.close()        
 
 requires = [
     # Basic requirements
