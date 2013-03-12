@@ -6,7 +6,7 @@ log = rootpy.log["/weboot"]
 
 
 from pkg_resources import resource_string
-__version__ = resource_string(__name__, "version.txt")
+__version__ = "0.1"
 
 import sys
 
