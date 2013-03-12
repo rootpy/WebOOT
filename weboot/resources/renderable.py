@@ -178,15 +178,13 @@ class RootRenderer(Renderer):
         with NamedTemporaryFile(suffix="." + rootformat) as tmpfile:
             with self.canvas as canvas:
                 self.configure_canvas(params, canvas)
-                alive = []       
-                self.render(canvas, alive.append)
+                self.render(canvas)
                 
                 if self.format == "xml":
                     # TODO(pwaller): special case
                     raise NotImplementedError()
                 
                 canvas.Update()
-                log.debug("Saving to {0}".format(tmpfile.name))
                 canvas.SaveAs(tmpfile.name)
                 
             # TODO(pwaller): figure out why these two lines are preventing
@@ -195,7 +193,7 @@ class RootRenderer(Renderer):
             #                    problem, but it's still a black box.
             # with open(tmpfile.name) as eps_fd: epsdata = eps_fd.read()
             
-            log.error("RENDERING {0} -- {1}".format(self.format, rootformat))
+            log.info("RENDERING {0} -- {1}".format(self.format, rootformat))
             if self.format == rootformat:
                 # No conversion necessary, ROOT did it directly.
                 # grab the file from disk
