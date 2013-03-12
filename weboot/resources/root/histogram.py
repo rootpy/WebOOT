@@ -36,7 +36,9 @@ class HistogramTable(RootObject):
             prev = h[i]
             content.append('<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td><td style="text-align: right;">{2:.3%}</td></tr>'.format(*a))
         content.append("</table>")
-        content.append('<div style="float:right;"><img src="../?render&resolution=50&logy" /></div><div style="clear:both;"></div>')
+        content.append('<div style="float:right;"><img src="{0}" /></div><div style="clear:both;"></div>'.format(
+        self.__parent__["!render"]["png"]["!resolution"]["50"].sub_url(query={"logy": 1})
+           ))
         return content
 
 def get_xyz_func(obj, func, ax):
