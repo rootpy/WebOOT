@@ -4,6 +4,7 @@ R.gROOT.SetBatch()
 import rootpy
 log = rootpy.log["/weboot"]
 
+
 from pkg_resources import resource_string
 __version__ = resource_string(__name__, "version.txt")
 
@@ -22,8 +23,6 @@ def setup_root():
     R.gROOT.SetBatch()
     R.TH1.SetDefaultSumw2(True)
     R.TH1.AddDirectory(False)
-    R.gROOT.SetStyle("Plain")
-    R.gStyle.SetPalette(1)
 
     # R.TTree.Draw._threaded = True
 
