@@ -4,6 +4,8 @@ import os
 import time
 from threading import RLock, Lock, Thread
 
+import magic
+
 import ROOT as R
 
 """
@@ -28,6 +30,8 @@ the following functions:
 
 """
 
+
+
 directory_ls_timeout = 2 #seconds
 root_file_validate_timeout = 2 #seconds
 root_file_close_timeout = 30 #seconds
@@ -42,6 +46,7 @@ def get_key_class(key):
         return class_object
     except AttributeError:
         return None
+
 class VFSDirectory(object):
     isdir = lambda self : True
     infile = isvfile = isobject = lambda self : False
@@ -341,8 +346,23 @@ class RootCacheFile(object):
             log.debug("-- Read {0} entries in {1:.4f} s".format(
                 count_e(self.entries), (later-now)))
 
+    @staticmethod
+    # TODO: @lrucache
+    def get_mime_type(path):
+        with magic.Magic() as m:
+            return m.id_filename(path)
+
+    @property
+    def mime_type(self):
+        return self.get_mime_type(self.name)
+
+    @property
+    def check_root_file(self):
+        return self.mime_type.startswith("ROOT file")
+
     @property
     def root_file(self):
+        if not self.check_root_file: return
         with self.lock:
             if self.tfile:
                 self.atime = time.time()
@@ -493,21 +513,20 @@ class RootCacheEntry(object):
         self.vtime = now
         return self._valid
 
-"""
-RootCache
-Singleton Threadsafe Cache that provides Root File Contents and TFile objects
-The cache of an inidvidual Root file is flushed on mtime changes
-"""
-
 from cPickle import dump
 
 class RootCache(object):
     """
+    RootCache
+    Singleton Threadsafe Cache that provides Root File Contents and TFile objects
+    The cache of an individual Root file is flushed on mtime changes
+
     A cache mapping a file name to a CacheEntry
     Both the relative and the real file name (symlinks, etc) is checked.
     """
     file_cache = {}
     lock = Lock()
+
     def __getitem__(_dummy_, name):
         realname = os.path.realpath(name)
         with RootCache.lock:

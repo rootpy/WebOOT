@@ -2,8 +2,11 @@ from .. import log; log = log[__name__]
 
 import ROOT as R
 
+from rootpy.memory.keepalive import keepalive
+
 from weboot.utils.thousands import split_thousands
-from weboot.utils.histogram import normalize_by_axis
+from weboot.utils.histogram import normalize_by_axis, fixup_hist_units
+
 
 from weboot.resources.actions import action
 from weboot.resources.renderable import Renderable, RootRenderer
@@ -33,7 +36,9 @@ class HistogramTable(RootObject):
             prev = h[i]
             content.append('<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td><td style="text-align: right;">{2:.3%}</td></tr>'.format(*a))
         content.append("</table>")
-        content.append('<div style="float:right;"><img src="../?render&resolution=50&logy" /></div><div style="clear:both;"></div>')
+        content.append('<div style="float:right;"><img src="{0}" /></div><div style="clear:both;"></div>'.format(
+        self.__parent__["!render"]["png"]["!resolution"]["50"].sub_url(query={"logy": 1})
+           ))
         return content
 
 def get_xyz_func(obj, func, ax):
@@ -77,7 +82,7 @@ def build_draw_params(h, params, box2d=False):
     return opts
 
 class HistogramRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
         params = self.request.params
         h = self.resource_to_render.obj
         
@@ -92,6 +97,7 @@ class HistogramRenderer(RootRenderer):
         
         # TODO(pwaller): bring back draw options
         h.Draw(build_draw_params(h, params))
+        keepalive(canvas, h)
 
 class Histogram(Renderable, RootObject):
     renderer = HistogramRenderer
@@ -237,7 +243,7 @@ class Histogram(Renderable, RootObject):
     def explode_slot_filler(multipletraverser, key):
         axis, bin = key.axis, key.bin
         #raise RuntimeError
-        return multipletraverser.__parent__.__parent__["!range"][axis][bin][bin]
+        return multipletraverser.__parent__.__parent__["!binrange"][axis][bin][bin]
         
     class ExplodeSlotKey(object):
         """
@@ -266,7 +272,7 @@ class Histogram(Renderable, RootObject):
         axis = get_haxis(self.obj, ax)
 
         def build_bin(i):
-            r = self["!range"][ax][i][i]
+            r = self["!binrange"][ax][i][i]
             s = "bin {0:03d}: [{1}, {2}) {3}"
             lo = axis.GetBinLowEdge(i) if i else "-inf"
             up = axis.GetBinUpEdge(i) if i != axis.GetNbins()+1 else "+inf"

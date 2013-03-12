@@ -1,13 +1,12 @@
 import ROOT as R
 R.gROOT.SetBatch()
-import rootpy
-rootpy.logger.magic.DANGER.enabled = True
 
-#from .logger import log_manager, log_trace; log = log_manager.getLogger("weboot")
+import rootpy
 log = rootpy.log["/weboot"]
 
+
 from pkg_resources import resource_string
-__version__ = resource_string(__name__, "version.txt")
+__version__ = "0.1"
 
 import sys
 
@@ -20,15 +19,17 @@ from auto_mongo import MongoStartFailure, configure_mongo
 
 from weboot.resources.home import HomeResource
 
-
 def setup_root():
     R.gROOT.SetBatch()
-    R.TH1.SetDefaultSumw2(False)
+    R.TH1.SetDefaultSumw2(True)
     R.TH1.AddDirectory(False)
-    R.gROOT.SetStyle("Plain")
-    R.gStyle.SetPalette(1)
 
-@log.trace()
+    # R.TTree.Draw._threaded = True
+
+    # Disable stack traces by default
+    # R.gEnv.SetValue("Root.Stacktrace", "no")
+
+#@log.trace()
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -108,6 +109,8 @@ def main(global_config, **settings):
     
     config.add_static_view('static', 'weboot:static')
     
+    # For now, disable mongodb.
+    """
     try:
         db = configure_mongo(config, settings)
         def request_setup_db(event):
@@ -118,6 +121,11 @@ def main(global_config, **settings):
         def no_mongo_db(event):
             event.request.db = None
         config.add_subscriber(no_mongo_db, NewRequest)
+    """
+    
+    def no_mongo_db(event):
+        event.request.db = None
+    config.add_subscriber(no_mongo_db, NewRequest)
     
     config.scan("weboot.views")
     

@@ -3,6 +3,8 @@ from tempfile import NamedTemporaryFile
 
 import ROOT as R
 
+from . import log; log = log[__name__]
+
 from ..actions import action, ResponseContext
 from ..multitraverser import MultipleTraverser
 
@@ -44,16 +46,26 @@ class Tree(RootObject):
     def draw(self, parent, key, arg):
         if MultipleTraverser.should_multitraverse(arg):
             return MultipleTraverser.from_listable(parent, arg, self)
-            
+        
+        @log.trace()
         def draw(t):
         
             if self.binning:
                 # TODO(pwaller): gDirectory needs to be thread-unique. Otherwise:
                 #       bad bad, sad sad.
                 # TODO(pwaller): Parse self.binning, call appropriate h.
-                n, low, hi = self.binning.split(",")
-                n, low, hi = int(n), float(low), float(hi)
-                h = R.TH1D("htemp", arg, n, low, hi)
+                
+                def mkbin(b):
+                    n, low, hi = b.split(",")
+                    return int(n), float(low), float(hi)
+                
+                dims = self.binning.split(":")
+                if len(dims) == 1:
+                    h = R.TH1D("htemp", arg, *mkbin(dims[0]))
+                elif len(dims) == 2:
+                    h = R.TH2D("htemp", arg, *(mkbin(dims[0]) + mkbin(dims[1])))
+                else:
+                    raise NotImplementedError("Not implemented yet for {0} dims".format(len(dims)))
                 h.SetDirectory(R.gDirectory)
                 # BUG: TODO(pwaller): Memory leak
                 R.SetOwnership(h, False)
@@ -61,10 +73,14 @@ class Tree(RootObject):
             nvar = len(arg.split(":"))
 
             opts = "goff "
-            if nvar > 4:
+            if nvar > 1:
+                opts += "colz "
+            elif nvar > 4:
                 opts += "para "
 
-            drawn = t.Draw(arg + ">>htemp", self.select_value, opts)
+            nmax = int(self.request.params.get("n", 1e9))
+
+            drawn = t.Draw(arg + ">>htemp", self.select_value, opts, nmax)
             
             if nvar > 4:
                 h = t.GetPlayer().GetSelector().GetObject()
@@ -89,7 +105,8 @@ class Tree(RootObject):
                 t.SetScanField(0)
                 t.GetPlayer().SetScanFileName(tmpfile.name)
                 t.GetPlayer().SetScanRedirect(True)
-                n = t.Scan(arg, self.selection, "colsize=30", nmax)
+                real_arg = arg
+                n = t.Scan(real_arg, self.select_value, "colsize=30", nmax)
                 status = t.GetPlayer().GetSelector().GetStatus()
                 if status < 0:
                     return "Unable to compile expression. (TODO: Show reason)\n  value: {0}\n  selection: {1}".format(

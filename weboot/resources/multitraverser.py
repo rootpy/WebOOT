@@ -204,6 +204,16 @@ class MultipleTraverser(LocationAware):
         if indexed_contexts:
             assert all(len(x) == order for x, y in indexed_contexts)
 
+    @action
+    def showshape(self, key):
+        class Tmp(Renderer, LocationAware):
+            def __init__(self, request):
+                self.request = request
+            @property
+            def content(self):
+                return Response("Hello world", content_type="text/plain")
+        return Tmp.from_parent(self, key)
+
     @classmethod
     def should_multitraverse(cls, key):
         if "*" in key or "," in key:
@@ -327,7 +337,7 @@ class MultipleTraverser(LocationAware):
         raise NotImplementedError()
     
     @action
-    def select(self, parent, key, selection):
+    def select_(self, parent, key, selection):
         selection_set = set(selection.split(","))
         indexed_contexts = [(index_tuple, context)
                             for index_tuple, context in self.indexed_contexts

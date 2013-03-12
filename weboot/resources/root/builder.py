@@ -19,6 +19,7 @@ from .tree import Tree
 RESOURCE_MAPPING = [
     (R.TH1,         Histogram),
     (R.TGraph,      Graph),
+    (R.TGraph2D,    Graph),
     (R.TCanvas,     Canvas),
     ("TParameter",  Parameter),
     (R.TTree,       Tree),

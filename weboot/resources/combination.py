@@ -1,5 +1,7 @@
 import ROOT as R
 
+from rootpy.memory.keepalive import keepalive
+
 from pyramid.location import lineage
 
 from .actions import action
@@ -137,7 +139,7 @@ class CombinationStackRenderer(RootRenderer):
         args = parent, key, self.resource_to_render, self.format, params
         return self.from_parent(*args)
         
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
         
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
@@ -150,7 +152,7 @@ class CombinationStackRenderer(RootRenderer):
         if "sum" in params:
 
             hsum = objs[0].Clone("sum")
-            keep_alive(hsum)
+            keepalive(hsum)
             hsum.SetTitle("sum")
 
             for h in objs[1:]:
@@ -165,7 +167,8 @@ class CombinationStackRenderer(RootRenderer):
             "fake"  :R.kRed,
         }
         
-        for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kBlack, R.kBlack, R.kBlack]):
+        for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kViolet, R.kAzure+6, R.kOrange]):
+            col = col + 1
             #obj.SetTitle(""); obj.SetStats(False)
             if name in colordict:
                 obj.SetLineColor(colordict[name])
@@ -180,7 +183,17 @@ class CombinationStackRenderer(RootRenderer):
                     obj.Scale(1. / obj.Integral())
         
         max_value = max(o.GetMaximum() for o in objs) * 1.1
-        
+        min_value = min(o.GetMinimum() for o in objs)
+       
+        if min_value != objs[0].GetMinimum():
+            old_minvalue = min_value
+            # Apply a correction to include a bit more than just the lower bound
+            min_value = min_value - (max_value - min_value)*0.1
+            # If this takes us below zero but the old minimum value was close
+            # to zero, just use zero.
+            if min_value < 0 and abs(old_minvalue) < 1e-8:
+                min_value = 0
+            
         
         obj = objs[0] #.pop(0)
         from root.histogram import build_draw_params
@@ -206,7 +219,7 @@ class CombinationStackRenderer(RootRenderer):
             l = R.TLine(*args)
             l.SetLineWidth(3); l.SetLineStyle(2)
             l.Draw()
-            keep_alive(l)
+            keepalive(l)
         
         # Draw cuts
         slot = self.request.params.get("slot", None)
@@ -225,12 +238,12 @@ class CombinationStackRenderer(RootRenderer):
         
         
         if self.request.params.get("legend", None) is not None:
-            log.error("Drawing legend: {0}".format(objs))
+            log.debug("Drawing legend: {0}".format(objs))
             for n, o in zip(names, objs):
                 o.SetTitle(n)
             legend = get_legend(mc=objs)
             legend.Draw()
-            keep_alive(legend)
+            keepalive(legend)
             
         return
         
@@ -256,7 +269,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
         args = parent, key, self.resource_to_render, self.format, params
         return self.from_parent(*args)
         
-    def render(self, canvas, keep_alive):
+    def render(self, canvas, keepalive):
         
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
@@ -336,7 +349,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
         mcstack = R.THStack()
         for h in mc:
             mcstack.Add(h)
-        keep_alive(mcstack)
+        keepalive(mcstack)
 
         axis = None
         mc_sum_line, mc_sum_error = None, None
@@ -344,8 +357,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
             axis = mcstack
             mcstack.Draw("Hist")
             mc_sum_line, mc_sum_error = create_mc_sum(mc)
-            keep_alive(mc_sum_line)
-            keep_alive(mc_sum_error)
+            keepalive(mc_sum_line)
+            keepalive(mc_sum_error)
 
         for signal in signals:
             if mc:
@@ -388,7 +401,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
             l = R.TLine(*args)
             l.SetLineWidth(1); l.SetLineStyle(2)
             l.Draw()
-            keep_alive(l)
+            keepalive(l)
         
         # Draw cuts
         slot = self.request.params.get("slot", None)
@@ -406,16 +419,16 @@ class EbkeCombinationStackRenderer(RootRenderer):
         if not self.request.params.get("legend", None) is None:
             legend = get_legend(mc=mc, data=data, signal=signals, mc_sum=mc_sum_error)
             legend.Draw()
-            keep_alive(legend)
+            keepalive(legend)
 
         if not self.request.params.get("lumi", None) is None:
             label = get_lumi_label(lumi=self.request.params["lumi"])
             label.Draw()
-            keep_alive(label)
+            keepalive(label)
        
         p = preliminary()
         p.Draw("hist e0x0")
-        keep_alive(p)
+        keepalive(p)
 
         return
         
@@ -432,7 +445,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
         h.Draw("hist e0x0")
         
 class CombinationDualRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
                 
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
@@ -442,7 +455,7 @@ class CombinationDualRenderer(RootRenderer):
         
         h1, h2 = objs
         
-        p1 = R.TPad("pad", "", 0, 0, 1, 1); keep_alive(p1)
+        p1 = R.TPad("pad", "", 0, 0, 1, 1); keepalive(p1)
         p1.Draw()
         p1.cd()
         
@@ -450,7 +463,7 @@ class CombinationDualRenderer(RootRenderer):
         h1.Draw()
         #return
         
-        p2 = R.TPad("overlay", "", 0, 0, 1, 1); keep_alive(p2)
+        p2 = R.TPad("overlay", "", 0, 0, 1, 1); keepalive(p2)
         p2.SetFillStyle(4000)
         p2.SetFrameFillStyle(4000)
         p2.Draw()
@@ -459,7 +472,7 @@ class CombinationDualRenderer(RootRenderer):
         h2.Draw("Y+")
         
 class CombinationEffRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
                 
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
@@ -468,13 +481,13 @@ class CombinationEffRenderer(RootRenderer):
         h1, h2 = sorted([h.obj for h in histograms], key=lambda x: x.GetEntries())
         
         eff = R.TEfficiency(h1, h2)
-        keep_alive(eff)
+        keepalive(eff)
         
         eff.SetFillColor(R.kRed)
         eff.Draw("AP")
         
 class CombinationDiffRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
                 
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
@@ -483,13 +496,13 @@ class CombinationDiffRenderer(RootRenderer):
         h1, h2 = [h.obj for h in histograms]
         
         h = h2.Clone()
-        keep_alive(h)
+        keepalive(h)
         
         h.Add(h1, -1)
         h.Draw()
 
 class CombinationDivRenderer(RootRenderer):
-    def render(self, canvas, keep_alive):
+    def render(self, canvas):
                 
         params = self.request.params
 
@@ -501,7 +514,7 @@ class CombinationDivRenderer(RootRenderer):
         h1, h2 = [h.obj for h in histograms]
         
         h = h2.Clone()
-        keep_alive(h)
+        keepalive(h)
         
         h.Divide(h,h1,1,1)
         h.Draw()
@@ -553,7 +566,7 @@ class Combination(Renderable, LocationAware):
         if self.composition_type == "div":
             self.renderer = CombinationDivRenderer
             
-        print "Using renderer:", self.renderer
+        log.debug("Using renderer: {0}".format(self.renderer))
     
     @property
     def object_types(self):
@@ -574,11 +587,9 @@ class Combination(Renderable, LocationAware):
     
     
     def keys(self):
-        log.error("{0}".format(self.object_types))
         if any(hasattr(t, "keys") for t in self.object_types):
             keys = [set(x.keys()) for n, x in self.stack if hasattr(x, "keys")]
             result = reduce(set.union, keys, set())
-            log.error("--- {0}".format(result))
             return result
         return []
         #if all(hasattr(

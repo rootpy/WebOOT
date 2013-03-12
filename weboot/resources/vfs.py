@@ -61,24 +61,23 @@ class VFSTraverser(LocationAware):
     
     def __iter__(self):
         return iter(self.keys())
-            
-    @log.trace()
+    
     def __getitem__(self, key):
         if MultipleTraverser.should_multitraverse(key):
             return MultipleTraverser.from_listable(self, key)
         path = pjoin(self.path, key)
         item = self.vfs.get(path)
         if not item:
-            log.debug("VFS returned None")
+            #log.debug("VFS returned None")
             return None
         elif item.isdir():
             return VFSTraverser.from_parent(self, key, path, self.vfs)
         elif item.isobject():
             return build_root_object(self, key, item)
-        elif path.endswith(".markdown"):
+        elif path.endswith(".md") or path.endswith(".markdown"):
             return MarkdownResource.from_parent(self, key, path)
         elif path.endswith(".png"):
             return StaticImageResource.from_parent(self, key, path)
-        log.debug("Unknown resource type")
+        log.debug("Ignoring unknown resource type {0}".format(item))
 
 
