@@ -24,12 +24,19 @@ requires = [
     # File mimetype detection
     'filemagic',
     
+    'rootpy',
+    
     # Database
     # 'pymongo',
     # Used to run mongo and determine when it started
     # 'pexpect',
-
-    #Markdown format rendering
+    
+    # OpenAuth (currently unused
+    # 'velruse', 
+    # Used to host HTTPs servers
+    # 'pyOpenSSL',
+    
+    # Markdown format rendering
     'markdown',
 ]
 
@@ -46,7 +53,7 @@ setup(
     ],
     author='Peter Waller',
     author_email='peter.waller@cern.ch',
-    url='https://weboot.cern.ch',
+    url='https://weboot.cern.ch/',
     keywords='web pyramid pylons',
     packages=find_packages(),
     include_package_data=True,
