@@ -1,10 +1,18 @@
 WebOOT
+------
 
-The web ROOT viewer.
+A web ROOT viewer.
 
 Fed up with writing plot scripts?
 
-Prerequisite:
+# Introduction
+
+WebOOT aims to make it easy to make navigate between ROOT files and do advanced
+maniuplation on many plots simultaneously.
+
+The first idea is that all plots should be addressable at a URL.
+
+# Prerequisites
 
 If these work, then weboot should work:
 
@@ -12,15 +20,16 @@ If these work, then weboot should work:
     $ convert -h
     (from ImageMagick)
 
-Installation:
+# Installation
 
 Using virtualenv you can install all dependencies
 in the current directory:
 
-    ./virtualenv.py --no-site-packages env
-    env/bin/pip install -e .
+    git clone git://github.com/rootpy/WebOOT
+    python WebOOT/setup.py develop --user
     mkdir results/
     # Copy some histograms to your results/ directory, then run..
-    env/bin/paster serve --reload development.ini
+    pserve --reload WebOOT/development.ini
 
 Please see `CONTRIBUTING`.
+
