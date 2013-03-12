@@ -75,7 +75,7 @@ def action(function):
     if n_args <= 0:
         thunk = function
     else:
-        def thunk(orig_resource, key):
+        def thunk(self, orig_resource, key):
             args = orig_resource, key, function, n_args, orig_resource
             return ArgumentCollector.from_parent(*args)
            
@@ -159,7 +159,7 @@ class HasActions(object):
         If `key` is present in `self.actions`, call it and return the resource.
         """
         if key in self.actions:
-            return self.actions[key]._action_thunk(self, key)
+            return self.actions[key]._action_thunk(self, self, key)
     
     def __getitem__(self, key):
         """
