@@ -14,7 +14,7 @@ from pyramid.config import Configurator
 from pyramid.events import subscriber, NewRequest
 
 # Database
-from auto_mongo import MongoStartFailure, configure_mongo
+# from auto_mongo import MongoStartFailure, configure_mongo
 
 
 from weboot.resources.home import HomeResource
