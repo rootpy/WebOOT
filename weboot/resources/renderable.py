@@ -12,6 +12,8 @@ from pyramid.response import Response
 
 import ROOT as R
 
+from rootpy import ROOTError
+
 from weboot import log; log = log.getChild("renderable")
 
 from .actions import HasActions, action
@@ -185,7 +187,14 @@ class RootRenderer(Renderer):
                     raise NotImplementedError()
                 
                 canvas.Update()
-                canvas.SaveAs(tmpfile.name)
+                try:
+                    canvas.SaveAs(tmpfile.name)
+                except ROOTError as err:
+                    if "illegal number of points" in err.msg:
+                        log.warning('problem plotting canvas "%s", error from ROOT %s', canvas.GetName(), err.msg)
+                    else:
+                        raise err
+
                 
             # TODO(pwaller): figure out why these two lines are preventing
             #                 blank images. (wtf?)
