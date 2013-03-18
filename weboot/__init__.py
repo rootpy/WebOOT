@@ -91,16 +91,6 @@ def main(global_config, **settings):
     config.add_view("weboot.views.multitraverse.view_multitraverse", 
                     context="weboot:resources.multitraverser.MultipleTraverser",
                     renderer='weboot:templates/result.pt')
-
-    # Multi_traverser?render=
-    config.add_view("weboot.views.multitraverse.view_multitraverse_render", 
-                    context="weboot:resources.multitraverser.MultipleTraverser",
-                    request_param="render")
-                    
-    # root_object?render=
-    config.add_view("weboot.views.root.object.view_root_object_render",
-                    context="weboot:resources.root.object.RootObject",
-                    request_param="render")
                     
     # /!render/type
     # (because !render/type returns a Renderer object)

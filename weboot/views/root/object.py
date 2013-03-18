@@ -11,6 +11,10 @@ from ...utils.timer import timer
 
 @log.trace()
 def view_root_object_render(context, request):
+    """
+    Only called if the object doesn't inherit from Renderable
+    """
+
     if request.params.get("render", "") == "xml":
         o = context.obj
         xmlfile = R.TXMLFile("test.xml", "recreate")
@@ -19,10 +23,5 @@ def view_root_object_render(context, request):
         with open("test.xml") as fd:
             content = fd.read()
         return Response(content, content_type="text/plain")
-
-            
-        
-    if issubclass(context.cls, R.TCanvas):
-        return render_actual_canvas(context, request)
-        
+    
     return HTTPFound(location=static_url('weboot:static/close_32.png', request))
