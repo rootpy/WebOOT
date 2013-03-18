@@ -7,7 +7,7 @@ from os.path import abspath, dirname, exists, join as pjoin
 from setuptools import setup, find_packages
 
 here = abspath(dirname(__file__))
-README = open(pjoin(here, 'README.txt')).read()
+README = open(pjoin(here, 'README.md')).read()
 CHANGES = open(pjoin(here, 'CHANGES.txt')).read()
 
 requires = [
