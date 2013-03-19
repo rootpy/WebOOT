@@ -1,3 +1,8 @@
+#! /usr/bin/env python
+
+from distribute_setup import use_setuptools
+use_setuptools()
+
 import os
 
 __version__ = "0.1"
