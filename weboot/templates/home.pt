@@ -61,6 +61,8 @@
 
     <h2>Starting points</h2>
     <ul>
+        <li><a href="${request.url}browse/">${request.url}browse/</a> :
+        Browse your ROOT files</li>
         <li><a href="${request.url}me/">${request.url}me/</a> :
         Go and look at some of your plots on AFS</li>
         <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> :
