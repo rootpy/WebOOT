@@ -24,7 +24,6 @@ Copy & paste these commands into a shell to check:
 
     $ python -c "import ROOT"
     $ convert -h
-    $ python -c "import pexpect"
     $ python -c "import magic"
 
 # Installation
@@ -36,8 +35,7 @@ This is a simple way to install WebOOT:
     python setup.py develop --user
 
 Extra Python package dependencies that WebOOT uses and you don't have already
-will be fetched and installed automatically
-from [PyPI](https://pypi.python.org/pypi/):
+will be fetched and installed from [PyPI](https://pypi.python.org/pypi/) automatically:
 [rootpy](https://pypi.python.org/pypi/rootpy/)
 [pyramid](https://pypi.python.org/pypi/pyramid/),
 [pyramid_debugtoolbar](https://pypi.python.org/pypi/pyramid_debugtoolbar/),
@@ -45,7 +43,7 @@ from [PyPI](https://pypi.python.org/pypi/):
 [Paste](https://pypi.python.org/pypi/Paste/),
 [PasteScript](https://pypi.python.org/pypi/PasteScript/),
 [PasteDeploy](https://pypi.python.org/pypi/PasteDeploy/),
-[WebError](https://pypi.python.org/pypi/WebError/)
+[WebError](https://pypi.python.org/pypi/WebError/).
 
 # Usage
 
