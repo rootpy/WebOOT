@@ -26,10 +26,11 @@ Using virtualenv you can install all dependencies
 in the current directory:
 
     git clone git://github.com/rootpy/WebOOT
-    python WebOOT/setup.py develop --user
+    cd WebOOT/
+    python setup.py develop --user
     mkdir results/
     # Copy some histograms to your results/ directory, then run..
-    pserve --reload WebOOT/development.ini
+    ${HOME}/.local/bin/pserve --reload development.ini
 
 Please see `CONTRIBUTING`.
 
