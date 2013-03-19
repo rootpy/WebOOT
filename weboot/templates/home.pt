@@ -9,7 +9,7 @@
     
     <script type="text/javascript">
         $(function () {
-            $.getJSON("https://github.com/api/v2/json/issues/list/pwaller/WebOOT/open?callback=?", 
+            $.getJSON("https://github.com/api/v2/json/issues/list/rootpy/WebOOT/open?callback=?", 
                 function (result) {
                     $("#number_of_issues").text(result["issues"].length);
                 });
@@ -42,7 +42,7 @@
             of a mess.</li>
     </ul>
     <p>Please report broken things, ideas or complaints at 
-       <a href="https://github.com/pwaller/WebOOT/issues">WebOOT issues</a> on github.
+       <a href="https://github.com/rootpy/WebOOT/issues">WebOOT issues</a> on github.
        There are currently <span id="number_of_issues">lots</span> open but between us we'll get around to it. 
        If you record an idea, it can't be permanently forgotten.
     </p>
@@ -51,20 +51,24 @@
     <h2>A community project</h2>
     <p>You are currently looking at one instance of the WebOOT server, running on <span class="host">${host}</span>. 
         You can start your own instance on <span class="host">${remote_host}</span> or wherever you like in a matter of 
-        <a href="https://github.com/pwaller/WebOOT/blob/master/README.txt">minutes</a>.
-        Anyone can get the source from <a href="https://github.com/pwaller/WebOOT/">github</a> 
+        <a href="https://github.com/rootpy/WebOOT/blob/master/README.md">minutes</a>.
+        Anyone can get the source from <a href="https://github.com/rootpy/WebOOT/">github</a> 
         and start committing to it without permission from anybody.
-        If you <a href="https://github.com/pwaller/WebOOT/blob/master/CONTRIBUTING">make something</a> cool, let us know by sending a 
+        If you <a href="https://github.com/rootpy/WebOOT/blob/master/CONTRIBUTING">make something</a> cool, let us know by sending a 
         <a href="http://help.github.com/send-pull-requests/">pull request</a>. 
         That will make the most of both of our time.</p>
     <br />
 
     <h2>Starting points</h2>
     <ul>
-        <li><a href="${request.url}me/">${request.url}me/</a> : Go and look at 
-        some of your plots on AFS</li>
-        <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> : Find some plots that are being shared with you.</li>
-        <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> : Share plots with others.</li>
+        <li><a href="${request.url}browse/">${request.url}browse/</a> :
+        Browse your ROOT files</li>
+        <li><a href="${request.url}me/">${request.url}me/</a> :
+        Go and look at some of your plots on AFS</li>
+        <li><a href="${request.url}dashboard/">${request.url}dashboard/</a> :
+        Find some plots that are being shared with you.</li>
+        <li><a href="${request.url}~${login}/">${request.url}~${login}/</a> :
+        Share plots with others.</li>
     </ul>
 
 </tal:block>
