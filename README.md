@@ -5,14 +5,14 @@ A web ROOT viewer.
 
 Fed up with writing plot scripts?
 
-# Introduction
+## Introduction
 
 WebOOT aims to make it easy to make navigate between ROOT files and do advanced
 manipulation on many plots simultaneously.
 
 The first idea is that all plots should be addressable at a URL.
 
-# Prerequisites
+## Prerequisites
 
 To make WebOOT work, you need
 [PyROOT](http://root.cern.ch/drupal/content/pyroot),
@@ -26,7 +26,7 @@ Copy & paste these commands into a shell to check:
     $ convert -h
     $ python -c "import magic"
 
-# Installation
+## Installation
 
 This is a simple way to install WebOOT:
 
@@ -34,18 +34,8 @@ This is a simple way to install WebOOT:
     cd WebOOT/
     python setup.py develop --user
 
-Extra Python package dependencies that WebOOT uses and you don't have already
-will be fetched and installed from [PyPI](https://pypi.python.org/pypi/) automatically:
-[rootpy](https://pypi.python.org/pypi/rootpy/)
-[pyramid](https://pypi.python.org/pypi/pyramid/),
-[pyramid_debugtoolbar](https://pypi.python.org/pypi/pyramid_debugtoolbar/),
-[waitress](https://pypi.python.org/pypi/waitress/),
-[Paste](https://pypi.python.org/pypi/Paste/),
-[PasteScript](https://pypi.python.org/pypi/PasteScript/),
-[PasteDeploy](https://pypi.python.org/pypi/PasteDeploy/),
-[WebError](https://pypi.python.org/pypi/WebError/).
 
-# Usage
+## Usage
 
 If you downloaded WebOOT to `Folder_A` and want to browse your ROOT files in `Folder_B`,
 open a terminal and type
