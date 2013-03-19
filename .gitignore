@@ -5,3 +5,5 @@
 /*.egg-info
 /env
 /results
+/.project
+/.pydevproject
