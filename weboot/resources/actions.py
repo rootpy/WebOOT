@@ -126,8 +126,8 @@ class HasActions(object):
             return CodeDefinition.from_parent(parent, key, self.actions["!"+name])
     
     @action
-    def list_actions(self, key):
-        return ActionList.from_parent(self, key, self.actions)
+    def list_actions(self, parent, key):
+        return ActionList.from_parent(parent, key, self.actions)
     
     @action
     def p(self, parent, key, param, value):
