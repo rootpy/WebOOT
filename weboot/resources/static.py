@@ -16,6 +16,7 @@ class StaticImageResource(Renderer, LocationAware):
         self.type = None
         if path:
             _, _, self.type = path.rpartition(".")
+        self.actions.pop("!resolution", None)
     
     @property
     def source(self):        
