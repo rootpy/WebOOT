@@ -313,7 +313,7 @@ class Histogram(Renderable, RootObject):
         """
 
         def tf(h):
-            scale = make_float(target_integral)/h.Integral()
+            scale = make_float(target_integral)/h.Integral() if h.Integral() else 0
             h.Scale(scale)
             return h
 
