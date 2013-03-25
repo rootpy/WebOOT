@@ -16,6 +16,9 @@ class StaticImageResource(Renderer, LocationAware):
         self.type = None
         if path:
             _, _, self.type = path.rpartition(".")
+        # remove action !resolution for static image: it is meaninful 
+        # for static images, since their resolution is already fixed
+        self.actions.pop("!resolution", None)
     
     @property
     def source(self):        
