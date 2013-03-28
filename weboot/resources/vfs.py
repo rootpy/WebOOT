@@ -9,15 +9,20 @@ import re
 from pyramid.traversal import traverse
 from pyramid.url import static_url
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.response import FileResponse, Response
 
 import ROOT as R
 
+from .renderable import Renderer
+from .actions import action
 from .locationaware import LocationAware
 from .multitraverser import MultipleTraverser
 from ._markdown import MarkdownResource
 from .static import StaticImageResource
 from ..utils.root_vfs import RootVFS
 from .root.builder import build_root_object
+
+
 
 class VFSTraverser(LocationAware):
     section = "directory"
@@ -26,7 +31,15 @@ class VFSTraverser(LocationAware):
         self.request = request
         self.path = path or request.registry.settings["results_path"]
         self.vfs = vfs or RootVFS(self.path)
-    
+
+    @action
+    def download(self, parent, key):
+        #  return FileResponse(self.path)
+        with open(self.path) as fd:
+            contents = fd.read()
+        return Response(contents, content_type="application/x-pdf",
+                        content_disposition="Content-Disposition: attachment; filename=beamer.pdf;")
+
     @property
     def name(self):
         return basename(self.path)
