@@ -1,7 +1,7 @@
 from .. import log; log = log[__name__]
 
 from os import listdir
-from os.path import basename, exists, isfile, isdir, join as pjoin
+from os.path import basename, abspath, exists, isfile, isdir, join as pjoin
 
 import fnmatch
 import re
@@ -9,7 +9,7 @@ import re
 from pyramid.traversal import traverse
 from pyramid.url import static_url
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.response import FileResponse, Response
+from pyramid.response import FileResponse
 
 import ROOT as R
 
@@ -23,6 +23,14 @@ from ..utils.root_vfs import RootVFS
 from .root.builder import build_root_object
 
 
+class Downloader(Renderer):
+    @property
+    def content(self):
+        filename = abspath(self.format)
+        response = FileResponse(filename)
+        response.headers['Content-Disposition'] = 'attachment; filename="{0}"'.format(basename(filename))
+        return response
+
 
 class VFSTraverser(LocationAware):
     section = "directory"
@@ -34,16 +42,12 @@ class VFSTraverser(LocationAware):
 
     @action
     def download(self, parent, key):
-        #  return FileResponse(self.path)
-        with open(self.path) as fd:
-            contents = fd.read()
-        return Response(contents, content_type="application/x-pdf",
-                        content_disposition="Content-Disposition: attachment; filename=beamer.pdf;")
+        return Downloader.from_parent(parent, key, self, self.path)
 
     @property
     def name(self):
         return basename(self.path)
-    
+
     @property
     def icon_url(self):
         p = self.vfs.get(self.path)
