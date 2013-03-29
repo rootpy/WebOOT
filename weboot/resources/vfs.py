@@ -28,7 +28,8 @@ class Downloader(Renderer):
     def content(self):
         filename = abspath(self.format)
         response = FileResponse(filename)
-        response.headers['Content-Disposition'] = 'attachment; filename="{0}"'.format(basename(filename))
+        response.headers['Content-type'] = 'application/octet-stream'
+        response.headers['Content-Disposition'] = 'attachment; filename="{0}";'.format(basename(filename))
         return response
 
 
