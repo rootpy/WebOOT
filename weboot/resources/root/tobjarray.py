@@ -1,4 +1,4 @@
-from .rootfile import RootFileTraverser
+from .file import RootFileTraverser
 
 
 class TObjArrayTraverser(RootFileTraverser):

@@ -12,6 +12,7 @@ import ROOT as R
 
 from ..locationaware import LocationAware
 from ..multitraverser import MultipleTraverser
+from ..actions import action
 from .util import get_key_class
 from .object import RootObject
 from .builder import build_root_object
