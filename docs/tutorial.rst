@@ -33,7 +33,7 @@ Now you can start browsing your data and making plots, e.g. simply add a ``*``
 at the end of the URL (i.e. go to ``http://0.0.0.0:6543/browse/*`` and you will
 see the top-level contents of the ROOT files:
 
-.. image:: _static/overview.*
+.. image:: _static/overview.png
    :scale: 25 %
 
 The main **View** area shows your results and you can use the **URL**, **Menu** or
