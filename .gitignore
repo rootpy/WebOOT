@@ -7,3 +7,6 @@
 /results
 /.project
 /.pydevproject
+/.settings
+/docs/_build
+/docs/_static/images.key
