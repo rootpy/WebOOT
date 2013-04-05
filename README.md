@@ -1,7 +1,7 @@
 WebOOT
 ------
 
-A web ROOT viewer.
+WebOOT is a [ROOT](http://root.cern.ch/) viewer for the web.
 
 Fed up with writing plot scripts?
 
@@ -12,12 +12,17 @@ manipulation on many plots simultaneously.
 
 The first idea is that all plots should be addressable at a URL.
 
+See the presentation at the
+[ROOT Users Workshop 2013](http://indico.cern.ch/conferenceDisplay.py?confId=217511):
+[Abstract](http://indico.cern.ch/contributionDisplay.py?contribId=50&confId=217511), 
+[PDF](http://indico.cern.ch/getFile.py/access?contribId=50&resId=0&materialId=slides&confId=217511)
+
 ## Links
 
+* Website: https://github.com/rootpy/WebOOT
+* Documentation: https://weboot.readthedocs.org/
 * Mailing list: [send email](mailto:weboot-users@cern.ch),
 or [subscribe](https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users).
-* Documentation: https://weboot.readthedocs.org/
-* Code / issues / contribute: https://github.com/rootpy/WebOOT
 
 ## Prerequisites
 
@@ -59,5 +64,5 @@ You will get a message on your screen that looks like this:
 Copy & paste the URL into the web browser of your choice and follow the `browse` link
 ( or go directly to http://0.0.0.0:6543/browse/ ).
 
-Please see `CONTRIBUTING`.
+Please see [CONTRIBUTING](https://github.com/rootpy/WebOOT/blob/master/CONTRIBUTING)
 

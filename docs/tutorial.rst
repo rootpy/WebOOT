@@ -3,6 +3,9 @@ Tutorial
 
 This is a 10 minute tutorial introduction to WebOOT.
 
+If you find that someting is not working or have questions and feature requests,
+please send an email to the WebOOT mailing list or file an issue on github. 
+
 Starting WebOOT
 ---------------
 
@@ -136,15 +139,35 @@ The buttons on the right side are pretty much self-explanatory, just try them ou
 Trees
 -----
 
-TODO: Examples how to scan / plot tree contents.
+Plot histograms:
+
+#. ``hsimple.root/ntuple/!draw/px``
+#. ``hsimple.root/ntuple/!draw/p*``
+#. ``hsimple.root/ntuple/!draw/p*/!compose/stack``
+#. ``hsimple.root/ntuple/!scan/px:py``
+
+Print entries:
+
+#. ``hsimple.root/ntuple/!scan/px``
+#. ``hsimple.root/ntuple/!scan/px:py``
+#. ``hsimple.root/ntuple/!scan/*``
+
+TODO: How to apply a cut to select a subset of the entries?
 
 Export
 ------
 
-TODO: Examples how to export PNG and PDF plots and ROOT files
+Download ROOT file:
 
-Questions?
-----------
+#. ``hsimple.root/!download``
 
-Something not working? Missing feature? ... send an email to the WebOOT mailing list or file an issue on github. 
+Generate high-quality versions of your plots:
+
+#. ``hsimple.root/hpx/!render/png``
+#. ``hsimple.root/hpx/!render/png?resolution=150`` -- zoom to 150%
+#. ``hsimple.root/hpx/!render/pdf``
+
+Probably your browser will by default display PNGs in the browser.
+PDFs might be displayed in your browser or saved in your download folder and possibly opened in some other PDF viewer.
+
 

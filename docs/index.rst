@@ -6,13 +6,14 @@
 Welcome to WebOOT's documentation!
 ==================================
 
+WebOOT is a `ROOT <http://root.cern.ch/>`_ viewer for the web.
+
 Links
 -----
 
-* Mailing list: `send email <mailto:weboot-users@cern.ch>`_, or `subscribe <https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users>`_.
+* Website: https://github.com/rootpy/WebOOT
 * Documentation: https://weboot.readthedocs.org/
-* Code / issues / contribute: https://github.com/rootpy/WebOOT
-* Installation instructions: https://github.com/rootpy/WebOOT/README.md
+* Mailing list: `send email <mailto:weboot-users@cern.ch>`_, or `subscribe <https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users>`_.
 
 Documentation
 -------------
