@@ -98,6 +98,8 @@ class Tree(RootObject):
     
     @action
     def scan(self, parent, key, arg):
+        """Return output of TTree::Scan(), i.e. a nicely formatted ascii art version
+        of the TTree contents"""
         def scan(t):
 
             nmax = int(self.request.params.get("n", 100))
@@ -115,6 +117,21 @@ class Tree(RootObject):
                 tree_data = tmpfile.read()
             return "Scanning {0} entries (status {2}):\n\n{1}".format(n, tree_data, status)
         return ResponseContext.from_parent(parent, key, scan(self.obj), content_type="text/plain")
+
+    @action
+    def csv(self, parent, key):
+        """Return TTree contents in CSV (comma-separated values) format"""
+        def csv(ttree):
+            from cStringIO import StringIO
+            from rootpy import asrootpy
+
+            stream = StringIO()
+            tree = asrootpy(ttree)
+            tree.csv(include_labels=True, stream=stream)
+            data = stream.getvalue()
+            return data
+
+        return ResponseContext.from_parent(parent, key, csv(self.obj), content_type="text/plain")
 
     @property
     def items(self):
