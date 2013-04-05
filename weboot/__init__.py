@@ -4,6 +4,9 @@ R.gROOT.SetBatch()
 import rootpy
 log = rootpy.log["/weboot"]
 
+# provides DrawableKeepAlive that keeps some classes (currently TH1,
+# TLegend, TLatex) alive with the current pad
+import rootpy.plotting
 
 from pkg_resources import resource_string
 __version__ = "0.1"
