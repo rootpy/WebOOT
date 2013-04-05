@@ -152,7 +152,7 @@ class CombinationStackRenderer(RootRenderer):
         if "sum" in params:
 
             hsum = objs[0].Clone("sum")
-            keepalive(hsum)
+            keepalive(canvas, hsum)
             hsum.SetTitle("sum")
 
             for h in objs[1:]:
@@ -219,8 +219,8 @@ class CombinationStackRenderer(RootRenderer):
             l = R.TLine(*args)
             l.SetLineWidth(3); l.SetLineStyle(2)
             l.Draw()
-            keepalive(l)
-        
+            keepalive(canvas, l)
+
         # Draw cuts
         slot = self.request.params.get("slot", None)
         if not slot:
@@ -243,8 +243,7 @@ class CombinationStackRenderer(RootRenderer):
                 o.SetTitle(n)
             legend = get_legend(mc=objs)
             legend.Draw()
-            keepalive(legend)
-            
+
         return
         
         if "unit_fixup" in params:
@@ -268,9 +267,9 @@ class EbkeCombinationStackRenderer(RootRenderer):
         params.update(self.params)
         args = parent, key, self.resource_to_render, self.format, params
         return self.from_parent(*args)
-        
-    def render(self, canvas, keepalive):
-        
+
+    def render(self, canvas):
+
         params = self.request.params
         names, histograms = zip(*self.resource_to_render.stack)
         #print "Rendering stack with {0} histograms".format(len(histograms))
@@ -349,7 +348,7 @@ class EbkeCombinationStackRenderer(RootRenderer):
         mcstack = R.THStack()
         for h in mc:
             mcstack.Add(h)
-        keepalive(mcstack)
+        keepalive(canvas, mcstack)
 
         axis = None
         mc_sum_line, mc_sum_error = None, None
@@ -357,8 +356,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
             axis = mcstack
             mcstack.Draw("Hist")
             mc_sum_line, mc_sum_error = create_mc_sum(mc)
-            keepalive(mc_sum_line)
-            keepalive(mc_sum_error)
+            keepalive(canvas, mc_sum_line)
+            keepalive(canvas, mc_sum_error)
 
         for signal in signals:
             if mc:
@@ -401,8 +400,8 @@ class EbkeCombinationStackRenderer(RootRenderer):
             l = R.TLine(*args)
             l.SetLineWidth(1); l.SetLineStyle(2)
             l.Draw()
-            keepalive(l)
-        
+            keepalive(canvas, l)
+
         # Draw cuts
         slot = self.request.params.get("slot", None)
         if not slot:
@@ -419,16 +418,13 @@ class EbkeCombinationStackRenderer(RootRenderer):
         if not self.request.params.get("legend", None) is None:
             legend = get_legend(mc=mc, data=data, signal=signals, mc_sum=mc_sum_error)
             legend.Draw()
-            keepalive(legend)
 
         if not self.request.params.get("lumi", None) is None:
             label = get_lumi_label(lumi=self.request.params["lumi"])
             label.Draw()
-            keepalive(label)
-       
+
         p = preliminary()
         p.Draw("hist e0x0")
-        keepalive(p)
 
         return
         
@@ -454,16 +450,16 @@ class CombinationDualRenderer(RootRenderer):
         objs = [h.obj for h in histograms]
         
         h1, h2 = objs
-        
-        p1 = R.TPad("pad", "", 0, 0, 1, 1); keepalive(p1)
+
+        p1 = R.TPad("pad", "", 0, 0, 1, 1); keepalive(canvas, p1)
         p1.Draw()
         p1.cd()
         
         h1.SetLineColor(R.kGreen)
         h1.Draw()
         #return
-        
-        p2 = R.TPad("overlay", "", 0, 0, 1, 1); keepalive(p2)
+
+        p2 = R.TPad("overlay", "", 0, 0, 1, 1); keepalive(canvas, p2)
         p2.SetFillStyle(4000)
         p2.SetFrameFillStyle(4000)
         p2.Draw()
@@ -481,8 +477,8 @@ class CombinationEffRenderer(RootRenderer):
         h1, h2 = sorted([h.obj for h in histograms], key=lambda x: x.GetEntries())
         
         eff = R.TEfficiency(h1, h2)
-        keepalive(eff)
-        
+        keepalive(canvas, eff)
+
         eff.SetFillColor(R.kRed)
         eff.Draw("AP")
         
@@ -496,8 +492,7 @@ class CombinationDiffRenderer(RootRenderer):
         h1, h2 = [h.obj for h in histograms]
         
         h = h2.Clone()
-        keepalive(h)
-        
+
         h.Add(h1, -1)
         h.Draw()
 
@@ -514,8 +509,7 @@ class CombinationDivRenderer(RootRenderer):
         h1, h2 = [h.obj for h in histograms]
         
         h = h2.Clone()
-        keepalive(h)
-        
+
         h.Divide(h,h1,1,1)
         h.Draw()
         
