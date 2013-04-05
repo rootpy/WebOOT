@@ -6,18 +6,30 @@
 Welcome to WebOOT's documentation!
 ==================================
 
-Links:
+Links
+-----
 
-* Mailing list: [send email](mailto:weboot-users@cern.ch),
-or [subscribe](https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users).
+* Mailing list: `send email <mailto:weboot-users@cern.ch>`_, or `subscribe <https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users>`_.
 * Documentation: https://weboot.readthedocs.org/
 * Code / issues / contribute: https://github.com/rootpy/WebOOT
 * Installation instructions: https://github.com/rootpy/WebOOT/README.md
+
+Documentation
+-------------
 
 .. toctree::
    :maxdepth: 2
 
    tutorial
+
+At the moment WebOOT API docs are not online. To generate them locally run::
+
+	cd docs
+	sphinx-apidoc ../weboot/ -o api
+	make html
+	# At the moment this hangs on exit
+	# Simply kill the process after it prints "build succeeded"
+	open _build/html/py-modindex.html
 
 Indices and tables
 ==================
