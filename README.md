@@ -12,6 +12,13 @@ manipulation on many plots simultaneously.
 
 The first idea is that all plots should be addressable at a URL.
 
+## Links
+
+* Mailing list: [send email](mailto:weboot-users@cern.ch),
+or [subscribe](https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users).
+* Documentation: https://weboot.readthedocs.org/
+* Code / issues / contribute: https://github.com/rootpy/WebOOT
+
 ## Prerequisites
 
 To make WebOOT work, you need

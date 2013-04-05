@@ -6,13 +6,13 @@
 Welcome to WebOOT's documentation!
 ==================================
 
-References:
+Links:
 
-* Documentation: TODO: Readthedocs?
-* Code / issues: https://github.com/rootpy/WebOOT
-* Mailing list: weboot.cern.ch
-
-TODO: include info from README here on install etc.?
+* Mailing list: [send email](mailto:weboot-users@cern.ch),
+or [subscribe](https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupName=weboot-users).
+* Documentation: https://weboot.readthedocs.org/
+* Code / issues / contribute: https://github.com/rootpy/WebOOT
+* Installation instructions: https://github.com/rootpy/WebOOT/README.md
 
 .. toctree::
    :maxdepth: 2
