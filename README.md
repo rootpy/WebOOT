@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rootpy/WebOOT.png)](https://travis-ci.org/rootpy/WebOOT)
+
 WebOOT
 ------
 
