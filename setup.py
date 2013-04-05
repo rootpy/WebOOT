@@ -17,7 +17,7 @@ CHANGES = open(pjoin(here, 'CHANGES.txt')).read()
 
 requires = [
     # Basic requirements
-    'pyramid',
+    'pyramid>=1.3',
     'pyramid_debugtoolbar',
     'waitress',
     
