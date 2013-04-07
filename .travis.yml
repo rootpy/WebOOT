@@ -6,7 +6,7 @@ python:
 
 env:
   - ROOT=5.34.05
-#  - ROOT=5.32.04
+  - ROOT=5.32.04
 
 install:
 
@@ -17,7 +17,10 @@ install:
   #- time sudo apt-get update -qq
 
   # Install the dependencies we need
-  - time sudo apt-get install -qq python-numpy python-nose python-pyramid python-pastewebkit python-magic python-markdown python-weberror
+  - time sudo apt-get install -qq python-numpy python-nose python-sphinx python-pexpect python-mongoengine
+  # Note: we don't install the web packages with apt-get because this resulted
+  # in version conflicts on travis-ci for WebOB:
+  # python-pyramid python-magic python-markdown python-weberror python-pastewebkit 
 
   # Install a ROOT binary that we custom-built in a 64-bit Ubuntu VM
   # for the correct Python / ROOT version
@@ -47,6 +50,11 @@ script:
   - ls -la /dev/shm
 
   # Check if weboot import works
-  - python -c 'import weboot; print "hi"'
+  - python -c 'import weboot'
+
+  # Check if building the docs works
+  - cd docs
+  - sphinx-apidoc ../weboot/ -o api
+  - make html
 
   # TODO: run weboot unit tests
