@@ -4,6 +4,7 @@ from rootpy.memory.keepalive import keepalive
 from weboot.resources.root.object import RootObject
 from weboot.resources.renderable import Renderable, RootRenderer
 
+
 class CanvasRenderer(RootRenderer):
 
     @property
@@ -25,8 +26,9 @@ class Canvas(Renderable, RootObject):
 
     def __init__(self, request, root_object):
         super(Canvas, self).__init__(request, root_object)
-    
+
     @property
     def content(self):
         rendered = self["!render"]["png"]["!resolution"]["100"]
-        return ['<p><img class="plot" src="{0}" /></p>'.format(rendered.sub_url(query={"todo-removeme": 1}))]
+        fmt = '<p><img class="plot" src="{0}" /></p>'
+        return [fmt.format(rendered.sub_url(query={"todo-removeme": 1}))]

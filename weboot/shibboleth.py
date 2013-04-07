@@ -1,5 +1,6 @@
 from pyramid.security import Everyone, Authenticated
 
+
 class ShibbolethAuthenticationPolicy(object):
     """ An object representing a Pyramid authentication policy. """
 
@@ -11,7 +12,7 @@ class ShibbolethAuthenticationPolicy(object):
         if a record associated with the current id does not exist in a
         persistent store, it should return ``None``."""
         return request.environ.get("HTTP_ADFS_LOGIN", None)
-    
+
     def effective_principals(self, request):
         """ Return a sequence representing the effective principals
         including the userid and any groups belonged to by the current
@@ -25,4 +26,3 @@ class ShibbolethAuthenticationPolicy(object):
         """ Return a set of headers suitable for 'forgetting' the
         current user on subsequent requests. """
         raise HTTPFound(location="https://login.cern.ch/adfs/ls/?wa=wsignout1.0")
-

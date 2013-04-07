@@ -1,4 +1,5 @@
-from .. import log; log = log[__name__]
+from .. import log
+log = log[__name__]
 
 from os import listdir
 from os.path import basename, abspath, exists, isfile, isdir, join as pjoin
@@ -29,7 +30,8 @@ class Downloader(Renderer):
         filename = abspath(self.format)
         response = FileResponse(filename)
         response.headers['Content-type'] = 'application/octet-stream'
-        response.headers['Content-Disposition'] = 'attachment; filename="{0}";'.format(basename(filename))
+        response.headers['Content-Disposition'] = 'attachment; filename="{0}";'.format(
+            basename(filename))
         return response
 
 
@@ -61,14 +63,14 @@ class VFSTraverser(LocationAware):
         elif p.isobject():
             raise RuntimeError("Should not be a VFSTraverser!")
         return static_url('weboot:static/close_32.png', self.request)
-    
+
     @property
     def items(self):
         items = [self[i] for i in self]
         items = [i for i in items if i]
         items.sort(key=lambda o: o.name)
         return items
-    
+
     def keys(self):
         try:
             return sorted(self.vfs[self.path].listdir())
@@ -76,17 +78,17 @@ class VFSTraverser(LocationAware):
             raise HTTPNotFound("Failed to open {0}: {1}".format(self.path, err))
         except KeyError as err:
             raise HTTPNotFound("Failed to open {0}: {1}".format(self.path, err))
-    
+
     def __iter__(self):
         return iter(self.keys())
-    
+
     def __getitem__(self, key):
         if MultipleTraverser.should_multitraverse(key):
             return MultipleTraverser.from_listable(self, key)
         path = pjoin(self.path, key)
         item = self.vfs.get(path)
         if not item:
-            #log.debug("VFS returned None")
+            # log.debug("VFS returned None")
             return None
         elif item.isdir():
             return VFSTraverser.from_parent(self, key, path, self.vfs)
@@ -97,5 +99,3 @@ class VFSTraverser(LocationAware):
         elif path.endswith(".png"):
             return StaticImageResource.from_parent(self, key, path)
         log.debug("Ignoring unknown resource type {0}".format(item))
-
-

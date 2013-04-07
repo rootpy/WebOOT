@@ -1,4 +1,5 @@
-from .. import log; log = log[__name__]
+from .. import log
+log = log[__name__]
 
 import ROOT as R
 
@@ -23,5 +24,5 @@ def view_root_object_render(context, request):
         with open("test.xml") as fd:
             content = fd.read()
         return Response(content, content_type="text/plain")
-    
+
     return HTTPFound(location=static_url('weboot:static/close_32.png', request))

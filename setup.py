@@ -20,7 +20,7 @@ requires = [
     'pyramid>=1.3',
     'pyramid_debugtoolbar',
     'waitress',
-    
+
     'Paste',
     'PasteScript',
     'PasteDeploy',
@@ -28,19 +28,19 @@ requires = [
 
     # File mimetype detection
     'filemagic',
-    
+
     'rootpy',
-    
+
     # Database
     # 'pymongo',
     # Used to run mongo and determine when it started
     # 'pexpect',
-    
+
     # OpenAuth (currently unused
-    # 'velruse', 
+    # 'velruse',
     # Used to host HTTPs servers
     # 'pyOpenSSL',
-    
+
     # Markdown format rendering
     'markdown',
 ]
@@ -49,7 +49,7 @@ setup(
     name='WebOOT',
     version=__version__,
     description='WebOOT',
-    long_description=README + '\n\n' +  CHANGES,
+    long_description=README + '\n\n' + CHANGES,
     classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -67,11 +67,10 @@ setup(
     tests_require=requires,
     test_suite="weboot",
     package_data={
-        "weboot" : ["version.txt"],
+        "weboot": ["version.txt"],
     },
-    entry_points = """
+    entry_points="""
         [paste.app_factory]
         main = weboot:main
     """,
-    )
-
+)

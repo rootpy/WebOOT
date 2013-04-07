@@ -17,17 +17,18 @@ from .tree import Tree
 # Used in build_root_object
 # More frequently encountered object types should be earlier
 RESOURCE_MAPPING = [
-    (R.TH1,         Histogram),
-    (R.TGraph,      Graph),
-    (R.TGraph2D,    Graph),
-    (R.TCanvas,     Canvas),
-    ("TParameter",  Parameter),
-    (R.TTree,       Tree),
+    (R.TH1, Histogram),
+    (R.TGraph, Graph),
+    (R.TGraph2D, Graph),
+    (R.TCanvas, Canvas),
+    ("TParameter", Parameter),
+    (R.TTree, Tree),
 ]
+
 
 def build_root_object(parent, key, obj):
     cls = get_root_class(obj.class_name)
-    
+
     # Find the resource_type for the matching super class
     for root_type, resource_type in RESOURCE_MAPPING:
         if isinstance(root_type, basestring):
@@ -40,5 +41,5 @@ def build_root_object(parent, key, obj):
     else:
         # Wow, a use for the for-else construct?
         resource_type = RootObject
-    
+
     return resource_type.from_parent(parent, key, obj)

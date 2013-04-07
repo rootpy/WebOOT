@@ -2,7 +2,7 @@ from .file import RootFileTraverser
 
 
 class TObjArrayTraverser(RootFileTraverser):
-    
+
     def __init__(self, request, obj_array):
         super(TObjArrayTraverser, self).__init__(request, obj_array)
         mapping = self.mapping = {}
@@ -12,18 +12,18 @@ class TObjArrayTraverser(RootFileTraverser):
             while name in mapping:
                 name = "{0};{1}".format(orig_name, n)
                 n += 1
-            mapping[name] = i                    
-    
+            mapping[name] = i
+
     @property
     def path(self):
         return self.__name__
-    
+
     @property
     def items(self):
         keys = [self[k.GetName()] for k in list(self.rootfile)]
         keys.sort(key=lambda k: k.name)
         return keys
-    
+
     def __getitem__(self, subpath):
         if subpath not in self.mapping:
             return
