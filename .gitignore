@@ -1,6 +1,7 @@
 *.pyc
 *~
 *.lock
+*.DS_Store
 /data/WebOOT.*
 /*.egg-info
 /env

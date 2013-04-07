@@ -1,5 +1,6 @@
 
 from tempfile import NamedTemporaryFile
+from pyramid.url import static_url
 
 import ROOT as R
 
@@ -17,6 +18,10 @@ class Tree(RootObject):
         self.binning = binning
         super(Tree, self).__init__(request, root_object)
     
+    @property
+    def icon_url(self):
+        return static_url('weboot:static/tree.png', self.request)
+
     @property
     def content(self):
         content = ('<a href="!draw/{0}/">{0}</a><br />'.format(l.GetName())
