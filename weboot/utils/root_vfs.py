@@ -555,4 +555,5 @@ def maintenance_main():
         RootCacheFile.maintenance()
 maintenance_thread = Thread()
 maintenance_thread.run = maintenance_main
+maintenance_thread.setDaemon(True)
 maintenance_thread.start()
