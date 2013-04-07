@@ -51,11 +51,8 @@ This is a simple way to install WebOOT:
 
 ## Usage
 
-If you downloaded WebOOT to `Folder_A` and want to browse your ROOT files in `Folder_B`,
-open a terminal and type
-
-    $ cd Folder_A
-    $ pserve --reload Folder_B/development.ini
+    $ cd my/lovely/plots
+    $ ~/.local/bin/weboot
 
 You will get a message on your screen that looks like this:
 
