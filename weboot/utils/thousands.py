@@ -10,7 +10,7 @@
 
 
 def split_thousands(s, tSep=',', dSep='.'):
-    if s == None:
+    if s is None:
         return 0
     if isinstance(s, int) or isinstance(s, long) or isinstance(s, float):
         s = str(s)
