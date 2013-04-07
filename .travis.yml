@@ -58,3 +58,5 @@ script:
   - make html
 
   # TODO: run weboot unit tests
+  - cd ..
+  - python weboot/tests.py
