@@ -28,8 +28,6 @@ At the moment WebOOT API docs are not online. To generate them locally run::
 	cd docs
 	sphinx-apidoc ../weboot/ -o api
 	make html
-	# At the moment this hangs on exit
-	# Simply kill the process after it prints "build succeeded"
 	open _build/html/py-modindex.html
 
 Indices and tables

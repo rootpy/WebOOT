@@ -5,8 +5,11 @@
 /*.egg-info
 /env
 /results
+/build
+/dist
 /.project
 /.pydevproject
 /.settings
+/docs/api
 /docs/_build
 /docs/_static/images.key
