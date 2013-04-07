@@ -181,30 +181,6 @@ def view_multitraverse(multitravese_context, request):
 
         content.extend(build_plot_view(request, value))
 
-        continue
-
-        url = "https://hep.ph.liv.ac.uk/~pwaller/weboot"
-        l1 = l[:]
-        #
-        l1[find_nth(l1, "*", ordering[0])] = name
-        # l1[l.index("*", l.index("*")+1)] = name
-
-        url += "/".join(l1)
-
-        content.append('<img class="plot" src="{0}?{1}" />'.format(url, request.query_string))
-
-        """
-        if isinstance(subcontext, MultipleTraverser):
-            subcontent = []
-            for subsubcontext in subcontext:
-                subname = subsubcontext.name
-                subcontent.append('<img class="plot" src="{0.url}?render&resolution=30&{1}" />'.format(subsubcontext, request.query_string))
-
-            content.append('<p>{0}</p><div>{1}</div>'.format(name, "".join(subcontent)))
-            continue
-
-        content.append('<p>{0}</p><div><img class="plot" src="{1.url}?render&resolution=50&{2}" /></div>'.format(name, subcontext, request.query_string))
-        """
     return dict(path=build_breadcrumbs(context),
                 content="\n".join(content))
 
