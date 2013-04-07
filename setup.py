@@ -8,6 +8,7 @@ import os
 __version__ = "0.1"
 
 from commands import getstatusoutput
+from glob import glob
 from os.path import abspath, dirname, exists, join as pjoin
 from setuptools import setup, find_packages
 
@@ -73,4 +74,5 @@ setup(
         [paste.app_factory]
         main = weboot:main
     """,
+    scripts=glob('scripts/*'),
 )
