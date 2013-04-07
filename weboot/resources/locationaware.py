@@ -6,23 +6,24 @@ This gives them a .url property, and "from_parent" class method.
 
 from .actions import HasActions
 
+
 class LocationAware(HasActions):
     __name__ = ""
     __parent__ = None
-    
+
     actions = {}
-    
+
     def __init__(self, request):
         self.request = request
-    
+
     @property
     def icon(self):
         """
-        Override this in base classes, should return an icon resource if there 
+        Override this in base classes, should return an icon resource if there
         is one
         """
         return None
-    
+
     @property
     def forward_url(self):
         """

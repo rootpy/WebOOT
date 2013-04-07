@@ -1,5 +1,6 @@
 import ROOT as R
 
+
 def get_key_class(key):
     if not isinstance(key, R.TKey):
         return type(key)
@@ -9,6 +10,7 @@ def get_key_class(key):
         return class_object
     except AttributeError:
         return None
+
 
 def get_root_class(class_name):
     try:

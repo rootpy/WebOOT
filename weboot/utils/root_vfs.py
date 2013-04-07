@@ -1,4 +1,5 @@
-from .. import log; log = log[__name__]
+from .. import log
+log = log[__name__]
 
 import os
 import time
@@ -20,7 +21,7 @@ A RootVFS is initialized with a jail path, outside of which no access
 is allowed.
 
 The only interface function is __getitem__, which returns an object which has
-the following functions: 
+the following functions:
     isdir() == True for directories and files which allow recursion
     infile() == True if the directory is inside a vfile
     isvfile() == True only for files which allow recursion
@@ -31,10 +32,9 @@ the following functions:
 """
 
 
-
-directory_ls_timeout = 2 #seconds
-root_file_validate_timeout = 2 #seconds
-root_file_close_timeout = 30 #seconds
+directory_ls_timeout = 2  # seconds
+root_file_validate_timeout = 2  # seconds
+root_file_close_timeout = 30  # seconds
 
 
 def get_key_class(key):
@@ -47,9 +47,10 @@ def get_key_class(key):
     except AttributeError:
         return None
 
+
 class VFSDirectory(object):
-    isdir = lambda self : True
-    infile = isvfile = isobject = lambda self : False
+    isdir = lambda self: True
+    infile = isvfile = isobject = lambda self: False
 
     @property
     def valid(self):
@@ -73,8 +74,9 @@ class VFSDirectory(object):
     def __str__(self):
         return self._dir
 
+
 class VFSFile(object):
-    isdir = infile = isvfile = isobject = lambda self : False
+    isdir = infile = isvfile = isobject = lambda self: False
 
     @property
     def valid(self):
@@ -86,9 +88,10 @@ class VFSFile(object):
     def __str__(self):
         return self._dir
 
+
 class VFSRootDirectory(object):
-    isdir = infile = lambda self : True
-    isobject = lambda self : False
+    isdir = infile = lambda self: True
+    isobject = lambda self: False
 
     @property
     def valid(self):
@@ -98,7 +101,7 @@ class VFSRootDirectory(object):
         """
         rcf = root cache file
         dir = directory inside root cache file
-        dict = dictionary of entries 
+        dict = dictionary of entries
         """
         self._rcf = _rcf
         self._dir = _dir
@@ -122,8 +125,8 @@ class VFSRootDirectory(object):
 
 
 class VFSRootObject(object):
-    isobject = infile = lambda self : True
-    isdir = isvfile = lambda self : False
+    isobject = infile = lambda self: True
+    isdir = isvfile = lambda self: False
 
     @property
     def valid(self):
@@ -142,24 +145,24 @@ class VFSRootObject(object):
         return self._ref.info
 
     def __init__(self, _rcf, _ref):
-        self._rcf = _rcf # Root Cache File
-        self._ref = _ref # Object reference
+        self._rcf = _rcf  # Root Cache File
+        self._ref = _ref  # Object reference
         self.transforms = []
 
     def get(self):
-        log.warning("VFS Root get of %s"%self.name)
+        log.warning("VFS Root get of %s" % self.name)
         rf = self._rcf.root_file
         o = self._ref.get_from(rf)
 
         if o is None:
-            log.error("Failed to get %s"%self.name)
+            log.error("Failed to get %s" % self.name)
             return None
 
         for tf in self.transforms:
             o = tf(o)
             if o is None:
-               log.error("Failed to transform %s with %s " % (self.name, tf))
-               return None
+                log.error("Failed to transform %s with %s " % (self.name, tf))
+                return None
 
         return o
 
@@ -168,14 +171,16 @@ class VFSRootObject(object):
         clone.transforms = self.transforms + [tf]
         return clone
 
+
 class AccessDeniedException(Exception):
     pass
+
 
 class RootVFS(object):
     def __init__(self, chroot_jail="/"):
         self.chroot_jail = os.path.realpath(chroot_jail)
         self.recent = {}
-        self.cache = RootCache() # singleton accessor
+        self.cache = RootCache()  # singleton accessor
 
     def __getitem__(self, name):
         rq = self.recent.get(name, None)
@@ -201,7 +206,7 @@ class RootVFS(object):
                 except KeyError:
                     element = None
                 if not element:
-                    #log.debug("VFS ELEMENT EMPTY %s" % name)
+                    # log.debug("VFS ELEMENT EMPTY %s" % name)
                     raise KeyError("Unknown path %s in file %s" % (subdir, root_file))
                 if isinstance(element, dict):
                     res = VFSRootDirectory(cache_file, subdir, element)
@@ -226,14 +231,15 @@ class RootVFS(object):
         rp = os.path.realpath(dir)
         if not os.path.realpath(dir).startswith(self.chroot_jail):
             raise AccessDeniedException("Access to '%s' from jail '%s' denied!"
-                    % (dir, self.chroot_jail))
+                                        % (dir, self.chroot_jail))
         np = os.path.normpath(dir)
         current_end = len(np)
         while current_end > 0:
             if os.path.isfile(np[:current_end]):
-                return np[:current_end], np[current_end+1:]
+                return np[:current_end], np[current_end + 1:]
             current_end = np.rfind(os.path.sep, 0, current_end)
         return None, None
+
 
 def extract_axis_info(axis):
     info = {}
@@ -249,20 +255,21 @@ def extract_axis_info(axis):
         info["labels"] = list(labels)
     return info
 
+
 def extract_info(obj):
     info = {}
     info["title"] = obj.GetTitle()
     if isinstance(obj, R.TH1):
         info["dimension"] = obj.GetDimension()
-        #info["entries"] = obj.GetEntries()
-        #info["maximum"] = obj.GetMaximum()
-        #info["minimum"] = obj.GetMinimum()
-        #info["maximum_bin"] = obj.GetMaximumBin()
-        #info["minimum_bin"] = obj.GetMinimumBin()
-        #info["mean"] = obj.GetMean()
-        #info["mean_error"] = obj.GetMeanError()
-        #info["rms"] = obj.GetRMS()
-        #info["rms_error"] = obj.GetRMSError()
+        # info["entries"] = obj.GetEntries()
+        # info["maximum"] = obj.GetMaximum()
+        # info["minimum"] = obj.GetMinimum()
+        # info["maximum_bin"] = obj.GetMaximumBin()
+        # info["minimum_bin"] = obj.GetMinimumBin()
+        # info["mean"] = obj.GetMean()
+        # info["mean_error"] = obj.GetMeanError()
+        # info["rms"] = obj.GetRMS()
+        # info["rms_error"] = obj.GetRMSError()
         info["x"] = extract_axis_info(obj.GetXaxis())
         if obj.GetDimension() > 1:
             info["y"] = extract_axis_info(obj.GetYaxis())
@@ -270,11 +277,14 @@ def extract_info(obj):
                 info["z"] = extract_axis_info(obj.GetZaxis())
     return info
 
+
 class RootObjectRef(object):
     def get_from(self, root_file):
         return root_file
+
     def add(self, subdir):
         return SimpleObjectRef(subdir)
+
     def name(self):
         return os.path.basename(self.name)
 
@@ -294,6 +304,7 @@ class SimpleObjectRef(object):
 
     def name(self):
         return os.path.basename(self.dir)
+
 
 class NestedObjectRef(object):
     """ Access Tuple format: (('G', objarray_name), ('O', <index>, name), ('G',hist))
@@ -335,16 +346,17 @@ class RootCacheFile(object):
         self.name = name
         if self.root_file:
             now = time.time()
-            #self.entries = self.root_listing()
-            #self.entries_flat[""] = self.entries
+            # self.entries = self.root_listing()
+            # self.entries_flat[""] = self.entries
             self.entries = self.quick_listing(self.root_file)
             later = time.time()
+
             def count_e(dct):
                 if isinstance(dct, dict):
-                    return sum(map(count_e, dct.values()))      
+                    return sum(map(count_e, dct.values()))
                 return 1
             log.debug("-- Read {0} entries in {1:.4f} s".format(
-                count_e(self.entries), (later-now)))
+                count_e(self.entries), (later - now)))
 
     @staticmethod
     # TODO: @lrucache
@@ -362,7 +374,8 @@ class RootCacheFile(object):
 
     @property
     def root_file(self):
-        if not self.check_root_file: return
+        if not self.check_root_file:
+            return
         with self.lock:
             if self.tfile:
                 self.atime = time.time()
@@ -399,7 +412,7 @@ class RootCacheFile(object):
                 tf = self.tfile
                 self.tfile = self.otime = self.atime = None
                 self._open_root_files.remove(self)
-                #tf.Close()
+                # tf.Close()
 
     def quick_listing(self, dir):
         entries = {}
@@ -408,7 +421,7 @@ class RootCacheFile(object):
             if cls and issubclass(cls, R.TDirectory):
                 entries[key.GetName()] = self.quick_listing(key.ReadObj())
             else:
-                entries[key.GetName()] = (key.GetClassName(), {})#extract_info(key.ReadObj()))
+                entries[key.GetName()] = (key.GetClassName(), {})  # extract_info(key.ReadObj()))
         return entries
 
     def root_listing(self, dir_ref=RootObjectRef(), dir_name="", key=None):
@@ -418,7 +431,7 @@ class RootCacheFile(object):
         else:
             o = dir_ref.get_from(self.root_file)
             cls = o.__class__
-            
+
         if issubclass(cls, R.TDirectory):
             o = o or dir_ref.get_from(self.root_file)
             entries = {}
@@ -427,7 +440,7 @@ class RootCacheFile(object):
                 absname = os.path.join(dir_name, name)
                 entries[name] = self.root_listing(dir_ref.add(name), absname, key=key)
                 self.entries_flat[absname] = entries[name]
-            return entries            
+            return entries
         elif issubclass(cls, R.TObjArray):
             o = o or dir_ref.get_from(self.root_file)
             entries = {}
@@ -443,7 +456,7 @@ class RootCacheFile(object):
             return entries
         else:
             dir_ref.class_name = cls.__name__
-            dir_ref.info = {} # extract_info(o)
+            dir_ref.info = {}  # extract_info(o)
             self.entries_flat[dir_name] = dir_ref
             return dir_ref
 
@@ -458,6 +471,7 @@ class RootCacheFile(object):
     def __setstate__(self, dct):
         self.__dict__.update(dct)
         self.lock = Lock()
+
 
 class RootCacheEntry(object):
 
@@ -515,6 +529,7 @@ class RootCacheEntry(object):
 
 from cPickle import dump
 
+
 class RootCache(object):
     """
     RootCache
@@ -548,6 +563,7 @@ class RootCache(object):
         return result
 
 rc = RootCache()
+
 
 def maintenance_main():
     while True:
