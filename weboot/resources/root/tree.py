@@ -56,11 +56,12 @@ class Tree(RootObject):
 
         @log.trace()
         def draw(t):
+            # TODO(pwaller): Move this to use rootpy's Tree.draw instead which
+            #                solves some of the problems for us.
 
             if self.binning:
-                # TODO(pwaller): gDirectory needs to be thread-unique. Otherwise:
-                #       bad bad, sad sad.
-                # TODO(pwaller): Parse self.binning, call appropriate h.
+                # TODO(pwaller): gDirectory needs to be thread-unique.
+                #                Otherwise: bad bad, sad sad.
 
                 def mkbin(b):
                     n, low, hi = b.split(",")
@@ -74,7 +75,7 @@ class Tree(RootObject):
                 else:
                     raise NotImplementedError("Not implemented yet for {0} dims".format(len(dims)))
                 h.SetDirectory(R.gDirectory)
-                # BUG: TODO(pwaller): Memory leak
+                # TODO(pwaller): BUG: Memory leak
                 R.SetOwnership(h, False)
 
             nvar = len(arg.split(":"))

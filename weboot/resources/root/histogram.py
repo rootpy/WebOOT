@@ -19,8 +19,11 @@ from weboot.resources.root.object import RootObject
 
 class HistogramTable(RootObject):
     """
-    TODO(pwaller): Fixme
+    Display the histogram as a table.
+
+    Currently only works for 1D histograms with labelled bins.
     """
+
     @property
     def content(self):
         if "cut" not in self.name:
@@ -106,7 +109,6 @@ class HistogramRenderer(RootRenderer):
         if "notitle" in params:
             h.SetTitle("")
 
-        # TODO(pwaller): bring back draw options
         h.Draw(build_draw_params(h, params))
         keepalive(canvas, h)
 
@@ -363,6 +365,11 @@ class Histogram(Renderable, RootObject):
 
 
 class FreqHist(Histogram):
+    """
+    If the x-axis bin labels are pdgids, replace them with ROOT latex for that
+    pdgid and show the y axis in percentage.
+    """
+
     def __init__(self, request, root_object):
         from cPickle import loads
         freqs = loads(root_object.ReadObj().GetString().Data())
@@ -371,9 +378,9 @@ class FreqHist(Histogram):
 
         root_object = R.TH1D("frequencies", "frequencies;frequencies;%", n, 0, n)
 
+        from pkg_resources import resource_string
         from yaml import load
-        # TODO(pwaller): use resource string
-        pdgs = load(open("pdg.yaml"))
+        pdgs = load(resource_string("weboot.utils", "pdg.yaml"))
 
         sorted_freqs = sorted(freqs.iteritems(), key=lambda (k, v): v, reverse=True)
         for i, (pdgid, value) in enumerate(sorted_freqs, 1):

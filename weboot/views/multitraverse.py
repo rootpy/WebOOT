@@ -105,9 +105,6 @@ def view_multitraverse(multitravese_context, request):
                 str_index_tuple[0], multitravese_context.fill_slot(0, this_idx)))
         prev_idx = index_tuple[0]
         if not context.icon:
-            # TODO(pwaller): If a context doesn't have an icon, we should
-            #                 show something else, but I haven't decided what
-            #                 yet
             if isinstance(context, MultipleTraverser):
                 for i, c in context.indexed_contexts:
                     content.append('<a href="{1.url}?{2}">{0}</a>'.format(
@@ -124,6 +121,11 @@ def view_multitraverse(multitravese_context, request):
                               request.environ.get("QUERY_STRING", ""))
                     content.append(fmt.format(values))
             continue
+        else:
+            # TODO(pwaller): If a context doesn't have an icon, we should
+            #                show something else, but I haven't decided what
+            #                yet
+            pass
         fmt = '<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
         values = (" / ".join(str_index_tuple), context, request.environ.get("QUERY_STRING", ""))
         content.append(fmt.format(values))

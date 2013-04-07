@@ -24,13 +24,6 @@ class LocationAware(HasActions):
         """
         return None
 
-    @property
-    def forward_url(self):
-        """
-        TODO(pwaller): Fix or eliminate this
-        """
-        pass
-
     def sub_url(self, *args, **kwargs):
         return self.request.resource_url(self, *args, **kwargs)
 

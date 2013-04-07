@@ -250,20 +250,6 @@ class CombinationStackRenderer(RootRenderer):
             legend = get_legend(mc=objs)
             legend.Draw()
 
-        return
-
-        if "unit_fixup" in params:
-            h = fixup_hist_units(h)
-
-        if "nostat" in params:
-            h.SetStats(False)
-
-        if "notitle" in params:
-            h.SetTitle("")
-
-        # TODO(pwaller): bring back draw options
-        h.Draw()
-
 
 class EbkeCombinationStackRenderer(RootRenderer):
 
@@ -434,20 +420,6 @@ class EbkeCombinationStackRenderer(RootRenderer):
 
         p = preliminary()
         p.Draw("hist e0x0")
-
-        return
-
-        if "unit_fixup" in params:
-            h = fixup_hist_units(h)
-
-        if "nostat" in params:
-            h.SetStats(False)
-
-        if "notitle" in params:
-            h.SetTitle("")
-
-        # TODO(pwaller): bring back draw options
-        h.Draw("hist e0x0")
 
 
 class CombinationDualRenderer(RootRenderer):

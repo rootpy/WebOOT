@@ -139,11 +139,21 @@ class HasActions(object):
         """
         Store a parameter
 
-        (BUG)
-        Note: This does not cause the action to enter the traversal hierarchy
+        TODO(pwaller)
+
+        We want to support /!p/logy/1/, for example, to set options through the
+        URL. This could allow /!p/logy/0,1/ to create a multitraverser
+        with both types of plots.
+
+        The current technique doesn't work, because:
+
+        This does not cause the action to enter the traversal hierarchy
         because `from_parent` isn't used. What is needed is a way to create
         a copy of `self` which can be placed correctly into the hierarchy.
         (pwaller) doesn't currently know how to achieve this reliably.
+
+        It's possible we can achieve this by making a special resource which
+        wraps `self` but knows its place in the heirarchy.
         """
         self.request.params.multi.dicts += ({param: value},)
         return self
@@ -229,7 +239,10 @@ class ResponseContext(Renderer):
 class CodeDefinition(Renderer):
     """
     Represents the source code of a function object
-    TODO(pwaller): Support for classes, link to online viewer
+
+    TODO(pwaller)
+
+        It would be nice to support classes and provide links to github.
     """
     def __init__(self, request, function):
         super(CodeDefinition, self).__init__(request, self, None)
