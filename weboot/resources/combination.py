@@ -175,7 +175,8 @@ class CombinationStackRenderer(RootRenderer):
             "fake": R.kRed,
         }
 
-        for name, obj, col in zip(names, objs, [R.kBlue, R.kRed, R.kGreen, R.kViolet, R.kAzure + 6, R.kOrange]):
+        cols = [R.kBlue, R.kRed, R.kGreen, R.kViolet, R.kAzure + 6, R.kOrange]
+        for name, obj, col in zip(names, objs, cols):
             col = col + 1
             # obj.SetTitle(""); obj.SetStats(False)
             if name in colordict:
@@ -288,8 +289,10 @@ class EbkeCombinationStackRenderer(RootRenderer):
             "fake": R.kRed,
         }
 
-        from ROOT import kAzure, kBlue, kWhite, kRed, kBlack, kGray, kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring
-        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan, kMagenta, kBlack, kGray, kRed, kAzure]
+        from ROOT import (kAzure, kBlue, kWhite, kRed, kBlack, kGray,
+                          kGreen, kYellow, kTeal, kCyan, kMagenta, kSpring)
+        clrs = [kWhite, kGreen, kYellow, kBlue, kCyan,
+                kMagenta, kBlack, kGray, kRed, kAzure]
 
         mc = []
         signals = []
@@ -588,7 +591,9 @@ class Combination(Renderable, LocationAware):
         assert len(self.object_types) == 1
         print "Got combination:", self.url
         print "Got rendered:", self.rendered("png").url
-        return ['<p><img class="plot" src="{0}?{1}" /></p>'.format(self.rendered("png").url, self.request.environ.get("QUERY_STRING", ""))]
+        fmt = '<p><img class="plot" src="{0}?{1}" /></p>'
+        return [fmt.format(self.rendered("png").url,
+                self.request.environ.get("QUERY_STRING", ""))]
 
     def keys(self):
         if any(hasattr(t, "keys") for t in self.object_types):

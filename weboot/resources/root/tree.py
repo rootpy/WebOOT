@@ -111,8 +111,9 @@ class Tree(RootObject):
                 n = t.Scan(real_arg, self.select_value, "colsize=30", nmax)
                 status = t.GetPlayer().GetSelector().GetStatus()
                 if status < 0:
-                    return "Unable to compile expression. (TODO: Show reason)\n  value: {0}\n  selection: {1}".format(
-                        arg, self.selection)
+                    fmt = ("Unable to compile expression. (TODO: Show reason)\n"
+                           "  value: {0}\n  selection: {1}")
+                    return fmt.format(arg, self.selection)
 
                 tree_data = tmpfile.read()
             return "Scanning {0} entries (status {2}):\n\n{1}".format(n, tree_data, status)

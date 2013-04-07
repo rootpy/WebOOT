@@ -22,7 +22,8 @@ class UserResource(LocationAware):
 
     @classmethod
     def storage_path(cls, user):
-        return "/afs/cern.ch/user/{initial}/{username}/weboot/".format(initial=user[0], username=user)
+        fmt = "/afs/cern.ch/user/{initial}/{username}/weboot/"
+        return fmt.format(initial=user[0], username=user)
 
     @classmethod
     def check_exists(cls, user):

@@ -467,6 +467,8 @@ class MultipleTraverser(LocationAware):
                     flattened_contexts.append((new_index_tuple, sub_context))
 
             return MultipleTraverser.from_parent(self, key, flattened_contexts,
-                                                 self.order + 1, slot_filler, ordering=self.ordering)
+                                                 self.order + 1, slot_filler,
+                                                 ordering=self.ordering)
         else:
-            return MultipleTraverser.from_parent(self, key, new_contexts, self.order, ordering=self.ordering)
+            return MultipleTraverser.from_parent(self, key, new_contexts,
+                                                 self.order, ordering=self.ordering)

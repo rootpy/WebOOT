@@ -45,8 +45,9 @@ def build_breadcrumbs(context):
             return ""
 
         final_url_part = "/".join(fragments)
-        a('<li><a href="{0.url}*/{1}/?{2}">*</a> <a href="{0.url}*/!compose/stack/{1}/?{2}">Compose</a></li>'.format(
-            c, final_url_part, context.request.environ.get("QUERY_STRING", "")))
+        fmt = ('<li><a href="{0.url}*/{1}/?{2}">*</a> '
+               '<a href="{0.url}*/!compose/stack/{1}/?{2}">Compose</a></li>')
+        a(fmt.format(c, final_url_part, context.request.environ.get("QUERY_STRING", "")))
         for x in good_keys:
             # a('<li><a href="{0.url}">{0.__name__}</a> <!--<style
             # type="text/css">color:white;</style>({1})--></li>'.format(c[x],

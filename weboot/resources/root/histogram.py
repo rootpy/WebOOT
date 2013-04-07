@@ -30,20 +30,20 @@ class HistogramTable(RootObject):
         h = self.obj
         xa = h.GetXaxis()
         content = []
-        content.append(
-            '<table style="float:left"><thead><tr><th>Bin</th><th>Content</th><th width="200px">% prev</th></tr></thead>')
+        content.append('<table style="float:left"><thead><tr><th>Bin</th><th>Content'
+                       '</th><th width="200px">% prev</th></tr></thead>')
         prev = h[1]
         for i in xrange(1, xa.GetNbins() + 1):
             count = split_thousands("{0:.2f}".format(h[i]))
             a = xa.GetBinLabel(i), count, h[i] / prev if prev else 0
             prev = h[i]
-            content.append(
-                '<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td><td style="text-align: right;">{2:.3%}</td></tr>'.format(*a))
+            fmt = ('<tr><td>{0}</td><td style="text-align:right; font-family: monospace">{1}</td>'
+                   '<td style="text-align: right;">{2:.3%}</td></tr>')
+            content.append(fmt.format(*a))
         content.append("</table>")
-        content.append('<div style="float:right;"><img src="{0}" /></div><div style="clear:both;"></div>'.format(
-                       self.__parent__["!render"]["png"]["!resolution"][
-                           "50"].sub_url(query={"logy": 1})
-                       ))
+        fmt = '<div style="float:right;"><img src="{0}" /></div><div style="clear:both;"></div>'
+        value = self.__parent__["!render"]["png"]["!resolution"]["50"].sub_url(query={"logy": 1})
+        content.append(fmt.format(value))
         return content
 
 
@@ -349,7 +349,8 @@ class Histogram(Renderable, RootObject):
     @property
     def content(self):
         rendered = self["!render"]["png"]["!resolution"]["100"]
-        return ['<p><img class="plot" src="{0}" /></p>'.format(rendered.sub_url(query={"todo-removeme": 1}))]
+        fmt = '<p><img class="plot" src="{0}" /></p>'
+        return [fmt.format(rendered.sub_url(query={"todo-removeme": 1}))]
         # self.sub_url(query={"render":None, "resolution":70}))]
 
     @action
@@ -374,7 +375,8 @@ class FreqHist(Histogram):
         # TODO(pwaller): use resource string
         pdgs = load(open("pdg.yaml"))
 
-        for i, (pdgid, value) in enumerate(sorted(freqs.iteritems(), key=lambda (k, v): v, reverse=True), 1):
+        sorted_freqs = sorted(freqs.iteritems(), key=lambda (k, v): v, reverse=True)
+        for i, (pdgid, value) in enumerate(sorted_freqs, 1):
             root_object.SetBinContent(i, value)
             root_object.SetBinError(i, value ** 0.5)
             root_object.GetXaxis().SetBinLabel(i, pdgs.get(pdgid, "?"))

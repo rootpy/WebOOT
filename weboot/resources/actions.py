@@ -157,7 +157,8 @@ class HasActions(object):
         from pyramid.location import lineage
         for element in lineage(self):
             contents.append(str(element))
-        return ResponseContext.from_parent(self, key, "\n".join(contents), content_type="text/plain")
+        return ResponseContext.from_parent(self, key, "\n".join(contents),
+                                           content_type="text/plain")
 
     def try_action(self, key):
         """

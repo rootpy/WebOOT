@@ -46,7 +46,10 @@ class RootFileTraverser(LocationAware):
 
         def link(p):
             url = self.request.resource_url(self, p)
-            return '<p><a href="{0}">{1}</a><img src="{0}/render?resolution=25" height="10%"/></p>'.format(url, p)
+            fmt = ('<p><a href="{0}">{1}</a><img '
+                   'src="{0}/render?resolution=25" '
+                   'height="10%"/></p>')
+            return fmt.format(url, p)
         return "".join(link(p) for p in keys)
 
     def keys(self):

@@ -201,8 +201,8 @@ class RootRenderer(Renderer):
                     canvas.SaveAs(tmpfile.name)
                 except ROOTError as err:
                     if "illegal number of points" in err.msg:
-                        log.warning(
-                            'problem plotting canvas "%s", error from ROOT "%s"', canvas.GetName(), err.msg)
+                        log.warning('problem plotting canvas "%s", error from ROOT "%s"',
+                                    canvas.GetName(), err.msg)
                     else:
                         raise
 

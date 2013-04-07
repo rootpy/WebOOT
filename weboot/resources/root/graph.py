@@ -30,7 +30,8 @@ class Graph(Renderable, RootObject):
     @property
     def content(self):
         rendered = self["!render"]["png"]["!resolution"]["100"]
-        return ['<p><img class="plot" src="{0}" /></p>'.format(rendered.sub_url(query={"todo-removeme": 1}))]
+        fmt = '<p><img class="plot" src="{0}" /></p>'
+        return [fmt.format(rendered.sub_url(query={"todo-removeme": 1}))]
 
         # return ['<p><img class="plot" src="{0}"
         # /></p>'.format(self.sub_url(query={"render":None, "resolution":70}))]

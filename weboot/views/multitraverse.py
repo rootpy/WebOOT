@@ -118,13 +118,15 @@ def view_multitraverse(multitravese_context, request):
                     subcontext = context[item]
                     if not subcontext:
                         continue
-                    content.append('<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
-                                   .format(" / ".join(str_index_tuple), context[item],
-                                   request.environ.get("QUERY_STRING", "")))
+                    fmt = ('<a href="{1.url}"><img class="plot" '
+                           'src="{1.icon_url}?{2}" title="{0}" /></a>')
+                    values = (" / ".join(str_index_tuple), context[item],
+                              request.environ.get("QUERY_STRING", ""))
+                    content.append(fmt.format(values))
             continue
-        content.append('<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
-                       .format(" / ".join(str_index_tuple), context,
-                       request.environ.get("QUERY_STRING", "")))
+        fmt = '<a href="{1.url}"><img class="plot" src="{1.icon_url}?{2}" title="{0}" /></a>'
+        values = (" / ".join(str_index_tuple), context, request.environ.get("QUERY_STRING", ""))
+        content.append(fmt.format(values))
 
     return dict(path=build_breadcrumbs(multitravese_context),
                 content="\n".join(content),
