@@ -239,7 +239,10 @@ class ResponseContext(Renderer):
 class CodeDefinition(Renderer):
     """
     Represents the source code of a function object
-    TODO(pwaller): Support for classes, link to online viewer
+
+    TODO(pwaller)
+    
+        It would be nice to support classes and provide links to github.
     """
     def __init__(self, request, function):
         super(CodeDefinition, self).__init__(request, self, None)
