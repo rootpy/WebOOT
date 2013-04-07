@@ -18,8 +18,6 @@ from .breadcrumb import build_breadcrumbs
 
 
 def view_root_object(context, request):
-    if context.forward_url:
-        return HTTPFound(location=context.forward_url)
     return dict(path=build_breadcrumbs(context),
                 content="\n".join(context.content),
                 sidebar="<!-- Hello world -->")
