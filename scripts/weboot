@@ -4,6 +4,7 @@ from pkg_resources import resource_filename
 
 import pyramid.scripts.pserve
 
+
 def main():
     config = resource_filename("weboot.utils", "default_conf.ini")
     args = ["--reload", config]
