@@ -201,7 +201,7 @@ class RootRenderer(Renderer):
                                     canvas.GetName(), err.msg)
                     else:
                         raise
-                        
+
             log.info("RENDERING {0} -- {1}".format(self.format, rootformat))
             if self.format == rootformat:
                 # No conversion necessary, ROOT did it directly.

@@ -250,6 +250,7 @@ class CombinationStackRenderer(RootRenderer):
             legend = get_legend(mc=objs)
             legend.Draw()
 
+
 class EbkeCombinationStackRenderer(RootRenderer):
 
     # This is a Hack
