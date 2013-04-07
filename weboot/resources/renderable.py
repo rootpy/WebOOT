@@ -192,10 +192,6 @@ class RootRenderer(Renderer):
                 self.configure_canvas(params, canvas)
                 self.render(canvas)
 
-                if self.format == "xml":
-                    # TODO(pwaller): special case
-                    raise NotImplementedError()
-
                 canvas.Update()
                 try:
                     canvas.SaveAs(tmpfile.name)
@@ -205,12 +201,7 @@ class RootRenderer(Renderer):
                                     canvas.GetName(), err.msg)
                     else:
                         raise
-
-            # TODO(pwaller): figure out why these two lines are preventing
-            #                 blank images. (wtf?)
-            # Response(pwaller): global canvas lock seems to have fixed the
-            #                    problem, but it's still a black box.
-            # with open(tmpfile.name) as eps_fd: epsdata = eps_fd.read()
+                        
             log.info("RENDERING {0} -- {1}".format(self.format, rootformat))
             if self.format == rootformat:
                 # No conversion necessary, ROOT did it directly.

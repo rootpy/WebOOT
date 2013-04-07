@@ -19,8 +19,11 @@ from weboot.resources.root.object import RootObject
 
 class HistogramTable(RootObject):
     """
-    TODO(pwaller): Fixme
+    Display the histogram as a table.
+
+    Currently only works for 1D histograms with labelled bins.
     """
+
     @property
     def content(self):
         if "cut" not in self.name:
@@ -106,7 +109,6 @@ class HistogramRenderer(RootRenderer):
         if "notitle" in params:
             h.SetTitle("")
 
-        # TODO(pwaller): bring back draw options
         h.Draw(build_draw_params(h, params))
         keepalive(canvas, h)
 
